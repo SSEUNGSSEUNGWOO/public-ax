@@ -92,11 +92,26 @@ export function Footer() {
           </div>
         </div>
         <Separator className="my-8" />
-        <div className="flex flex-col items-center gap-3">
+        <div className="flex flex-col items-center gap-3 mb-8">
           <Image src="/logo-color.svg" alt="PUBLIC-AX" width={100} height={27} />
           <p className="text-sm text-muted-foreground">
             &copy; 2026 PUBLIC-AX · 케이브레인 AI퍼블릭센터
           </p>
+        </div>
+
+        <Separator className="mb-8" />
+
+        <div className="flex flex-col md:flex-row md:items-start gap-6">
+          <div className="flex-shrink-0">
+            <Image src="/kbrain-logo.png" alt="K-BRAIN" width={140} height={40} className="object-contain" />
+          </div>
+          <div className="text-xs text-muted-foreground space-y-1 leading-relaxed">
+            <p>상호명: (주)케이브레인컴퍼니 | 브랜드: DAEASY(데이지)</p>
+            <p>대표: 민상일 (사업자등록번호: 129-86-50144)</p>
+            <p>통신판매업신고번호: 제2026-서울동작-0124호</p>
+            <p>영업소재지: 서울특별시 동작구 보라매로5길 51 롯데타워 301~309호</p>
+            <p>공개교육장: 서울시 마포구 성암로 189 중소기업DMC타워 701호</p>
+          </div>
         </div>
       </div>
     </footer>
