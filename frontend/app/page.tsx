@@ -4,9 +4,11 @@ import { PortfolioCard } from "@/components/portfolio/portfolio-card";
 import { InsightCard } from "@/components/insights/insight-card";
 import { ProcWidget } from "@/components/marketing/proc-widget";
 import { JoinCta } from "@/components/marketing/join-cta";
+import { AboutSection } from "@/components/marketing/about-section";
 import { LinkButton } from "@/components/shared/link-button";
 import { NavCards } from "@/components/marketing/nav-cards";
 import { fetchUnsplashPhotos } from "@/lib/unsplash";
+import { getAllInsights } from "@/lib/insights";
 
 const champions = [
   {
@@ -47,10 +49,6 @@ const portfolioQueries = [
   "data analytics fraud detection",
 ];
 
-const insightQueries = [
-  "government AI technology trends",
-  "smart city digital transformation",
-];
 
 const portfolios = [
   {
@@ -97,70 +95,61 @@ const portfolios = [
   },
 ];
 
-const insights = [
-  {
-    slug: "2025-q1-public-ai-trends",
-    title: "2025년 1분기 공공 AI 조달 트렌드 분석",
-    summary:
-      "RAG와 문서 AI가 전체 공고의 45%를 차지하며, 평균 예산 규모가 전년 대비 30% 증가했습니다.",
-    publishedAt: "2025-04-15",
-    sourceType: "original" as const,
-  },
-  {
-    slug: "local-gov-ai-case-studies",
-    title: "지자체 AI 도입 성공 사례 5선",
-    summary:
-      "서울, 부산, 대전, 세종, 제주의 AI 전환 사례를 분석합니다.",
-    publishedAt: "2025-04-10",
-    sourceType: "curated" as const,
-  },
-];
-
 export default async function Home() {
-  const [portfolioImages, insightImages] = await Promise.all([
+  const [portfolioImages] = await Promise.all([
     fetchUnsplashPhotos(portfolioQueries),
-    fetchUnsplashPhotos(insightQueries),
   ]);
+  const recentInsights = getAllInsights().slice(0, 2);
 
   return (
     <>
       <Hero bgImage="/hero-bg.jpg" />
       <NavCards />
 
-      <section className="py-16 mt-16 bg-muted/20">
+      <div className="mt-16" />
+      <AboutSection
+        insightCount={getAllInsights()[0]?.crawled_count ?? 0}
+        championCount={champions.length}
+        portfolioCount={portfolios.length}
+      />
+
+      <section className="py-16">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-bold">최근 포트폴리오</h2>
-            <LinkButton href="/portfolio" variant="ghost" size="sm">
+            <h2 className="text-2xl font-bold">최근 인사이트</h2>
+            <LinkButton href="/insights" variant="ghost" size="sm">
               전체 보기 &rarr;
             </LinkButton>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {portfolios.map((portfolio, i) => (
-              <PortfolioCard
-                key={portfolio.slug}
-                {...portfolio}
-                coverImage={portfolioImages[i] ?? undefined}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {recentInsights.map((insight) => (
+              <InsightCard
+                key={insight.slug}
+                slug={insight.slug}
+                title={insight.title}
+                publishedAt={insight.published_at}
+                coverImage={insight.image_url ?? undefined}
+                sourceCount={insight.crawled_count}
               />
             ))}
           </div>
         </div>
       </section>
 
-      <section className="py-16">
+      <section className="py-16 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-bold">이번 주 인사이트</h2>
-            <LinkButton href="/insights" variant="ghost" size="sm">
+            <h2 className="text-2xl font-bold">공공 AX 포트폴리오</h2>
+            <LinkButton href="/portfolio" variant="ghost" size="sm">
               전체 보기 &rarr;
             </LinkButton>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {insights.map((insight, i) => (
-              <InsightCard
-                key={insight.slug}
-                {...insight}
-                coverImage={insightImages[i] ?? undefined}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {portfolios.slice(0, 3).map((portfolio, i) => (
+              <PortfolioCard
+                key={portfolio.slug}
+                {...portfolio}
+                coverImage={portfolioImages[i] ?? undefined}
               />
             ))}
           </div>

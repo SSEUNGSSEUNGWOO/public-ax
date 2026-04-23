@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Separator } from "@/components/ui/separator";
 
 const footerLinks = {
@@ -91,9 +92,12 @@ export function Footer() {
           </div>
         </div>
         <Separator className="my-8" />
-        <p className="text-sm text-muted-foreground text-center">
-          &copy; 2026 공공 AX 커뮤니티. All rights reserved.
-        </p>
+        <div className="flex flex-col items-center gap-3">
+          <Image src="/logo-color.svg" alt="PUBLIC-AX" width={100} height={27} />
+          <p className="text-sm text-muted-foreground">
+            &copy; 2026 PUBLIC-AX · 케이브레인 AI퍼블릭센터
+          </p>
+        </div>
       </div>
     </footer>
   );

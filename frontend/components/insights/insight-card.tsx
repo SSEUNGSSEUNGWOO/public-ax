@@ -1,7 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 
 interface InsightCardProps {
   slug: string;
@@ -9,7 +8,7 @@ interface InsightCardProps {
   summary?: string;
   coverImage?: string;
   publishedAt?: string;
-  sourceType?: "original" | "curated";
+  sourceCount?: number;
 }
 
 export function InsightCard({
@@ -18,7 +17,7 @@ export function InsightCard({
   summary,
   coverImage,
   publishedAt,
-  sourceType,
+  sourceCount,
 }: InsightCardProps) {
   return (
     <Link href={`/insights/${slug}`} className="group">
@@ -50,14 +49,9 @@ export function InsightCard({
           )}
         </div>
         <CardContent className="p-5">
-          {sourceType && (
-            <Badge
-              variant={sourceType === "original" ? "default" : "outline"}
-              className="text-xs mb-2 rounded-full font-normal"
-            >
-              {sourceType === "original" ? "원본 기사" : "외부 큐레이션"}
-            </Badge>
-          )}
+          <span className="text-[10px] font-semibold uppercase tracking-widest text-primary mb-2 block">
+            Daily Report
+          </span>
           <h3 className="font-semibold mb-1 group-hover:text-primary transition-colors line-clamp-2">
             {title}
           </h3>
@@ -66,9 +60,15 @@ export function InsightCard({
               {summary}
             </p>
           )}
-          {publishedAt && (
-            <time className="text-xs text-muted-foreground/70">{publishedAt}</time>
-          )}
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground/70">
+            {publishedAt && <time>{publishedAt}</time>}
+            {sourceCount !== undefined && sourceCount > 0 && (
+              <>
+                <span>·</span>
+                <span>{sourceCount}개 데이터 분석</span>
+              </>
+            )}
+          </div>
         </CardContent>
       </Card>
     </Link>

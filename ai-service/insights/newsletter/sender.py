@@ -1,0 +1,164 @@
+"""
+뉴스레터 발송 모듈 (Resend 사용)
+pip install resend markdown
+"""
+import json
+import os
+import re
+from datetime import date
+from pathlib import Path
+
+import resend
+import markdown as md_lib
+
+DATA_DIR = Path(__file__).parent.parent / "data"
+SUBSCRIBERS_PATH = DATA_DIR / "subscribers.json"
+
+
+def load_subscribers() -> list[str]:
+    if not SUBSCRIBERS_PATH.exists():
+        return []
+    with open(SUBSCRIBERS_PATH) as f:
+        return json.load(f).get("subscribers", [])
+
+
+def add_subscriber(email: str) -> bool:
+    """이메일 추가. 이미 있으면 False 반환."""
+    subs = load_subscribers()
+    if email in subs:
+        return False
+    subs.append(email)
+    with open(SUBSCRIBERS_PATH, "w") as f:
+        json.dump({"subscribers": subs}, f, ensure_ascii=False, indent=2)
+    return True
+
+
+def insight_to_html(title: str, body: str, slug: str, published_at: str) -> str:
+    site_url = os.getenv("SITE_URL", "https://public-ax.kr")
+    insight_url = f"{site_url}/insights/{slug}"
+
+    # 마크다운 → HTML 변환
+    body_html = md_lib.markdown(body, extensions=["tables", "fenced_code"])
+
+    # H1 제거 (제목은 따로 표시)
+    body_html = re.sub(r"<h1[^>]*>.*?</h1>", "", body_html, flags=re.DOTALL)
+
+    today_str = date.fromisoformat(published_at).strftime("%Y년 %m월 %d일")
+
+    return f"""<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{title}</title>
+</head>
+<body style="margin:0;padding:0;background:#F5F5F0;font-family:-apple-system,'Apple SD Gothic Neo',sans-serif;">
+  <div style="max-width:640px;margin:0 auto;padding:32px 16px;">
+
+    <!-- 헤더 -->
+    <div style="margin-bottom:32px;">
+      <div style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#888;margin-bottom:8px;">
+        PUBLIC-AX · {today_str}
+      </div>
+      <div style="font-size:11px;color:#888;">
+        공공 AI 일일 인사이트 뉴스레터
+      </div>
+    </div>
+
+    <!-- 제목 카드 -->
+    <div style="background:#fff;border:1px solid #E5E5E0;border-radius:12px;padding:32px;margin-bottom:24px;">
+      <div style="font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#E94E1B;margin-bottom:12px;">
+        DAILY INSIGHT
+      </div>
+      <h1 style="font-size:24px;font-weight:700;line-height:1.4;color:#17150F;margin:0 0 20px;">
+        {title}
+      </h1>
+      <a href="{insight_url}" style="display:inline-block;background:#E94E1B;color:#fff;text-decoration:none;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;">
+        전체 리포트 보기 →
+      </a>
+    </div>
+
+    <!-- 본문 -->
+    <div style="background:#fff;border:1px solid #E5E5E0;border-radius:12px;padding:32px;margin-bottom:24px;
+                font-size:15px;line-height:1.75;color:#3A362C;">
+      <style>
+        h2 {{ font-size:18px;font-weight:700;color:#17150F;margin:28px 0 12px; }}
+        h3 {{ font-size:16px;font-weight:600;color:#17150F;margin:20px 0 8px; }}
+        p {{ margin:0 0 16px; }}
+        a {{ color:#E94E1B; }}
+        ul, ol {{ padding-left:20px;margin:0 0 16px; }}
+        li {{ margin-bottom:6px; }}
+        blockquote {{ border-left:3px solid #E94E1B;margin:16px 0;padding:8px 16px;color:#74705F; }}
+        code {{ background:#F5F5F0;padding:2px 6px;border-radius:4px;font-size:13px; }}
+        table {{ border-collapse:collapse;width:100%;margin:16px 0; }}
+        td, th {{ border:1px solid #E5E5E0;padding:8px 12px;font-size:14px; }}
+        th {{ background:#F5F5F0;font-weight:600; }}
+      </style>
+      {body_html}
+    </div>
+
+    <!-- 푸터 -->
+    <div style="text-align:center;font-size:12px;color:#999;line-height:1.8;">
+      <p style="margin:0 0 8px;">
+        <a href="{site_url}" style="color:#E94E1B;text-decoration:none;">PUBLIC-AX</a>
+        &nbsp;·&nbsp; 케이브레인 AI퍼블릭센터
+      </p>
+      <p style="margin:0;">
+        이 메일은 PUBLIC-AX 뉴스레터를 구독하신 분께 발송됩니다.
+      </p>
+    </div>
+
+  </div>
+</body>
+</html>"""
+
+
+def send_newsletter(insight: dict) -> int:
+    """
+    insight: { title, body, slug, published_at, ... }
+    반환값: 발송 성공 수
+    """
+    api_key = os.getenv("RESEND_API_KEY")
+    if not api_key:
+        print("[newsletter] RESEND_API_KEY 없음. 발송 생략.")
+        return 0
+
+    resend.api_key = api_key
+
+    subscribers = load_subscribers()
+    if not subscribers:
+        print("[newsletter] 구독자 없음.")
+        return 0
+
+    title = insight["title"]
+    html = insight_to_html(
+        title=title,
+        body=insight["body"],
+        slug=insight["slug"],
+        published_at=insight["published_at"],
+    )
+
+    sent = 0
+    from_addr = os.getenv("NEWSLETTER_FROM", "PUBLIC-AX <newsletter@public-ax.kr>")
+
+    # Resend는 배치 발송 지원 (최대 100개)
+    batch = [
+        {
+            "from": from_addr,
+            "to": [email],
+            "subject": f"[PUBLIC-AX] {title}",
+            "html": html,
+        }
+        for email in subscribers
+    ]
+
+    try:
+        # 100개씩 나눠서 발송
+        for i in range(0, len(batch), 100):
+            resend.Emails.send_batch(batch[i:i+100])
+            sent += len(batch[i:i+100])
+        print(f"[newsletter] 발송 완료: {sent}명")
+    except Exception as e:
+        print(f"[newsletter] 발송 오류: {e}")
+
+    return sent

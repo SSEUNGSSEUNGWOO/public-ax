@@ -24,6 +24,7 @@ from proofreader.proofreader import run as proofreader_run
 from evaluator.evaluator import run as evaluator_run
 from shared.storage import load_draft_meta, load_raw_items, save_draft, save_insight
 from shared.models import Insight
+from newsletter.sender import send_newsletter
 
 
 CRAWLERS = [arxiv, github, ai_news, ai_blogs, huggingface, kr_ai_policy]
@@ -123,6 +124,7 @@ def save_to_insights(result: dict):
     meta = load_draft_meta()
     draft = meta.get("draft", "")
     items = load_raw_items(today_only=False)
+    today_items = load_raw_items(today_only=True)
     sources = extract_sources(draft, items)
     insight = Insight(
         title=extract_title(draft),
@@ -132,9 +134,11 @@ def save_to_insights(result: dict):
         category="daily_report",
         image_url=meta.get("cover_image"),
         evaluation_score=result.get("weighted_score"),
+        crawled_count=len(today_items),
     )
     save_insight(insight)
     print(f"[run] insights.json 저장 완료: {insight.slug} ({len(sources)}개 출처)")
+    return insight
 
 
 if __name__ == "__main__":
@@ -144,6 +148,7 @@ if __name__ == "__main__":
     run_proofreader()
     passed, result = run_evaluator()
     if passed:
-        save_to_insights(result)
+        insight = save_to_insights(result)
+        send_newsletter(vars(insight))
     else:
         print("[run] 최종 인사이트 저장 생략")

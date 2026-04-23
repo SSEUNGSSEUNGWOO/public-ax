@@ -15,7 +15,7 @@ criteria:
     max_score: 5
 
   - name: "source_linkage"
-    description: "원문 출처가 정확하게 연결되어 있는가"
+    description: "출처 URL이 수집 데이터에 실제로 존재하는 URL인가. 창작하거나 추측한 URL이 있으면 감점. 각 번호 항목에 출처가 1개 이상 있는가"
     weight: 0.10
     max_score: 5
 

@@ -1,5 +1,8 @@
 import json
+import re
 import subprocess
+import urllib.error
+import urllib.request
 import yaml
 from pathlib import Path
 
@@ -9,6 +12,23 @@ from shared.storage import load_draft, save_draft
 def load_rubric() -> dict:
     with open(Path(__file__).parent / "rubric.yaml", encoding="utf-8") as f:
         return yaml.safe_load(f)
+
+
+def check_urls(draft: str) -> list[str]:
+    urls = re.findall(r'\[([^\]]+)\]\((https?://[^\)]+)\)', draft)
+    invalid = []
+    for _, url in urls:
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(req, timeout=8) as resp:
+                if resp.status == 404:
+                    invalid.append(url)
+        except urllib.error.HTTPError as e:
+            if e.code in (401, 404):
+                invalid.append(url)
+        except Exception:
+            pass
+    return invalid
 
 
 def evaluate_with_claude_cli(draft: str, rubric: dict) -> dict:
@@ -73,6 +93,11 @@ def run() -> tuple[bool, dict]:
 
     for attempt in range(1, max_retries + 1):
         print(f"[evaluator] 평가 시도 {attempt}/{max_retries}")
+
+        invalid_urls = check_urls(draft)
+        if invalid_urls:
+            print(f"[evaluator] 유효하지 않은 URL {len(invalid_urls)}개: {invalid_urls}")
+
         try:
             result = evaluate_with_claude_cli(draft, rubric)
         except Exception as e:
@@ -80,7 +105,7 @@ def run() -> tuple[bool, dict]:
             return False, {}
 
         score = result.get("weighted_score", 0)
-        passed = result.get("pass", False) and score >= threshold
+        passed = result.get("pass", False) and score >= threshold and not invalid_urls
 
         print(f"[evaluator] 점수: {score:.2f} / 통과: {passed}")
         print(f"[evaluator] 피드백: {result.get('feedback', '')}")
@@ -90,6 +115,8 @@ def run() -> tuple[bool, dict]:
 
         if attempt < max_retries:
             feedback = result.get("feedback", "")
+            if invalid_urls:
+                feedback += f"\n\n다음 URL은 실제로 접근 불가능하므로 반드시 수집 데이터에 있는 실제 URL로 교체하세요: {', '.join(invalid_urls)}"
             print(f"[evaluator] 피드백과 함께 재작성 요청...")
             from writer.writer import run as writer_run
             from image_agent.image_agent import run as image_agent_run

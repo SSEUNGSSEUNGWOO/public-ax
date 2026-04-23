@@ -5,18 +5,16 @@ from shared.utils import fetch_og_image, fetch_unsplash_image
 
 
 def insert_section_images(draft: str, item_urls: set[str]) -> str:
-    """각 번호 섹션의 볼드 제목 바로 뒤에 og:image 삽입."""
-    section_pattern = re.compile(r'(?=^(?:\*\*\d+\.|\d+\.) )', re.MULTILINE)
-    parts = section_pattern.split(draft)
-    if len(parts) <= 1:
-        parts = re.split(r'\n---\n', draft)
+    """--- 구분선 기준으로 섹션 분리 후 각 섹션 앞에 og:image 삽입."""
+    parts = re.split(r'\n---\n', draft)
 
     url_pattern = re.compile(r'\[([^\]]+)\]\((https?://[^\)]+)\)')
     seen_urls: set[str] = set()
 
     new_parts = []
     for part in parts:
-        if not re.search(r'\*\*\d+\.|\d+\. ', part[:30]):
+        # 번호 항목 섹션인지 확인 (N. 또는 N. ### 로 시작)
+        if not re.search(r'^\d+\.', part.strip()):
             new_parts.append(part)
             continue
 
@@ -27,13 +25,12 @@ def insert_section_images(draft: str, item_urls: set[str]) -> str:
             img = fetch_og_image(url)
             if img:
                 seen_urls.add(url)
-                # 섹션 제목 앞에 이미지 삽입
-                part = f"![source-image]({img})\n\n" + part
+                part = f"![source-image]({img})\n\n" + part.lstrip()
             break
 
         new_parts.append(part)
 
-    return "".join(new_parts)
+    return "\n---\n".join(new_parts)
 
 
 def run(draft: str, items: list[dict]) -> tuple[str, str | None]:

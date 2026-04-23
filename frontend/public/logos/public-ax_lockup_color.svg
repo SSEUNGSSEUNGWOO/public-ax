@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 140" width="1040" height="280" fill="none">
+  <!-- Symbol -->
+  <g transform="translate(30 20) scale(1)">
+    <path d="M18 26 L50 50 L18 74" stroke="#0A0A0B" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M50 26 L82 50 L50 74" stroke="oklch(0.68 0.18 50)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="18" cy="26" r="7" fill="#0A0A0B"/>
+    <circle cx="18" cy="74" r="7" fill="#0A0A0B"/>
+    <circle cx="82" cy="50" r="9" fill="oklch(0.68 0.18 50)"/>
+  </g>
+  <!-- Wordmark -->
+  <text x="160" y="92" font-family="'Space Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="56" font-weight="700" letter-spacing="-1.6" fill="#0A0A0B">PUBLIC</text>
+  <text x="348" y="92" font-family="'Space Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="56" font-weight="500" fill="#0A0A0B" opacity="0.5">–</text>
+  <text x="374" y="92" font-family="'Space Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="56" font-weight="500" letter-spacing="-0.8" fill="oklch(0.68 0.18 50)">AX</text>
+</svg>

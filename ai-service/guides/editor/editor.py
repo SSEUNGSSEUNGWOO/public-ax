@@ -1,0 +1,72 @@
+import json
+import re
+import subprocess
+
+
+TEMPLATE_GUIDE = """
+가이드 템플릿 구조:
+1. tldr: 핵심 요약 3개 (짧고 명확한 문장)
+2. body 첫 섹션: ## 개요 또는 개념 설명
+3. body 중간: ## 작동 방식 또는 핵심 원리
+4. body 하단: ## 공공기관 활용 방법 (실무 예시 포함)
+5. 콜아웃 박스 활용:
+   - > 💡 **팁**: 실용적인 조언
+   - > ⚠️ **주의**: 유의사항
+   - > 📌 **핵심**: 반드시 기억할 내용
+6. 오탈자, 비자연스러운 표현 교정
+7. AI 상투어 제거: '살펴보겠습니다', '알아보겠습니다', '중요한 시사점' 등
+"""
+
+
+def edit(guide: dict) -> dict:
+    prompt = f"""다음 가이드 문서를 편집해주세요.
+
+{TEMPLATE_GUIDE}
+
+## 편집 대상
+
+제목: {guide['title']}
+카테고리: {guide['category']}
+요약: {guide['summary']}
+난이도: {guide.get('difficulty', '기초')}
+
+현재 TL;DR:
+{chr(10).join(f'- {t}' for t in guide.get('tldr', []))}
+
+현재 본문:
+{guide['body']}
+
+## 편집 지침
+- 템플릿 구조에 맞게 섹션 재구성 (내용은 최대한 유지)
+- TL;DR이 없거나 부실하면 본문에서 핵심 3개 추출해 보완
+- 콜아웃 박스를 본문에 2~3개 자연스럽게 삽입
+- 오탈자 및 어색한 표현 교정
+- AI 상투어 자연스럽게 수정
+- 전체 분량은 줄이지 말 것
+
+## 응답 형식 (JSON만 출력)
+{{
+  "tldr": ["핵심1", "핵심2", "핵심3"],
+  "body": "편집된 마크다운 본문"
+}}"""
+
+    result = subprocess.run(
+        ["claude", "-p", prompt],
+        capture_output=True,
+        text=True,
+        timeout=180,
+    )
+
+    if result.returncode != 0:
+        raise RuntimeError(f"claude CLI 실패: {result.stderr}")
+
+    output = result.stdout
+    start = output.find("{")
+    end = output.rfind("}") + 1
+    if start == -1:
+        raise ValueError("JSON을 찾을 수 없음")
+
+    data = json.loads(output[start:end])
+    guide["tldr"] = data.get("tldr", guide.get("tldr", []))
+    guide["body"] = data.get("body", guide["body"])
+    return guide

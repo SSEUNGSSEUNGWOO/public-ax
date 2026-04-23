@@ -17,15 +17,18 @@ const playfair = Playfair_Display({
 
 export const metadata: Metadata = {
   title: {
-    default: "공공 AX 커뮤니티",
-    template: "%s | 공공 AX 커뮤니티",
+    default: "PUBLIC-AX",
+    template: "%s | PUBLIC-AX",
   },
   description:
     "대한민국 공공 AI 전환(AX)을 이끄는 사람과 작품을 아카이빙하고, 조달 동향과 인사이트를 제공하는 커뮤니티 포털",
+  icons: {
+    icon: "/favicon.svg",
+  },
   openGraph: {
     type: "website",
     locale: "ko_KR",
-    siteName: "공공 AX 커뮤니티",
+    siteName: "PUBLIC-AX",
   },
 };
 

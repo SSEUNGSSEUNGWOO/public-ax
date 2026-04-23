@@ -4,31 +4,29 @@ export function JoinCta() {
   return (
     <section className="py-24">
       <div className="container mx-auto px-4">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/90 to-primary p-12 md:p-16 text-center">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.15),transparent_60%)]" />
+        <div className="relative overflow-hidden rounded-3xl p-12 md:p-16 text-center">
+          <div className="absolute inset-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/join-bg.jpg" alt="" className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-black/60" />
+          </div>
           <div className="relative">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-primary-foreground">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
               공공 AI 생태계에 참여하세요
             </h2>
-            <p className="text-primary-foreground/70 mb-8 max-w-md mx-auto text-lg">
+            <p className="text-white/70 mb-8 max-w-md mx-auto text-lg">
               챔피언들과 실무자, 기업이 함께 만들어가는 커뮤니티
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <LinkButton
+              <a
                 href="/join"
-                size="lg"
-                className="bg-white text-primary hover:bg-white/90 font-semibold px-8 border-white"
+                className="inline-flex items-center gap-2 justify-center h-11 px-8 rounded-md text-sm font-semibold bg-[#FEE500] text-[#3C1E1E] hover:bg-[#F5DC00] transition-colors"
               >
-                카카오 오픈채팅 참여
-              </LinkButton>
-              <LinkButton
-                href="/join"
-                size="lg"
-                variant="outline"
-                className="border-white/30 text-primary-foreground hover:bg-white/10 px-8"
-              >
-                챔피언 지원하기
-              </LinkButton>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 3C6.477 3 2 6.477 2 10.8c0 2.7 1.52 5.09 3.84 6.56L4.8 21l4.32-2.16c.92.24 1.89.36 2.88.36 5.523 0 10-3.477 10-7.8S17.523 3 12 3z"/>
+                </svg>
+                카카오톡 오픈채팅 참여
+              </a>
             </div>
           </div>
         </div>

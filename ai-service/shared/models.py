@@ -30,6 +30,7 @@ class Insight:
     category: str = "general"
     image_url: Optional[str] = None
     evaluation_score: Optional[float] = None
+    crawled_count: int = 0
     slug: str = ""
 
     def __post_init__(self):

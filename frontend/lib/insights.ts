@@ -10,6 +10,7 @@ export interface Insight {
   category: string;
   image_url: string | null;
   evaluation_score: number | null;
+  crawled_count: number;
 }
 
 const DATA_PATH = path.join(

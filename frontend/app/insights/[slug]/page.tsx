@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { getInsightBySlug, getAllInsights } from "@/lib/insights";
@@ -9,13 +8,41 @@ export async function generateStaticParams() {
   return getAllInsights().map((i) => ({ slug: i.slug }));
 }
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://public-ax.kr";
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const insight = getInsightBySlug(slug);
   if (!insight) return {};
+
+  const description = insight.body
+    .replace(/[#*`>\[\]]/g, "")
+    .replace(/\n+/g, " ")
+    .trim()
+    .slice(0, 160);
+
+  const url = `${SITE_URL}/insights/${insight.slug}`;
+
   return {
     title: insight.title,
-    description: insight.body.slice(0, 150).replace(/[#*\n]/g, " ").trim(),
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      type: "article",
+      url,
+      title: insight.title,
+      description,
+      publishedTime: insight.published_at,
+      siteName: "PUBLIC-AX",
+      locale: "ko_KR",
+      ...(insight.image_url ? { images: [{ url: insight.image_url }] } : {}),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: insight.title,
+      description,
+      ...(insight.image_url ? { images: [insight.image_url] } : {}),
+    },
   };
 }
 
@@ -24,12 +51,17 @@ function slugify(text: string) {
 }
 
 function extractToc(body: string) {
-  const items: { id: string; text: string; level: number }[] = [];
+  const items: { id: string; text: string; level: number; index?: number }[] = [];
+  let sectionIndex = 0;
   for (const line of body.split("\n")) {
-    const m = line.match(/^(#{2,3})\s+(.+)/);
-    if (m) {
-      const text = m[2].trim();
-      items.push({ id: slugify(text), text, level: m[1].length });
+    const h = line.match(/^(#{2,3})\s+(.+)/);
+    if (h) {
+      items.push({ id: slugify(h[2].trim()), text: h[2].trim(), level: h[1].length });
+    }
+    const listH3 = line.match(/^(\d+)\.\s+###\s+(.+)/);
+    if (listH3) {
+      sectionIndex++;
+      items.push({ id: slugify(listH3[2].trim()), text: listH3[2].trim(), level: 3, index: sectionIndex });
     }
   }
   return items;
@@ -46,6 +78,7 @@ export default async function InsightDetailPage({
 
   const cleanBody = insight.body
     .replace(/^#[^\n]*\n+/, "")
+    .replace(/^\*\*\d{4}-\d{2}-\d{2}\*\*\n*/m, "")
     .replace(/^\*\*리포트 날짜:[^\n]*\*\*\n*/m, "")
     .replace(/^\*\*[^\n]*인사이트[^\n]*\*\*\n*/m, "")
     .replace(/\n*---\n+\*?본 리포트는[^\n]*\*?\n*/g, "")
@@ -53,28 +86,40 @@ export default async function InsightDetailPage({
     .replace(/^---\n+/, "");
 
   const tocItems = [
+    { id: "top", text: "제목", level: 2 },
     ...extractToc(cleanBody),
     ...(insight.sources.length > 0 ? [{ id: "sources", text: "참고 출처", level: 2 }] : []),
   ];
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: insight.title,
+    description: insight.body.replace(/[#*`>\[\]]/g, "").replace(/\n+/g, " ").trim().slice(0, 160),
+    datePublished: insight.published_at,
+    dateModified: insight.published_at,
+    author: { "@type": "Organization", name: "케이브레인 AI퍼블릭센터" },
+    publisher: {
+      "@type": "Organization",
+      name: "PUBLIC-AX",
+      url: `${SITE_URL}`,
+    },
+    url: `${SITE_URL}/insights/${insight.slug}`,
+    ...(insight.image_url ? { image: insight.image_url } : {}),
+  };
+
   return (
+    <>
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
     <div className="container mx-auto px-4 py-16 max-w-6xl">
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_200px] gap-16">
         {/* 본문 */}
         <div className="min-w-0">
-          {insight.image_url && (
-            <div className="relative w-full h-64 rounded-2xl overflow-hidden mb-8">
-              <Image
-                src={insight.image_url}
-                alt={insight.title}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 768px"
-                priority
-                unoptimized
-              />
-            </div>
-          )}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          {insight.image_url && <img src={insight.image_url} alt={insight.title} className="rounded-2xl w-full h-auto mb-8" />}
 
           <div className="mb-8">
             <span className="text-[10px] font-semibold uppercase tracking-widest text-primary mb-3 block">
@@ -91,7 +136,7 @@ export default async function InsightDetailPage({
             </div>
           </div>
 
-          <article className="prose prose-neutral dark:prose-invert max-w-none [&_p>strong:only-child]:text-lg [&_p>strong:only-child]:block">
+          <article className="prose prose-neutral dark:prose-invert max-w-none [&_p>strong:only-child]:text-lg [&_p>strong:only-child]:block [&_li>p:first-child]:mt-0 [&_li>p:first-child]:mb-0 [&_li>p:not(:first-child)]:mt-4 [&_li>p]:leading-7 [&_ol>li>h3]:text-primary [&_ol>li>h3]:text-xl [&_ol>li>h3]:font-bold [&_ol>li>h3]:mt-0 [&_ol>li>h3]:mb-2 [&_ol>li>h3]:tracking-tight [&_ol>li::marker]:text-primary [&_ol>li::marker]:text-xl [&_ol>li::marker]:font-bold [&_h2]:border-b [&_h2]:border-border [&_h2]:pb-3 [&_h2]:text-2xl ">
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               components={{
@@ -108,7 +153,7 @@ export default async function InsightDetailPage({
                   <img
                     src={src}
                     alt={alt ?? ""}
-                    className="rounded-xl w-full object-cover max-h-64 my-4"
+                    className="rounded-xl w-full h-auto my-4"
                   />
                 ),
                 hr: () => (
@@ -156,5 +201,6 @@ export default async function InsightDetailPage({
         </aside>
       </div>
     </div>
+    </>
   );
 }

@@ -6,6 +6,7 @@ interface TocItem {
   id: string;
   text: string;
   level: number;
+  index?: number;
 }
 
 export function TableOfContents({ items }: { items: TocItem[] }) {
@@ -42,15 +43,25 @@ export function TableOfContents({ items }: { items: TocItem[] }) {
           href={`#${item.id}`}
           onClick={(e) => {
             e.preventDefault();
-            document.getElementById(item.id)?.scrollIntoView({ behavior: "smooth" });
+            if (item.id === "top") {
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            } else {
+              document.getElementById(item.id)?.scrollIntoView({ behavior: "smooth" });
+            }
           }}
-          className={`block text-sm leading-snug py-0.5 border-l-2 pl-3 transition-colors ${
+          className={`block text-sm leading-snug py-0.5 border-l-2 transition-colors ${
+            item.level === 3
+              ? "pl-6 text-xs"
+              : "pl-3"
+          } ${
             active === item.id
               ? "border-primary text-primary font-medium"
               : "border-transparent text-muted-foreground hover:text-foreground"
           }`}
         >
-          {item.text}
+          {item.level === 3 && item.index !== undefined
+            ? `${item.index}. ${item.text}`
+            : item.text}
         </a>
       ))}
     </nav>
