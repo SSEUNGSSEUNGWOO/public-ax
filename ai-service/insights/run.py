@@ -26,6 +26,7 @@ from shared.storage import load_draft_meta, load_raw_items, save_draft, save_ins
 from shared.models import Insight
 from newsletter.sender import send_newsletter
 from shared.supabase_client import get_client as get_supabase
+from shared.indexer import chunk_insight, chunk_raw_items, upsert_chunks
 
 
 CRAWLERS = [arxiv, github, ai_news, ai_blogs, huggingface, kr_ai_policy]
@@ -161,6 +162,23 @@ def save_to_insights(result: dict):
     return insight
 
 
+def run_embedding(insight):
+    print("\n=== [6] 임베딩 ===")
+    try:
+        today_items = load_raw_items(today_only=True)
+        raw_chunks = chunk_raw_items(today_items)
+        insight_chunks = chunk_insight(
+            title=insight.title,
+            body=insight.body,
+            slug=insight.slug,
+            published_at=insight.published_at,
+        )
+        upsert_chunks(raw_chunks + insight_chunks)
+        print(f"=== 임베딩 완료: raw {len(raw_chunks)}개 + insight {len(insight_chunks)}개 ===\n")
+    except Exception as e:
+        print(f"[run] 임베딩 실패: {e}")
+
+
 if __name__ == "__main__":
     run_crawlers()
     run_writer()
@@ -169,6 +187,7 @@ if __name__ == "__main__":
     passed, result = run_evaluator()
     if passed:
         insight = save_to_insights(result)
+        run_embedding(insight)
         send_newsletter(vars(insight))
     else:
         print("[run] 최종 인사이트 저장 생략")

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-const suggestions = ["RAG 기반 민원 챗봇", "의료 AI 판독 시스템", "나라장터 AI 공고"];
+const suggestions = ["공공기관 RAG 도입 방법", "오늘의 AI 동향", "LLM 프롬프트 엔지니어링"];
 
 export function HeroSearch() {
   const [query, setQuery] = useState("");
@@ -17,17 +17,14 @@ export function HeroSearch() {
   return (
     <div className="w-full max-w-sm md:max-w-xl lg:max-w-2xl xl:max-w-3xl mx-auto">
       <p className="text-white/70 text-xs text-center mb-3 tracking-wide">
-        AI 챔피언, 포트폴리오, 조달 공고를 검색하세요
+        공공 AI 동향, 기술, 정책을 검색하세요
       </p>
-      <form
-        onSubmit={(e) => { e.preventDefault(); submit(query); }}
-        className="relative"
-      >
+      <form onSubmit={(e) => { e.preventDefault(); submit(query); }} className="relative">
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="예: 서울시 AI 민원 챗봇, 의료 AI 판독..."
+          placeholder="예: 서울시 AI 민원 챗봇, RAG 도입 사례..."
           autoComplete="off"
           className="w-full rounded-full px-6 py-4 pr-14 text-sm outline-none placeholder-white/40"
           style={{
