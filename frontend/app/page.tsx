@@ -9,6 +9,7 @@ import { LinkButton } from "@/components/shared/link-button";
 import { NavCards } from "@/components/marketing/nav-cards";
 import { fetchUnsplashPhotos } from "@/lib/unsplash";
 import { getAllInsights } from "@/lib/insights";
+import { getCountsForType } from "@/lib/counts";
 
 const champions = [
   {
@@ -96,10 +97,12 @@ const portfolios = [
 ];
 
 export default async function Home() {
-  const [portfolioImages] = await Promise.all([
+  const [portfolioImages, allInsights, insightCounts] = await Promise.all([
     fetchUnsplashPhotos(portfolioQueries),
+    getAllInsights(),
+    getCountsForType("insight"),
   ]);
-  const recentInsights = getAllInsights().slice(0, 2);
+  const recentInsights = allInsights.slice(0, 2);
 
   return (
     <>
@@ -108,7 +111,7 @@ export default async function Home() {
 
       <div className="mt-16" />
       <AboutSection
-        insightCount={getAllInsights()[0]?.crawled_count ?? 0}
+        insightCount={allInsights[0]?.crawled_count ?? 0}
         championCount={champions.length}
         portfolioCount={portfolios.length}
       />
@@ -129,7 +132,8 @@ export default async function Home() {
                 title={insight.title}
                 publishedAt={insight.published_at}
                 coverImage={insight.image_url ?? undefined}
-                sourceCount={insight.crawled_count}
+                likeCount={insightCounts[insight.slug]?.likes ?? 0}
+                commentCount={insightCounts[insight.slug]?.comments ?? 0}
               />
             ))}
           </div>

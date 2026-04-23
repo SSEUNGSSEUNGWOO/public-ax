@@ -65,7 +65,9 @@ export default function JoinPage() {
           ))}
         </ul>
         <a
-          href="#"
+          href="https://open.kakao.com/o/grNa0Iri"
+          target="_blank"
+          rel="noopener noreferrer"
           className="inline-flex items-center gap-2 justify-center w-full h-12 rounded-xl text-sm font-semibold bg-[#FEE500] text-[#3C1E1E] hover:bg-[#F5DC00] transition-colors"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">

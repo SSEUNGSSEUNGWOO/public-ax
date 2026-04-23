@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { LikeButton } from "@/components/shared/like-button";
 
 interface TocItem {
   id: string;
@@ -9,7 +10,11 @@ interface TocItem {
   index?: number;
 }
 
-export function TableOfContents({ items }: { items: TocItem[] }) {
+export function TableOfContents({ items, likeContentType, likeContentId }: {
+  items: TocItem[];
+  likeContentType?: "insight" | "guide";
+  likeContentId?: string;
+}) {
   const [active, setActive] = useState<string>("");
 
   useEffect(() => {
@@ -33,7 +38,7 @@ export function TableOfContents({ items }: { items: TocItem[] }) {
   if (items.length === 0) return null;
 
   return (
-    <nav className="sticky top-24 space-y-1">
+    <div className="sticky top-24 space-y-1">
       <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-3">
         목차
       </p>
@@ -64,6 +69,11 @@ export function TableOfContents({ items }: { items: TocItem[] }) {
             : item.text}
         </a>
       ))}
-    </nav>
+      {likeContentType && likeContentId && (
+        <div className="pt-6 flex justify-center">
+          <LikeButton contentType={likeContentType} contentId={likeContentId} />
+        </div>
+      )}
+    </div>
   );
 }

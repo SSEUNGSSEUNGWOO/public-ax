@@ -1,5 +1,4 @@
-import fs from "fs";
-import path from "path";
+import { createClient } from "@supabase/supabase-js";
 
 export interface Insight {
   slug: string;
@@ -13,28 +12,34 @@ export interface Insight {
   crawled_count: number;
 }
 
-const DATA_PATH = path.join(
-  process.cwd().includes("frontend")
-    ? process.cwd()
-    : path.join(process.cwd(), "frontend"),
-  "..",
-  "ai-service",
-  "insights",
-  "data",
-  "insights.json"
-);
-
-export function getAllInsights(): Insight[] {
-  try {
-    const raw = fs.readFileSync(DATA_PATH, "utf-8");
-    const data = JSON.parse(raw) as Insight[];
-    return data.sort((a, b) => b.published_at.localeCompare(a.published_at));
-  } catch {
-    return [];
-  }
+function getClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 }
 
-export function getInsightBySlug(slug: string): Insight | null {
+export async function getAllInsights(): Promise<Insight[]> {
+  const { data, error } = await getClient()
+    .from("insights")
+    .select("*")
+    .order("published_at", { ascending: false });
+
+  if (error) {
+    console.error("insights fetch error:", error.message);
+    return [];
+  }
+  return data ?? [];
+}
+
+export async function getInsightBySlug(slug: string): Promise<Insight | null> {
   const decoded = decodeURIComponent(slug);
-  return getAllInsights().find((i) => i.slug === decoded || i.slug === slug) ?? null;
+  const { data, error } = await getClient()
+    .from("insights")
+    .select("*")
+    .or(`slug.eq.${decoded},slug.eq.${slug}`)
+    .single();
+
+  if (error) return null;
+  return data;
 }

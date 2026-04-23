@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readFileSync, writeFileSync } from "fs";
-import { join } from "path";
+import { createClient } from "@supabase/supabase-js";
 
-const SUBSCRIBERS_PATH = join(
-  process.cwd(),
-  "../ai-service/insights/data/subscribers.json"
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
 export async function POST(req: NextRequest) {
@@ -14,15 +13,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "유효하지 않은 이메일입니다." }, { status: 400 });
   }
 
-  try {
-    const data = JSON.parse(readFileSync(SUBSCRIBERS_PATH, "utf-8"));
-    if (data.subscribers.includes(email)) {
+  const { error } = await supabase
+    .from("subscribers")
+    .insert({ email })
+    .single();
+
+  if (error) {
+    if (error.code === "23505") {
       return NextResponse.json({ message: "이미 구독 중입니다." });
     }
-    data.subscribers.push(email);
-    writeFileSync(SUBSCRIBERS_PATH, JSON.stringify(data, null, 2), "utf-8");
-    return NextResponse.json({ message: "구독 완료" });
-  } catch {
     return NextResponse.json({ error: "서버 오류" }, { status: 500 });
   }
+
+  return NextResponse.json({ message: "구독 완료" });
 }

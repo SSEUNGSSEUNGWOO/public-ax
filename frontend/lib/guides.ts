@@ -1,5 +1,4 @@
-import fs from "fs";
-import path from "path";
+import { createClient } from "@supabase/supabase-js";
 
 export interface GuideVideo {
   title: string;
@@ -20,27 +19,34 @@ export interface Guide {
   status?: "draft" | "published";
 }
 
-const DATA_PATH = path.join(
-  process.cwd().includes("frontend")
-    ? process.cwd()
-    : path.join(process.cwd(), "frontend"),
-  "content",
-  "guides.json"
-);
-
-export function getAllGuides(): Guide[] {
-  try {
-    const raw = fs.readFileSync(DATA_PATH, "utf-8");
-    const data = JSON.parse(raw) as Guide[];
-    return data
-      .filter((g) => !g.status || g.status === "published")
-      .sort((a, b) => b.published_at.localeCompare(a.published_at));
-  } catch {
-    return [];
-  }
+function getClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 }
 
-export function getGuideBySlug(slug: string): Guide | null {
-  const decoded = decodeURIComponent(slug);
-  return getAllGuides().find((g) => g.slug === decoded || g.slug === slug) ?? null;
+export async function getAllGuides(): Promise<Guide[]> {
+  const { data, error } = await getClient()
+    .from("guides")
+    .select("*")
+    .eq("status", "published")
+    .order("published_at", { ascending: false });
+
+  if (error) {
+    console.error("guides fetch error:", error.message);
+    return [];
+  }
+  return data ?? [];
+}
+
+export async function getGuideBySlug(slug: string): Promise<Guide | null> {
+  const { data, error } = await getClient()
+    .from("guides")
+    .select("*")
+    .eq("slug", slug)
+    .single();
+
+  if (error) return null;
+  return data;
 }

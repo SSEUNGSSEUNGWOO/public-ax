@@ -3,16 +3,18 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { getInsightBySlug, getAllInsights } from "@/lib/insights";
 import { TableOfContents } from "@/components/insights/toc";
+import { CommentsSection } from "@/components/shared/comments-section";
 
 export async function generateStaticParams() {
-  return getAllInsights().map((i) => ({ slug: i.slug }));
+  const insights = await getAllInsights();
+  return insights.map((i) => ({ slug: i.slug }));
 }
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://public-ax.kr";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const insight = getInsightBySlug(slug);
+  const insight = await getInsightBySlug(slug);
   if (!insight) return {};
 
   const description = insight.body
@@ -73,7 +75,7 @@ export default async function InsightDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const insight = getInsightBySlug(slug);
+  const insight = await getInsightBySlug(slug);
   if (!insight) notFound();
 
   const cleanBody = insight.body
@@ -99,66 +101,36 @@ export default async function InsightDetailPage({
     datePublished: insight.published_at,
     dateModified: insight.published_at,
     author: { "@type": "Organization", name: "케이브레인 AI퍼블릭센터" },
-    publisher: {
-      "@type": "Organization",
-      name: "PUBLIC-AX",
-      url: `${SITE_URL}`,
-    },
+    publisher: { "@type": "Organization", name: "PUBLIC-AX", url: `${SITE_URL}` },
     url: `${SITE_URL}/insights/${insight.slug}`,
     ...(insight.image_url ? { image: insight.image_url } : {}),
   };
 
   return (
     <>
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-    />
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
     <div className="container mx-auto px-4 py-16 max-w-6xl">
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_200px] gap-16">
-        {/* 본문 */}
         <div className="min-w-0">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           {insight.image_url && <img src={insight.image_url} alt={insight.title} className="rounded-2xl w-full h-auto mb-8" />}
 
           <div className="mb-8">
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-primary mb-3 block">
-              Daily Report
-            </span>
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-primary mb-3 block">Daily Report</span>
             <h1 className="text-3xl font-bold leading-tight mb-4">{insight.title}</h1>
             <div className="flex items-center justify-between mb-6">
-              <p className="text-sm text-muted-foreground">
-                AI 동향 일일 리포트 — {insight.published_at}
-              </p>
-              <p className="text-sm text-muted-foreground/70">
-                케이브레인 AI퍼블릭센터 · 장승우
-              </p>
+              <p className="text-sm text-muted-foreground">AI 동향 일일 리포트 — {insight.published_at}</p>
+              <p className="text-sm text-muted-foreground/70">케이브레인 AI퍼블릭센터 · 장승우</p>
             </div>
           </div>
 
-          <article className="prose prose-neutral dark:prose-invert max-w-none [&_p>strong:only-child]:text-lg [&_p>strong:only-child]:block [&_li>p:first-child]:mt-0 [&_li>p:first-child]:mb-0 [&_li>p:not(:first-child)]:mt-4 [&_li>p]:leading-7 [&_ol>li>h3]:text-primary [&_ol>li>h3]:text-xl [&_ol>li>h3]:font-bold [&_ol>li>h3]:mt-0 [&_ol>li>h3]:mb-2 [&_ol>li>h3]:tracking-tight [&_ol>li::marker]:text-primary [&_ol>li::marker]:text-xl [&_ol>li::marker]:font-bold [&_h2]:border-b [&_h2]:border-border [&_h2]:pb-3 [&_h2]:text-2xl ">
+          <article className="prose prose-neutral dark:prose-invert max-w-none [&_p>strong:only-child]:text-lg [&_p>strong:only-child]:block [&_li>p:first-child]:mt-0 [&_li>p:first-child]:mb-0 [&_li>p:not(:first-child)]:mt-4 [&_li>p]:leading-7 [&_ol>li>h3]:text-primary [&_ol>li>h3]:text-xl [&_ol>li>h3]:font-bold [&_ol>li>h3]:mt-0 [&_ol>li>h3]:mb-2 [&_ol>li>h3]:tracking-tight [&_ol>li::marker]:text-primary [&_ol>li::marker]:text-xl [&_ol>li::marker]:font-bold [&_h2]:border-b [&_h2]:border-border [&_h2]:pb-3 [&_h2]:text-2xl">
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               components={{
-                h2: ({ children }) => {
-                  const text = String(children);
-                  return <h2 id={slugify(text)} className="scroll-mt-24">{children}</h2>;
-                },
-                h3: ({ children }) => {
-                  const text = String(children);
-                  return <h3 id={slugify(text)} className="scroll-mt-24">{children}</h3>;
-                },
-                img: ({ src, alt }) => (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={src}
-                    alt={alt ?? ""}
-                    className="rounded-xl w-full h-auto my-4"
-                  />
-                ),
-                hr: () => (
-                  <hr className="my-8 border-t border-border" />
-                ),
+                h2: ({ children }) => <h2 id={slugify(String(children))} className="scroll-mt-24">{children}</h2>,
+                h3: ({ children }) => <h3 id={slugify(String(children))} className="scroll-mt-24">{children}</h3>,
+                img: ({ src, alt }) => <img src={src} alt={alt ?? ""} className="rounded-xl w-full h-auto my-4" />,
+                hr: () => <hr className="my-8 border-t border-border" />,
               }}
             >
               {cleanBody}
@@ -167,19 +139,12 @@ export default async function InsightDetailPage({
 
           {insight.sources.length > 0 && (
             <div id="sources" className="mt-12 pt-8 border-t scroll-mt-24">
-              <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-4">
-                참고 출처
-              </h2>
+              <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-4">참고 출처</h2>
               <ul className="space-y-2">
                 {insight.sources.map((source) => (
                   <li key={source.url} className="flex items-start gap-2 text-sm">
                     <span className="text-primary mt-0.5">↗</span>
-                    <a
-                      href={source.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-foreground hover:text-primary transition-colors underline underline-offset-2 decoration-muted-foreground/40 hover:decoration-primary line-clamp-1"
-                    >
+                    <a href={source.url} target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-primary transition-colors underline underline-offset-2 decoration-muted-foreground/40 hover:decoration-primary line-clamp-1">
                       {source.title}
                     </a>
                   </li>
@@ -193,11 +158,12 @@ export default async function InsightDetailPage({
               본 리포트는 {insight.published_at} 수집 데이터 기준이며, 에디터 코멘트는 공공 AI 전환 맥락에서의 해석을 포함합니다.
             </p>
           </div>
+
+          <CommentsSection contentType="insight" contentId={insight.slug} />
         </div>
 
-        {/* TOC 사이드바 */}
         <aside className="hidden lg:block">
-          <TableOfContents items={tocItems} />
+          <TableOfContents items={tocItems} likeContentType="insight" likeContentId={insight.slug} />
         </aside>
       </div>
     </div>

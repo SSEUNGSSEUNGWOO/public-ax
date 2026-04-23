@@ -13,9 +13,8 @@ export const metadata = {
   description: "공공기관 실무자를 위한 AI 개념 및 활용 가이드",
 };
 
-export default function GuidePage() {
-  const guides = getAllGuides();
-
+export default async function GuidePage() {
+  const guides = await getAllGuides();
   const categories = Array.from(new Set(guides.map((g) => g.category)));
 
   return (
@@ -31,9 +30,7 @@ export default function GuidePage() {
       </div>
       <div className="container mx-auto px-4 py-12 max-w-4xl">
       {guides.length === 0 ? (
-        <p className="text-muted-foreground text-center py-20">
-          준비 중입니다.
-        </p>
+        <p className="text-muted-foreground text-center py-20">준비 중입니다.</p>
       ) : (
         <div className="space-y-12">
           {categories.map((category) => {
@@ -41,9 +38,7 @@ export default function GuidePage() {
             const colorClass = CATEGORY_COLORS[category] ?? "text-primary";
             return (
               <section key={category}>
-                <h2
-                  className={`text-xs font-semibold uppercase tracking-widest mb-4 ${colorClass}`}
-                >
+                <h2 className={`text-xs font-semibold uppercase tracking-widest mb-4 ${colorClass}`}>
                   {category}
                 </h2>
                 <div className="flex flex-col gap-3">
@@ -57,16 +52,11 @@ export default function GuidePage() {
                         <h3 className="font-semibold text-base leading-snug group-hover:text-primary transition-colors mb-1">
                           {guide.title}
                         </h3>
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          {guide.summary}
-                        </p>
+                        <p className="text-sm text-muted-foreground line-clamp-2">{guide.summary}</p>
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0">
                         {guide.tags.slice(0, 2).map((tag) => (
-                          <span
-                            key={tag}
-                            className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground"
-                          >
+                          <span key={tag} className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
                             {tag}
                           </span>
                         ))}

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="640" height="640">
+  <!-- 배경 -->
+  <rect width="640" height="640" fill="#0A0A0B"/>
+  <!-- 심볼 (중앙 배치, 240×240) -->
+  <g transform="translate(200, 200) scale(2.4)">
+    <path d="M18 26 L50 50 L18 74" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <path d="M50 26 L82 50 L50 74" stroke="#E8823A" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <circle cx="18" cy="26" r="7" fill="#ffffff"/>
+    <circle cx="18" cy="74" r="7" fill="#ffffff"/>
+    <circle cx="82" cy="50" r="9" fill="#E8823A"/>
+  </g>
+</svg>
