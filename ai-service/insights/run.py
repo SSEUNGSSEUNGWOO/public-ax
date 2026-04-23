@@ -25,6 +25,7 @@ from evaluator.evaluator import run as evaluator_run
 from shared.storage import load_draft_meta, load_raw_items, save_draft, save_insight
 from shared.models import Insight
 from newsletter.sender import send_newsletter
+from shared.supabase_client import get_client as get_supabase
 
 
 CRAWLERS = [arxiv, github, ai_news, ai_blogs, huggingface, kr_ai_policy]
@@ -138,6 +139,25 @@ def save_to_insights(result: dict):
     )
     save_insight(insight)
     print(f"[run] insights.json 저장 완료: {insight.slug} ({len(sources)}개 출처)")
+
+    try:
+        sb = get_supabase()
+        row = {
+            "slug": insight.slug,
+            "title": insight.title,
+            "body": insight.body,
+            "sources": insight.sources,
+            "published_at": insight.published_at,
+            "category": insight.category,
+            "image_url": insight.image_url,
+            "evaluation_score": insight.evaluation_score,
+            "crawled_count": insight.crawled_count,
+        }
+        sb.table("insights").upsert(row).execute()
+        print(f"[run] Supabase 업로드 완료: {insight.slug}")
+    except Exception as e:
+        print(f"[run] Supabase 업로드 실패 (로컬엔 저장됨): {e}")
+
     return insight
 
 

@@ -1,0 +1,29 @@
+name: Daily Insights Pipeline
+
+on:
+  schedule:
+    - cron: "0 22 * * *"  # 매일 오전 7시 KST (UTC+9)
+  workflow_dispatch:       # 수동 실행도 가능
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r ai-service/requirements.txt
+
+      - name: Run pipeline
+        working-directory: ai-service
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
+        run: python insights/run.py
