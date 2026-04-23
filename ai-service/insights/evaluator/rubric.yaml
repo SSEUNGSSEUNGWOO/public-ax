@@ -1,0 +1,36 @@
+criteria:
+  - name: "factual_accuracy"
+    description: "출처가 명확하고 과장이 없는가"
+    weight: 0.25
+    max_score: 5
+
+  - name: "relevance"
+    description: "한국 공공 AI 맥락에서 실질적으로 유용한가"
+    weight: 0.25
+    max_score: 5
+
+  - name: "insight_quality"
+    description: "단순 요약을 넘어 인과관계/시사점이 있는가"
+    weight: 0.20
+    max_score: 5
+
+  - name: "source_linkage"
+    description: "원문 출처가 정확하게 연결되어 있는가"
+    weight: 0.10
+    max_score: 5
+
+  - name: "seo_quality"
+    description: "제목/소제목에 키워드가 포함되고, 구조가 검색 의도를 충족하는가"
+    weight: 0.10
+    max_score: 5
+
+  - name: "human_voice"
+    description: |
+      AI 상투어 없이 자연스러운 필자의 목소리가 느껴지는가.
+      감점 표현: '살펴보겠습니다', '주목할 만합니다', '중요한 시사점을 제공합니다',
+      '~에 대해 알아보겠습니다', '핵심은 다음과 같습니다', 과도한 나열형 구조
+    weight: 0.10
+    max_score: 5
+
+pass_threshold: 4.0
+max_retries: 3
