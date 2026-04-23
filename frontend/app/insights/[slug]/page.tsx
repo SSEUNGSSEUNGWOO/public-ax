@@ -4,6 +4,7 @@ import remarkGfm from "remark-gfm";
 import { getInsightBySlug, getAllInsights } from "@/lib/insights";
 import { TableOfContents } from "@/components/insights/toc";
 import { ContentCta } from "@/components/shared/content-cta";
+import { LikeButton } from "@/components/shared/like-button";
 
 export async function generateStaticParams() {
   const insights = await getAllInsights();
@@ -117,7 +118,7 @@ export default async function InsightDetailPage({
           <div className="mb-8">
             <span className="text-[10px] font-semibold uppercase tracking-widest text-primary mb-3 block">Daily Report</span>
             <h1 className="text-3xl font-bold leading-tight mb-4">{insight.title}</h1>
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-6">
               <p className="text-sm text-muted-foreground">AI 동향 일일 리포트 — {insight.published_at}</p>
               <p className="text-sm text-muted-foreground/70">케이브레인 AI퍼블릭센터 · 장승우</p>
             </div>
@@ -157,6 +158,10 @@ export default async function InsightDetailPage({
             <p className="text-xs text-muted-foreground/60 leading-relaxed">
               본 리포트는 {insight.published_at} 수집 데이터 기준이며, 에디터 코멘트는 공공 AI 전환 맥락에서의 해석을 포함합니다.
             </p>
+          </div>
+
+          <div className="lg:hidden flex justify-center mt-8">
+            <LikeButton contentType="insight" contentId={insight.slug} />
           </div>
 
           <ContentCta />

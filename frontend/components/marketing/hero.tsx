@@ -44,7 +44,7 @@ export function Hero({ bgImage }: HeroProps) {
         <div className="w-full text-center">
           <div style={{ opacity: 0, animation: "fadeUp 0.7s ease 0.1s forwards" }}>
             <span
-              className="mb-6 inline-flex px-5 py-2 rounded-full text-2xl font-bold text-white"
+              className="mb-6 inline-flex px-3 md:px-5 py-2 rounded-full text-sm md:text-xl font-bold text-white"
               style={{
                 background: "rgba(255,255,255,0.15)",
                 backdropFilter: "blur(12px)",
@@ -55,7 +55,7 @@ export function Hero({ bgImage }: HeroProps) {
             </span>
           </div>
 
-          <h1 className="font-bold text-white drop-shadow-lg mb-4" style={{ fontSize: "clamp(5rem, 15vw, 11rem)", letterSpacing: "-0.03em", lineHeight: 0.95, fontFamily: "var(--font-display)", whiteSpace: "nowrap", opacity: 0, animation: "fadeUp 0.7s ease 0.3s forwards" }}>
+          <h1 className="font-bold text-white drop-shadow-lg mb-4" style={{ fontSize: "clamp(2.5rem, 12vw, 11rem)", letterSpacing: "-0.03em", lineHeight: 0.95, fontFamily: "var(--font-display)", whiteSpace: "nowrap", opacity: 0, animation: "fadeUp 0.7s ease 0.3s forwards" }}>
             PUBLIC-AX
           </h1>
           <div className="w-full px-4 mb-8 max-w-sm md:max-w-xl lg:max-w-2xl xl:max-w-3xl mx-auto mt-16" style={{ opacity: 0, animation: "fadeUp 0.7s ease 0.75s forwards" }}>

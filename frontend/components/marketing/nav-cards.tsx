@@ -27,7 +27,7 @@ const cards = [
 
 export function NavCards() {
   return (
-    <div className="relative z-10 px-4" style={{ marginTop: "-110px" }}>
+    <div className="relative z-10 px-4 -mt-10 md:-mt-[110px]">
       <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4">
         {cards.map((card) => (
           <Link

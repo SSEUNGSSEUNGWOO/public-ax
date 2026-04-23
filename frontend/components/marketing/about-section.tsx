@@ -93,14 +93,14 @@ export function AboutSection({ insightCount, championCount, portfolioCount }: Pi
 
 
 {/* Manifesto */}
-      <div className="px-8 lg:px-14 pt-12 pb-10 relative">
+      <div className="px-4 md:px-8 lg:px-14 pt-12 pb-10 relative">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end">
           <div className="lg:col-span-8">
             <div className="text-[11px] font-mono tracking-[0.22em] uppercase text-primary mb-6">
               Public-AX · Manifesto
             </div>
             <h2 className="font-bold leading-[0.95] tracking-[-0.03em] text-foreground"
-                style={{ fontSize: "clamp(52px, 8vw, 100px)", lineHeight: 1.15 }}>
+                style={{ fontSize: "clamp(1.75rem, 7vw, 6.25rem)", lineHeight: 1.15 }}>
               AI는 <span className="text-primary italic">매일</span>,<br />
               <span
                 className="inline-block transition-all duration-300"

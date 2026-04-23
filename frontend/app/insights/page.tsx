@@ -89,7 +89,7 @@ export default async function InsightsPage() {
                       <img
                         src={insight.image_url}
                         alt={insight.title}
-                        className="w-36 h-24 rounded-xl object-cover flex-shrink-0 group-hover:scale-105 transition-transform duration-500"
+                        className="w-24 h-20 sm:w-36 sm:h-24 rounded-xl object-cover flex-shrink-0 group-hover:scale-105 transition-transform duration-500"
                       />
                     )}
                     <div className="flex flex-col justify-between min-w-0">
