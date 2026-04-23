@@ -3,7 +3,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { getInsightBySlug, getAllInsights } from "@/lib/insights";
 import { TableOfContents } from "@/components/insights/toc";
-import { CommentsSection } from "@/components/shared/comments-section";
+import { ContentCta } from "@/components/shared/content-cta";
 
 export async function generateStaticParams() {
   const insights = await getAllInsights();
@@ -159,7 +159,7 @@ export default async function InsightDetailPage({
             </p>
           </div>
 
-          <CommentsSection contentType="insight" contentId={insight.slug} />
+          <ContentCta />
         </div>
 
         <aside className="hidden lg:block">

@@ -19,11 +19,6 @@ export default async function InsightsPage() {
             eyebrow="Daily Report"
             title="인사이트"
             description="자는 사이 쌓인 AI 뉴스·기술·법안, 매일 아침 한 장으로"
-            action={
-              <LinkButton href="/insights/subscribe" variant="outline" size="sm">
-                뉴스레터 구독
-              </LinkButton>
-            }
           />
         </div>
       </div>

@@ -4,9 +4,8 @@ import { getAllGuides } from "@/lib/guides";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://public-ax.kr";
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const insights = getAllInsights();
-  const guides = getAllGuides();
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const [insights, guides] = await Promise.all([getAllInsights(), getAllGuides()]);
 
   const staticPages: MetadataRoute.Sitemap = [
     { url: SITE_URL, lastModified: new Date(), changeFrequency: "daily", priority: 1 },

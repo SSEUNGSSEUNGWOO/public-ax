@@ -3,8 +3,7 @@ import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { getGuideBySlug, getAllGuides, GuideVideo } from "@/lib/guides";
-import { LikeButton } from "@/components/shared/like-button";
-import { CommentsSection } from "@/components/shared/comments-section";
+import { ContentCta } from "@/components/shared/content-cta";
 
 export async function generateStaticParams() {
   const guides = await getAllGuides();
@@ -105,11 +104,7 @@ export default async function GuideDetailPage({
         </div>
       )}
 
-      <div className="mt-10 flex items-center gap-3">
-        <LikeButton contentType="guide" contentId={guide.slug} />
-      </div>
-
-      <CommentsSection contentType="guide" contentId={guide.slug} />
+      <ContentCta />
 
       {related.length > 0 && (
         <div className="mt-16 pt-10 border-t">
