@@ -7,7 +7,6 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: NextRequest) {
   const { email } = await req.json();
@@ -28,6 +27,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "서버 오류" }, { status: 500 });
   }
 
+  const resend = new Resend(process.env.RESEND_API_KEY);
   await resend.emails.send({
     from: "PUBLIC-AX <onboarding@resend.dev>",
     to: email,
