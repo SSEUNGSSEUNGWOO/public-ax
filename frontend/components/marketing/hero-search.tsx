@@ -16,7 +16,7 @@ export function HeroSearch() {
 
   return (
     <div className="w-full max-w-sm md:max-w-xl lg:max-w-2xl xl:max-w-3xl mx-auto">
-      <p className="text-white/70 text-xs text-center mb-3 tracking-wide">
+      <p className="text-white/70 text-sm text-center mb-3 tracking-wide">
         공공 AI 동향, 기술, 정책을 검색하세요
       </p>
       <form onSubmit={(e) => { e.preventDefault(); submit(query); }} className="relative">
@@ -49,7 +49,7 @@ export function HeroSearch() {
           <button
             key={s}
             onClick={() => submit(s)}
-            className="text-[11px] px-3 py-1.5 rounded-full transition-all hover:opacity-80"
+            className="text-xs px-3 py-1.5 rounded-full transition-all hover:opacity-80"
             style={{
               background: "rgba(255,255,255,0.1)",
               border: "1px solid rgba(255,255,255,0.2)",

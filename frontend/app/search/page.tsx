@@ -66,11 +66,11 @@ function SearchContent() {
           <div className="mt-8 rounded-2xl border bg-primary/5 px-6 py-5 min-h-[100px]">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-primary mb-4">AI 답변</p>
             {answer ? (
-              <div className="prose prose-sm prose-neutral dark:prose-invert max-w-none
+              <div className="prose prose-base prose-neutral dark:prose-invert max-w-none
                 [&_strong]:text-foreground [&_strong]:font-semibold
                 [&_p]:leading-7 [&_p]:mb-3 [&_p:last-child]:mb-0
-                [&_h2]:text-base [&_h2]:font-bold [&_h2]:mt-4 [&_h2]:mb-2
-                [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:mt-3 [&_h3]:mb-1
+                [&_h2]:text-lg [&_h2]:font-bold [&_h2]:mt-4 [&_h2]:mb-2
+                [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mt-3 [&_h3]:mb-1
                 [&_ul]:my-2 [&_ul]:pl-4 [&_li]:my-0.5
               ">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -97,8 +97,8 @@ function SearchContent() {
                     href={s.url}
                     className="group flex items-center gap-3 rounded-xl border bg-card p-4 hover:shadow-md hover:bg-primary/5 transition-all duration-200"
                   >
-                    <span className="text-primary text-sm">↗</span>
-                    <span className="text-sm font-medium group-hover:text-primary transition-colors line-clamp-1">{s.title}</span>
+                    <span className="text-primary text-base">↗</span>
+                    <span className="text-base font-medium group-hover:text-primary transition-colors line-clamp-1">{s.title}</span>
                   </Link>
                 ))}
               </div>
@@ -115,7 +115,7 @@ function SearchContent() {
                     href={s.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    className="flex items-center gap-2 text-base text-muted-foreground hover:text-foreground transition-colors"
                   >
                     <span className="text-muted-foreground/50">↗</span>
                     <span className="line-clamp-1 hover:underline underline-offset-2">{s.title}</span>
