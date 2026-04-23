@@ -93,7 +93,7 @@ export function Footer() {
         </div>
         <Separator className="my-8" />
 
-        <div className="flex flex-col md:flex-row md:items-start gap-6">
+        <div className="flex flex-col md:flex-row md:items-start gap-6 justify-center">
           <div className="flex-shrink-0">
             <Image src="/kbrain-logo.png" alt="K-BRAIN" width={140} height={40} className="object-contain" />
           </div>
