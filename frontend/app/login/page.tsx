@@ -12,6 +12,13 @@ export default function LoginPage() {
     });
   }
 
+  async function loginWithKakao() {
+    await supabase.auth.signInWithOAuth({
+      provider: "kakao",
+      options: { redirectTo: `${location.origin}/auth/callback` },
+    });
+  }
+
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
@@ -22,6 +29,16 @@ export default function LoginPage() {
         </div>
 
         <div className="rounded-2xl border bg-card p-8 flex flex-col gap-3">
+          <button
+            onClick={loginWithKakao}
+            className="flex items-center justify-center gap-3 w-full h-11 rounded-xl text-sm font-semibold transition-colors"
+            style={{ background: "#FEE500", color: "#3C1E1E" }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#3C1E1E">
+              <path d="M12 3C6.477 3 2 6.477 2 10.8c0 2.7 1.52 5.09 3.84 6.56L4.8 21l4.32-2.16c.92.24 1.89.36 2.88.36 5.523 0 10-3.477 10-7.8S17.523 3 12 3z"/>
+            </svg>
+            카카오로 계속하기
+          </button>
           <button
             onClick={loginWithGoogle}
             className="flex items-center justify-center gap-3 w-full h-11 rounded-xl border bg-background text-sm font-medium hover:bg-muted/50 transition-colors"
