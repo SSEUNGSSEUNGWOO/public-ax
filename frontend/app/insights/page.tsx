@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { getAllInsights } from "@/lib/insights";
+
+export const dynamic = "force-dynamic";
 import { getCountsForType } from "@/lib/counts";
 import { LinkButton } from "@/components/shared/link-button";
 import { PageHeader } from "@/components/shared/page-header";

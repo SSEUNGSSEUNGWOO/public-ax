@@ -96,6 +96,8 @@ const portfolios = [
   },
 ];
 
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   const [portfolioImages, allInsights, insightCounts] = await Promise.all([
     fetchUnsplashPhotos(portfolioQueries),
