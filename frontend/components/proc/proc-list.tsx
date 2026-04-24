@@ -99,7 +99,13 @@ export function ProcList({ bids, stats }: ProcListProps) {
     if (activeKeyword) list = list.filter((b) => b.bidNtceNm?.includes(activeKeyword));
     if (q) list = list.filter((b) => b.bidNtceNm?.toLowerCase().includes(q) || b.ntceInsttNm?.toLowerCase().includes(q));
     return list.slice().sort((a, b) => {
-      if (sort === "dday") return getDday(a.bidClseDate, a.bidClseTm) - getDday(b.bidClseDate, b.bidClseTm);
+      if (sort === "dday") {
+        const da = getDday(a.bidClseDate, a.bidClseTm);
+        const db = getDday(b.bidClseDate, b.bidClseTm);
+        if (da < 0 && db >= 0) return 1;
+        if (da >= 0 && db < 0) return -1;
+        return da - db;
+      }
       if (sort === "latest") return b.bidNtceDate.localeCompare(a.bidNtceDate);
       if (sort === "budget") return parseInt(b.asignBdgtAmt ?? "0") - parseInt(a.asignBdgtAmt ?? "0");
       return 0;

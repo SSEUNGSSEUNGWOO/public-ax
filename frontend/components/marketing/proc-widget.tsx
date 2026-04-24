@@ -46,7 +46,13 @@ export function ProcWidget({
   });
   const preview = recentBids
     .slice()
-    .sort((a, b) => getDday(a.bidClseDate, a.bidClseTm) - getDday(b.bidClseDate, b.bidClseTm))
+    .sort((a, b) => {
+      const da = getDday(a.bidClseDate, a.bidClseTm);
+      const db = getDday(b.bidClseDate, b.bidClseTm);
+      if (da < 0 && db >= 0) return 1;
+      if (da >= 0 && db < 0) return -1;
+      return da - db;
+    })
     .slice(0, 5);
 
   return (
