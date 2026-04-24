@@ -86,10 +86,9 @@ export default async function GuideDetailPage({
             },
           };
 
-          // 활용 관련 섹션 인덱스 찾기
-          const exampleIdx = sections.findIndex(s => /활용|예시|사례|적용/.test(s));
-          const diagramAt = Math.min(2, sections.length - 1);
-          const exampleAt = exampleIdx > 0 ? exampleIdx : Math.min(4, sections.length - 1);
+          const total = sections.length;
+          const diagramAt = Math.max(1, Math.floor(total / 3));
+          const exampleAt = Math.max(diagramAt + 1, Math.floor(total * 2 / 3));
 
           return sections.map((section, i) => (
             <div key={i}>
@@ -98,7 +97,7 @@ export default async function GuideDetailPage({
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={guide.image_diagram} alt="개념 다이어그램" className="w-full rounded-xl my-6 not-prose" />
               )}
-              {i === exampleAt && i !== diagramAt && guide.image_example && (
+              {i === exampleAt && guide.image_example && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={guide.image_example} alt="활용 예시" className="w-full rounded-xl my-6 not-prose" />
               )}
