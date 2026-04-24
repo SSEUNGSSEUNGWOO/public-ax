@@ -96,7 +96,12 @@ export default async function GuidePage() {
                     <div className="flex items-center gap-2 mt-2">
                       <span className="text-[10px] text-muted-foreground/60">조회 {guide.views ?? 0}</span>
                       <span className="text-[10px] text-muted-foreground/40">·</span>
-                      <span className="text-[10px] text-muted-foreground/60">❤ {counts[guide.slug]?.likes ?? 0}</span>
+                      <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground/60">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" className="text-red-400">
+                          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                        </svg>
+                        {counts[guide.slug]?.likes ?? 0}
+                      </span>
                     </div>
                   </div>
                 </Link>
