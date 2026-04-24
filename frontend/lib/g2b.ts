@@ -1,5 +1,9 @@
-const G2B_KEY = process.env.G2B_API_KEY ?? "3393eec4c01364de879d496e848da7a9a067555abbff33f38f6293502956fc71";
-const BASE = "https://apis.data.go.kr/1230000/ao/PubDataOpnStdService";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 export const AI_KEYWORDS = ["AI", "인공지능", "빅데이터", "머신러닝", "딥러닝", "자연어처리", "LLM", "챗봇", "지능형", "디지털전환", "클라우드"] as const;
 export type AiKeyword = typeof AI_KEYWORDS[number];
@@ -21,69 +25,66 @@ export interface BidItem {
 }
 
 export interface MonthStat {
-  label: string; // "2026-04"
+  label: string;
   count: number;
   totalBudget: number;
 }
 
-function getMonthRange(year: number, month: number) {
-  const mm = String(month).padStart(2, "0");
-  const lastDay = new Date(year, month, 0).getDate();
+function rowToBidItem(row: Record<string, string>): BidItem {
   return {
-    bgn: `${year}${mm}010000`,
-    end: `${year}${mm}${lastDay}2359`,
-    label: `${year}-${mm}`,
+    bidNtceNo: row.bid_ntce_no ?? "",
+    bidNtceOrd: row.bid_ntce_ord ?? "",
+    bidNtceNm: row.bid_ntce_nm ?? "",
+    bidNtceSttusNm: row.bid_ntce_sttus ?? "",
+    bidNtceDate: row.bid_ntce_date ?? "",
+    bidNtceBgn: "",
+    bsnsDivNm: row.bsns_div_nm ?? "",
+    ntceInsttNm: row.ntce_instt_nm ?? "",
+    asignBdgtAmt: row.assign_bdgt_amt ?? "",
+    presmptPrce: row.presmpt_prce ?? "",
+    bidClseDate: row.bid_clse_date ?? "",
+    bidClseTm: row.bid_clse_tm ?? "",
+    bidNtceUrl: row.bid_ntce_url ?? "",
   };
 }
 
-function isAIBid(name: string) {
-  return AI_KEYWORDS.some((kw) => name?.includes(kw));
-}
-
-async function fetchMonthBids(year: number, month: number, maxPages = 10): Promise<BidItem[]> {
-  const { bgn, end } = getMonthRange(year, month);
-  const allItems: BidItem[] = [];
-
-  for (let page = 1; page <= maxPages; page++) {
-    const url = `${BASE}/getDataSetOpnStdBidPblancInfo?serviceKey=${G2B_KEY}&pageNo=${page}&numOfRows=100&type=json&bidNtceBgnDt=${bgn}&bidNtceEndDt=${end}`;
-    try {
-      const res = await fetch(url, { next: { revalidate: 21600 } }); // 6시간 캐시
-      const text = await res.text();
-      if (!text.startsWith("{")) break;
-      const data = JSON.parse(text);
-      const items: BidItem[] = data?.response?.body?.items ?? [];
-      allItems.push(...items);
-      if (items.length < 100) break;
-    } catch {
-      break;
-    }
-  }
-
-  return allItems.filter((item) => isAIBid(item.bidNtceNm));
-}
-
-// 이번달 공고 (현재 페이지 메인 데이터)
+// 전체 공고 (Supabase)
 export async function fetchAIBids(): Promise<BidItem[]> {
-  const now = new Date();
-  return fetchMonthBids(now.getFullYear(), now.getMonth() + 1, 10);
+  const { data, error } = await supabase
+    .from("bids")
+    .select("*")
+    .order("bid_ntce_date", { ascending: false })
+    .limit(2000);
+
+  if (error || !data) return [];
+  return data.map(rowToBidItem);
 }
 
-// 최근 N개월 통계 (트렌드 비교용)
+// 월별 통계 (Supabase 집계)
 export async function fetchMonthlyStats(months = 6): Promise<MonthStat[]> {
-  const now = new Date();
   const results: MonthStat[] = [];
+  const now = new Date();
 
   for (let i = months - 1; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const year = d.getFullYear();
-    const month = d.getMonth() + 1;
-    const { label } = getMonthRange(year, month);
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const label = `${year}-${month}`;
+    const from = `${year}${month}01`;
+    const to = `${year}${month}31`;
 
-    // 통계용은 5페이지만 (500건 샘플)
-    const bids = await fetchMonthBids(year, month, 2);
-    const totalBudget = bids.reduce((sum, b) => sum + parseInt(b.asignBdgtAmt || b.presmptPrce || "0"), 0);
+    const { data } = await supabase
+      .from("bids")
+      .select("assign_bdgt_amt, presmpt_prce")
+      .gte("bid_ntce_date", from)
+      .lte("bid_ntce_date", to);
 
-    results.push({ label, count: bids.length, totalBudget });
+    const count = data?.length ?? 0;
+    const totalBudget = (data ?? []).reduce(
+      (sum, b) => sum + parseInt((b.assign_bdgt_amt || b.presmpt_prce) ?? "0"),
+      0
+    );
+    results.push({ label, count, totalBudget });
   }
 
   return results;
