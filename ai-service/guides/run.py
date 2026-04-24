@@ -8,7 +8,7 @@ ROOT = Path(__file__).parent.parent.parent
 load_dotenv(ROOT / ".env")
 sys.path.insert(0, str(Path(__file__).parent.parent))  # ai-service/
 
-from guides.writer import search_videos, get_transcript, write, save, load_cache, save_cache
+from guides.writer import search_articles, fetch_article, search_youtube, write, save, load_cache, save_cache
 from guides.evaluator.evaluator import evaluate, load_rubric
 from guides.editor.editor import edit
 
@@ -34,39 +34,45 @@ def run(topic: str) -> None:
     rubric = load_rubric()
     max_retries = rubric.get("max_retries", 3)
 
-    # ── 1. 영상 수집 (캐시 우선) ──────────────────
+    # ── 1. 아티클 + YouTube 수집 (캐시 우선) ──────
     cached = load_cache(topic)
-    if cached:
-        print(f"\n[캐시] '{topic}' 자막 캐시 발견 → YouTube 요청 생략")
-        videos_ok = cached["videos"]
-        transcripts = cached["transcripts"]
-        for v, t in zip(videos_ok, transcripts):
-            print(f"  ✓ {v['title'][:55]} ({len(t):,}자)")
+    if cached and cached.get("articles"):
+        print(f"\n[캐시] '{topic}' 캐시 발견 → 수집 생략")
+        articles_ok = cached["articles"]
+        texts = cached["texts"]
+        youtube = cached.get("youtube", [])
+        for a, t in zip(articles_ok, texts):
+            print(f"  ✓ {a['title'][:55]} ({len(t):,}자)")
     else:
-        print(f"\n[1/3] YouTube 검색: '{topic}'")
-        videos = search_videos(topic)
-        if not videos:
-            print("  ✗ 영상을 찾지 못했습니다.")
+        print(f"\n[1/3] 웹 검색: '{topic}'")
+        articles = search_articles(topic)
+        if not articles:
+            print("  ✗ 아티클을 찾지 못했습니다.")
             return
 
-        print(f"[2/3] 자막 추출 ({len(videos)}개 영상)")
-        transcripts, videos_ok = [], []
-        for i, v in enumerate(videos):
+        print(f"[2/3] 아티클 본문 수집 ({len(articles)}개)")
+        texts, articles_ok = [], []
+        for i, a in enumerate(articles):
             if i > 0:
-                time.sleep(3)
-            t = get_transcript(v["id"])
+                time.sleep(1)
+            t = fetch_article(a["url"])
             if t:
-                print(f"  ✓ {v['title'][:55]} ({len(t):,}자)")
-                transcripts.append(t)
-                videos_ok.append(v)
+                print(f"  ✓ {a['title'][:55]} ({len(t):,}자)")
+                texts.append(t)
+                articles_ok.append(a)
             else:
-                print(f"  ✗ 자막 없음: {v['title'][:55]}")
+                print(f"  ✗ 본문 없음: {a['title'][:55]}")
 
-        if not transcripts:
-            print("  ✗ 자막을 가져올 수 있는 영상이 없습니다.")
+        if not texts:
+            print("  ✗ 아티클 본문을 가져올 수 없습니다.")
             return
 
-        save_cache(topic, videos_ok, transcripts)
+        print(f"  YouTube 추천 영상 검색 중...")
+        youtube = search_youtube(topic)
+        for v in youtube:
+            print(f"  ✓ {v['title'][:55]}")
+
+        save_cache(topic, articles_ok, texts, youtube)
 
     # ── 2. Writer + Evaluator 루프 ────────────────
     print(f"\n[3/3] 파이프라인 시작")
@@ -75,7 +81,7 @@ def run(topic: str) -> None:
 
     for attempt in range(1, max_retries + 1):
         print(f"\n  [Writer] 초안 작성 중... (시도 {attempt}/{max_retries})")
-        guide = write(topic, videos_ok, transcripts, feedback)
+        guide = write(topic, articles_ok, texts, youtube, feedback)
         print(f"  [Writer] 완료: {guide['title']}")
 
         print(f"  [Evaluator] 평가 중...")
@@ -99,7 +105,7 @@ def run(topic: str) -> None:
     save(guide)
 
     print(f"\n✅ 저장 완료: [{guide['category']}] {guide['title']} (평가 {score:.2f}점)")
-    print(f"   참고 영상 {len(guide['videos'])}개 포함")
+    print(f"   참고 아티클 {len(articles_ok)}개 / YouTube 추천 {len(guide['videos'])}개 포함")
 
     print_image_prompts(guide)
 
