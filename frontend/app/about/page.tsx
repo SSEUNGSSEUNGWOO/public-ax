@@ -286,9 +286,18 @@ export default function AboutPage() {
                       <span className="text-foreground">{r.v}</span>
                     </div>
                   ))}
-                  <div className="mt-4 rounded-xl bg-muted/30 border p-3">
-                    <p className="text-[11px] text-muted-foreground/60 font-mono tracking-widest">통신판매업신고번호: 제2026-서울동작-0124호</p>
+                  <div className="mt-4 rounded-xl overflow-hidden border aspect-video">
+                    <iframe
+                      src="https://maps.google.com/maps?q=서울특별시+동작구+보라매로5길+51+롯데타워&t=&z=16&ie=UTF8&iwloc=&output=embed"
+                      width="100%"
+                      height="100%"
+                      style={{ border: 0 }}
+                      allowFullScreen
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                    />
                   </div>
+                  <p className="mt-2 text-[11px] text-muted-foreground/60 font-mono tracking-widest">통신판매업신고번호: 제2026-서울동작-0124호</p>
                 </div>
               </div>
             </section>
