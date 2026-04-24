@@ -14,7 +14,7 @@ except ImportError:
     sys.exit(1)
 
 SUPABASE_URL = "https://dpmxietmqojcdjkvipms.supabase.co"
-SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_KEY") or os.environ.get("SUPABASE_ANON_KEY", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRwbXhpZXRtcW9qY2Rqa3ZpcG1zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5MjI5MDgsImV4cCI6MjA5MjQ5ODkwOH0.1G9egGVgKWJZ0LXNhYXS9b6CjkprQlYkQG4lCUz_N_I")
+SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY") or os.environ.get("SUPABASE_SERVICE_KEY") or os.environ.get("SUPABASE_ANON_KEY", "")
 
 ROOT = Path(__file__).parent.parent.parent
 
