@@ -85,9 +85,9 @@ export default async function GuidePage() {
                     <p className="text-xs text-muted-foreground line-clamp-2 flex-1">
                       {guide.summary}
                     </p>
-                    <div className="flex flex-wrap gap-1.5 mt-3">
+                    <div className="flex flex-nowrap gap-1.5 mt-3 overflow-hidden">
                       {guide.tags.slice(0, 3).map((tag) => (
-                        <span key={tag} className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                        <span key={tag} className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground whitespace-nowrap">
                           #{tag}
                         </span>
                       ))}
