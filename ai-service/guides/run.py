@@ -32,8 +32,9 @@ def generate_images(guide: dict) -> dict:
     headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
 
     style_prefix = (
-        "Flat design illustration, clean minimal style, Korean government/public sector context, "
-        "professional and trustworthy, 16:9 aspect ratio, no text overlay. "
+        "Flat design illustration, clean minimal style, professional and trustworthy, 16:9 aspect ratio. "
+        "ABSOLUTELY NO TEXT, NO LABELS, NO LETTERS, NO WORDS, NO NUMBERS anywhere in the image. "
+        "Pure visual metaphor only, icon-based, symbol-based. "
     )
 
     updated_images = []
