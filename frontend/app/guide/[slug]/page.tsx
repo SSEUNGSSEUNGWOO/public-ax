@@ -45,6 +45,11 @@ export default async function GuideDetailPage({
 
   return (
     <div className="container mx-auto px-4 py-16 max-w-3xl">
+      {guide.image_cover && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={guide.image_cover} alt={guide.title} className="w-full h-64 object-cover rounded-2xl mb-8" />
+      )}
+
       <div className="mb-8">
         <Link href="/guide" className="text-xs text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1 mb-6">
           ← 가이드 목록
