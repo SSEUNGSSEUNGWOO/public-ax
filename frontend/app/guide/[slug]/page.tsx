@@ -4,6 +4,7 @@ import Link from "next/link";
 import { getGuideBySlug, getAllGuides, GuideVideo, GuideImage } from "@/lib/guides";
 import { ContentCta } from "@/components/shared/content-cta";
 import { GuideBody } from "@/components/guide/guide-body";
+import { ViewTracker } from "@/components/shared/view-tracker";
 
 export async function generateStaticParams() {
   const guides = await getAllGuides();
@@ -48,6 +49,7 @@ export default async function GuideDetailPage({
 
   return (
     <div className="container mx-auto px-4 py-16 max-w-3xl">
+      <ViewTracker type="guide" slug={slug} />
       {coverImage?.url && (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={coverImage.url} alt={guide.title} className="w-full rounded-2xl mb-8" />

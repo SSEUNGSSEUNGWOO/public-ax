@@ -5,6 +5,7 @@ import { getInsightBySlug, getAllInsights } from "@/lib/insights";
 import { TableOfContents } from "@/components/insights/toc";
 import { ContentCta } from "@/components/shared/content-cta";
 import { LikeButton } from "@/components/shared/like-button";
+import { ViewTracker } from "@/components/shared/view-tracker";
 
 export const dynamic = "force-dynamic";
 
@@ -112,6 +113,7 @@ export default async function InsightDetailPage({
     <>
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
     <div className="container mx-auto px-4 py-16 max-w-6xl">
+      <ViewTracker type="insight" slug={insight.slug} />
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_200px] gap-16">
         <div className="min-w-0">
           {insight.image_url && <img src={insight.image_url} alt={insight.title} className="rounded-2xl w-full h-auto mb-8" />}
