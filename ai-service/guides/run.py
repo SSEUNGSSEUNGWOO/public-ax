@@ -143,7 +143,20 @@ def run(topic: str) -> None:
 
     guide["evaluation_score"] = round(score, 2)
 
-    # ── 4. 이미지 생성 ────────────────────────────
+    # ── 4. 이미지 프롬프트 출력 ───────────────────
+    images = guide.get("images", [])
+    if images:
+        slug = guide["slug"]
+        print(f"\n{'─' * 55}")
+        print(f"📸 이미지 프롬프트 ({len(images)}개) — claude.design 또는 DALL-E 사용")
+        print(f"{'─' * 55}")
+        for img in images:
+            print(f"\n[{img['type'].upper()}] id: {img['id']}")
+            print(f"  저장 경로: frontend/public/guides/{slug}-{img['id']}.png")
+            print(f"  프롬프트: {img['description']}")
+        print(f"{'─' * 55}")
+
+    # ── 5. DALL-E 자동 생성 (OPENAI_API_KEY 있을 때만) ──
     print(f"\n  [Image] DALL-E 이미지 생성 중...")
     guide = generate_images(guide)
 
@@ -151,7 +164,11 @@ def run(topic: str) -> None:
 
     print(f"\n✅ 저장 완료: [{guide['category']}] {guide['title']} (평가 {score:.2f}점)")
     print(f"   참고 아티클 {len(articles_ok)}개 / YouTube 추천 {len(guide['videos'])}개 포함")
-    print(f"   이미지 {len([i for i in guide.get('images', []) if i.get('url')])}개 생성 완료")
+    generated = len([i for i in guide.get('images', []) if i.get('url')])
+    if generated:
+        print(f"   이미지 {generated}개 자동 생성 완료")
+    else:
+        print(f"   이미지는 위 프롬프트로 수동 생성 후 경로에 저장하세요")
 
 
 if __name__ == "__main__":
