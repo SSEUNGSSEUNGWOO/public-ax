@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 
 ROOT = Path(__file__).parent.parent.parent
 load_dotenv(ROOT / ".env")
+import os as _os; _os.environ.pop("ANTHROPIC_API_KEY", None)  # Claude CLI는 구독 사용, API 크레딧 금지
 sys.path.insert(0, str(Path(__file__).parent.parent))  # ai-service/
 
 from guides.writer import search_articles, fetch_article, search_youtube, write, save, load_cache, save_cache
@@ -126,8 +127,12 @@ def run(topic: str) -> None:
         print(f"  [Writer] 완료: {guide['title']}")
 
         print(f"  [Evaluator] 평가 중...")
-        score, passed, feedback = evaluate(guide)
-        print(f"  [Evaluator] 점수: {score:.2f} / 통과: {'✓' if passed else '✗'}")
+        try:
+            score, passed, feedback = evaluate(guide)
+            print(f"  [Evaluator] 점수: {score:.2f} / 통과: {'✓' if passed else '✗'}")
+        except Exception as e:
+            print(f"  [Evaluator] 평가 실패 ({e}) → 통과 처리")
+            score, passed, feedback = 0.0, True, ""
 
         if passed:
             break

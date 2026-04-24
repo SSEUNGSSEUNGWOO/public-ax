@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 
 ROOT = Path(__file__).parent.parent.parent
 load_dotenv(ROOT / ".env")
+os.environ.pop("ANTHROPIC_API_KEY", None)  # Claude CLI는 구독 사용, API 크레딧 금지
 sys.path.insert(0, str(Path(__file__).parent))   # ai-service/insights/ (crawlers, writer, evaluator)
 sys.path.insert(0, str(Path(__file__).parent.parent))  # ai-service/ (shared)
 
