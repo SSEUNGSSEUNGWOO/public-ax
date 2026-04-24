@@ -110,29 +110,30 @@ export default async function GuideDetailPage({
       {guide.videos && guide.videos.length > 0 && (
         <div className="mt-12 pt-8 border-t">
           <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">참고 영상</h2>
-          <div className="flex flex-col gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {guide.videos.map((v: GuideVideo) => {
               const videoId = v.url.match(/(?:v=|youtu\.be\/)([^&?/]+)/)?.[1];
               const thumbnail = videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : null;
               return (
                 <a key={v.url} href={v.url} target="_blank" rel="noopener noreferrer"
-                  className="group flex items-center gap-4 rounded-xl border bg-card overflow-hidden hover:shadow-md hover:bg-primary/5 transition-all duration-200"
+                  className="group flex flex-col rounded-xl border bg-card overflow-hidden hover:shadow-md hover:bg-primary/5 transition-all duration-200"
                 >
-                  {thumbnail ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={thumbnail} alt={v.title} className="w-32 h-20 object-cover flex-shrink-0 group-hover:scale-105 transition-transform duration-300" />
-                  ) : (
-                    <div className="w-32 h-20 bg-red-500/10 flex items-center justify-center flex-shrink-0">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="text-red-500">
-                        <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
-                      </svg>
-                    </div>
-                  )}
-                  <div className="min-w-0 flex-1 py-3 pr-4">
-                    <p className="text-sm font-medium leading-snug group-hover:text-primary transition-colors line-clamp-2">{v.title}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{v.channel}</p>
+                  <div className="w-full aspect-video bg-muted overflow-hidden">
+                    {thumbnail ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={thumbnail} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    ) : (
+                      <div className="w-full h-full bg-red-500/10 flex items-center justify-center">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" className="text-red-500">
+                          <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
+                        </svg>
+                      </div>
+                    )}
                   </div>
-                  <span className="text-muted-foreground/40 text-xs pr-4 flex-shrink-0">↗</span>
+                  <div className="p-3">
+                    <p className="text-xs font-medium leading-snug group-hover:text-primary transition-colors line-clamp-2">{v.title}</p>
+                    <p className="text-[11px] text-muted-foreground mt-1">{v.channel}</p>
+                  </div>
                 </a>
               );
             })}
