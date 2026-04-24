@@ -7,11 +7,14 @@ from writer.prompts import CLUSTER_PROMPT_TEMPLATE, FEEDBACK_SECTION_TEMPLATE, S
 
 
 def run_claude(prompt: str, timeout: int = 180) -> str:
+    import os
+    env = {k: v for k, v in os.environ.items() if k != "ANTHROPIC_API_KEY"}
     result = subprocess.run(
         ["claude", "-p", prompt],
         capture_output=True,
         text=True,
         timeout=timeout,
+        env=env,
     )
     if result.returncode != 0:
         raise RuntimeError(f"claude CLI 실패: {result.stderr}")
