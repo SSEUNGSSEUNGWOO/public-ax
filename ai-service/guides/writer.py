@@ -153,8 +153,22 @@ def write(topic: str, articles: list[dict], texts: list[str], youtube: list[dict
   "difficulty": "입문 | 기초 | 심화 중 하나",
   "tags": ["태그1", "태그2", "태그3"],
   "tldr": ["핵심 요약 1", "핵심 요약 2", "핵심 요약 3"],
-  "body": "마크다운 본문. ## 섹션 구분. 2000자 이상."
+  "images": [
+    {{
+      "id": "영문-소문자-하이픈 식별자 (예: rag-flow-diagram)",
+      "type": "cover | diagram | example | infographic",
+      "description": "DALL-E 3용 영어 이미지 프롬프트. 구체적으로 무엇을 시각화할지 설명."
+    }}
+  ],
+  "body": "마크다운 본문. ## 섹션 구분. 이미지가 필요한 위치에 {{{{image:id}}}} 플레이스홀더 삽입 (cover 제외). 2000자 이상."
 }}
+
+이미지 작성 원칙:
+- type=cover: 반드시 1개 포함. 가이드 상단에 표시될 커버 이미지.
+- type=diagram/example/infographic: 실제로 시각화가 독자 이해에 도움이 될 때만 포함 (0~2개)
+- 이미지가 없어도 이해되는 내용이면 images 배열에 cover만 포함
+- {{{{image:id}}}} 플레이스홀더는 해당 섹션 내용 바로 뒤에 삽입
+- cover 이미지는 body에 플레이스홀더 삽입 금지
 
 작성 원칙:
 - 기술 용어는 처음 등장 시 한국어로 풀어 설명

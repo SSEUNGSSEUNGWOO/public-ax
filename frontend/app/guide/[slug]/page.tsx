@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { getGuideBySlug, getAllGuides, GuideVideo } from "@/lib/guides";
+import { getGuideBySlug, getAllGuides, GuideVideo, GuideImage } from "@/lib/guides";
 import { ContentCta } from "@/components/shared/content-cta";
 
 export async function generateStaticParams() {
@@ -44,11 +44,40 @@ export default async function GuideDetailPage({
   const allGuides = await getAllGuides();
   const related = allGuides.filter((g) => g.slug !== guide.slug && g.category === guide.category).slice(0, 3);
 
+  const imageMap = Object.fromEntries(
+    (guide.images ?? []).filter((img: GuideImage) => img.url).map((img: GuideImage) => [img.id, img])
+  );
+  const coverImage = (guide.images ?? []).find((img: GuideImage) => img.type === "cover");
+
+  const mdProps = {
+    remarkPlugins: [remarkGfm] as [typeof remarkGfm],
+    components: {
+      h2: ({ children }: { children: React.ReactNode }) => <h2 id={slugify(String(children))} className="scroll-mt-24">{children}</h2>,
+      h3: ({ children }: { children: React.ReactNode }) => <h3 id={slugify(String(children))} className="scroll-mt-24">{children}</h3>,
+    },
+  };
+
+  function renderBody(body: string) {
+    const parts = body.split(/({{image:[^}]+}})/);
+    return parts.map((part, i) => {
+      const match = part.match(/^{{image:([^}]+)}}$/);
+      if (match) {
+        const img = imageMap[match[1]];
+        if (!img?.url) return null;
+        return (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img key={i} src={img.url} alt={img.id} className="w-full rounded-xl my-8 not-prose" />
+        );
+      }
+      return <ReactMarkdown key={i} {...mdProps}>{part}</ReactMarkdown>;
+    });
+  }
+
   return (
     <div className="container mx-auto px-4 py-16 max-w-3xl">
-      {guide.image_cover && (
+      {coverImage?.url && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={guide.image_cover} alt={guide.title} className="w-full h-64 object-cover rounded-2xl mb-8" />
+        <img src={coverImage.url} alt={guide.title} className="w-full h-64 object-cover rounded-2xl mb-8" />
       )}
 
       <div className="mb-8">
@@ -75,35 +104,7 @@ export default async function GuideDetailPage({
       <hr className="border-border mb-10" />
 
       <article className="prose prose-neutral dark:prose-invert max-w-none [&_h2]:border-b [&_h2]:border-border [&_h2]:pb-3 [&_h2]:text-2xl [&_h3]:text-lg [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_pre]:bg-muted [&_pre]:rounded-xl [&_pre]:p-4 [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_table]:border [&_table]:border-border [&_th]:bg-muted [&_th]:px-3 [&_th]:py-2 [&_td]:px-3 [&_td]:py-2 [&_td]:border-t [&_td]:border-border">
-        {(() => {
-          // ## 기준으로 섹션 분리
-          const sections = guide.body.split(/(?=^## )/m);
-          const mdProps = {
-            remarkPlugins: [remarkGfm] as [typeof remarkGfm],
-            components: {
-              h2: ({ children }: { children: React.ReactNode }) => <h2 id={slugify(String(children))} className="scroll-mt-24">{children}</h2>,
-              h3: ({ children }: { children: React.ReactNode }) => <h3 id={slugify(String(children))} className="scroll-mt-24">{children}</h3>,
-            },
-          };
-
-          const total = sections.length;
-          const diagramAt = Math.max(1, Math.floor(total / 3));
-          const exampleAt = Math.max(diagramAt + 1, Math.floor(total * 2 / 3));
-
-          return sections.map((section, i) => (
-            <div key={i}>
-              <ReactMarkdown {...mdProps}>{section}</ReactMarkdown>
-              {i === diagramAt && guide.image_diagram && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={guide.image_diagram} alt="개념 다이어그램" className="w-full rounded-xl my-6 not-prose" />
-              )}
-              {i === exampleAt && guide.image_example && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={guide.image_example} alt="활용 예시" className="w-full rounded-xl my-6 not-prose" />
-              )}
-            </div>
-          ));
-        })()}
+        {renderBody(guide.body)}
       </article>
 
       {guide.videos && guide.videos.length > 0 && (

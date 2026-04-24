@@ -65,6 +65,7 @@ def upload_guides():
             "published_at": item["published_at"],
             "body": item["body"],
             "videos": item.get("videos", []),
+            "images": item.get("images", []),
             "evaluation_score": item.get("evaluation_score"),
             "status": item.get("status", "published"),
         }

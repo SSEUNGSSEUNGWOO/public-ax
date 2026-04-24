@@ -2,6 +2,7 @@ import sys
 import time
 from pathlib import Path
 
+import requests
 from dotenv import load_dotenv
 
 ROOT = Path(__file__).parent.parent.parent
@@ -12,22 +13,61 @@ from guides.writer import search_articles, fetch_article, search_youtube, write,
 from guides.evaluator.evaluator import evaluate, load_rubric
 from guides.editor.editor import edit
 
+FRONTEND_PUBLIC = ROOT / "frontend" / "public" / "guides"
 
-def print_image_prompts(guide: dict) -> None:
-    title = guide["title"]
-    category = guide["category"]
+
+def generate_images(guide: dict) -> dict:
+    import os
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        print("  [이미지] OPENAI_API_KEY 없음. 이미지 생성 생략.")
+        return guide
+
+    images = guide.get("images", [])
+    if not images:
+        return guide
+
+    FRONTEND_PUBLIC.mkdir(parents=True, exist_ok=True)
     slug = guide["slug"]
-    print("\n" + "─" * 50)
-    print("📸 claude.design 이미지 프롬프트")
-    print("─" * 50)
-    print(f"\n[1] 커버 이미지 → public/guides/{slug}-cover.png")
-    print(f"    공공기관 AI 가이드 커버. 주제: {title}. 미니멀하고 신뢰감 있는 16:9 커버 디자인.")
-    print(f"\n[2] 개념 다이어그램 → public/guides/{slug}-diagram.png")
-    print(f"    {title}의 핵심 개념을 시각화한 다이어그램. 흐름도 또는 구조도 형태. 16:9.")
-    print(f"\n[3] 활용 예시 → public/guides/{slug}-example.png")
-    print(f"    한국 공공기관에서 {title}를 활용하는 장면. 실무적인 UI/인포그래픽. 16:9.")
-    print(f"\nguides.json의 '{slug}' 항목에 image_cover, image_diagram, image_example 필드 추가")
-    print("─" * 50)
+    headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+
+    style_prefix = (
+        "Flat design illustration, clean minimal style, Korean government/public sector context, "
+        "professional and trustworthy, 16:9 aspect ratio, no text overlay. "
+    )
+
+    updated_images = []
+    for img in images:
+        img_id = img["id"]
+        img_type = img["type"]
+        description = img["description"]
+        filename = f"{slug}-{img_id}.png"
+        save_path = FRONTEND_PUBLIC / filename
+        url_path = f"/guides/{filename}"
+
+        print(f"  [이미지] 생성 중: {img_id} ({img_type})")
+
+        dalle_prompt = style_prefix + description
+
+        try:
+            resp = requests.post(
+                "https://api.openai.com/v1/images/generations",
+                headers=headers,
+                json={"model": "dall-e-3", "prompt": dalle_prompt, "size": "1792x1024", "n": 1},
+                timeout=60,
+            )
+            resp.raise_for_status()
+            image_url = resp.json()["data"][0]["url"]
+            img_data = requests.get(image_url, timeout=30).content
+            save_path.write_bytes(img_data)
+            print(f"  [이미지] 저장: {save_path.name}")
+            updated_images.append({**img, "url": url_path})
+        except Exception as e:
+            print(f"  [이미지] 실패 ({img_id}): {e}")
+            updated_images.append(img)
+
+    guide["images"] = updated_images
+    return guide
 
 
 def run(topic: str) -> None:
@@ -102,12 +142,16 @@ def run(topic: str) -> None:
     print(f"  [Editor] 완료")
 
     guide["evaluation_score"] = round(score, 2)
+
+    # ── 4. 이미지 생성 ────────────────────────────
+    print(f"\n  [Image] DALL-E 이미지 생성 중...")
+    guide = generate_images(guide)
+
     save(guide)
 
     print(f"\n✅ 저장 완료: [{guide['category']}] {guide['title']} (평가 {score:.2f}점)")
     print(f"   참고 아티클 {len(articles_ok)}개 / YouTube 추천 {len(guide['videos'])}개 포함")
-
-    print_image_prompts(guide)
+    print(f"   이미지 {len([i for i in guide.get('images', []) if i.get('url')])}개 생성 완료")
 
 
 if __name__ == "__main__":

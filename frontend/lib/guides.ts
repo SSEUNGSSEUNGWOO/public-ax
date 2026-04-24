@@ -6,6 +6,13 @@ export interface GuideVideo {
   channel: string;
 }
 
+export interface GuideImage {
+  id: string;
+  type: "cover" | "diagram" | "example" | "infographic" | "screenshot";
+  description: string;
+  url?: string;
+}
+
 export interface Guide {
   slug: string;
   title: string;
@@ -15,11 +22,9 @@ export interface Guide {
   published_at: string;
   body: string;
   videos?: GuideVideo[];
+  images?: GuideImage[];
   evaluation_score?: number;
   status?: "draft" | "published";
-  image_cover?: string;
-  image_diagram?: string;
-  image_example?: string;
 }
 
 function getClient() {
@@ -40,7 +45,7 @@ export async function getAllGuides(): Promise<Guide[]> {
     console.error("guides fetch error:", error.message);
     return [];
   }
-  return (data ?? []).map(addImageCover);
+  return data ?? [];
 }
 
 export async function getGuideBySlug(slug: string): Promise<Guide | null> {
@@ -51,14 +56,5 @@ export async function getGuideBySlug(slug: string): Promise<Guide | null> {
     .single();
 
   if (error) return null;
-  return addImageCover(data);
-}
-
-function addImageCover(guide: Guide): Guide {
-  return {
-    ...guide,
-    image_cover: `/guides/${guide.slug}-cover.png`,
-    image_diagram: `/guides/${guide.slug}-diagram.png`,
-    image_example: `/guides/${guide.slug}-example.png`,
-  };
+  return data;
 }
