@@ -144,7 +144,7 @@ def write(topic: str, articles: list[dict], texts: list[str], youtube: list[dict
     {{
       "id": "영문-소문자-하이픈 식별자 (예: rag-flow-diagram)",
       "type": "cover | diagram | example | infographic",
-      "description": "DALL-E 3용 영어 이미지 프롬프트. 텍스트/라벨/글자 없이 순수 시각적 은유로 설명. 아이콘, 도형, 색상, 구도로만 표현."
+      "description": "ChatGPT 이미지 생성용 영어 프롬프트. wide 16:9 landscape orientation. 텍스트/라벨/글자 절대 금지. 주제에 어울리는 색상 자유롭게 선택 (dark navy 고정 금지). 아이콘·도형·색상·구도로만 표현."
     }}
   ],
   "body": "마크다운 본문. ## 섹션 구분. 이미지가 필요한 위치에 {{{{image:id}}}} 플레이스홀더 삽입 (cover 제외). 2000자 이상."
