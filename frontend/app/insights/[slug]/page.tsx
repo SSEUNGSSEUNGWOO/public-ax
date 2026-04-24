@@ -6,9 +6,10 @@ import { TableOfContents } from "@/components/insights/toc";
 import { ContentCta } from "@/components/shared/content-cta";
 import { LikeButton } from "@/components/shared/like-button";
 
+export const dynamic = "force-dynamic";
+
 export async function generateStaticParams() {
-  const insights = await getAllInsights();
-  return insights.map((i) => ({ slug: i.slug }));
+  return [];
 }
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://public-ax.kr";
