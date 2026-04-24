@@ -5,6 +5,7 @@ import { getGuideBySlug, getAllGuides, GuideVideo, GuideImage } from "@/lib/guid
 import { ContentCta } from "@/components/shared/content-cta";
 import { GuideBody } from "@/components/guide/guide-body";
 import { ViewTracker } from "@/components/shared/view-tracker";
+import { LikeButton } from "@/components/shared/like-button";
 
 export async function generateStaticParams() {
   const guides = await getAllGuides();
@@ -115,6 +116,10 @@ export default async function GuideDetailPage({
           </div>
         </div>
       )}
+
+      <div className="flex justify-center mt-12">
+        <LikeButton contentType="guide" contentId={guide.slug} />
+      </div>
 
       <ContentCta />
 
