@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
   const url = `${SITE_URL}/guide/${guide.slug}`;
   const coverImage = (guide.images ?? []).find((img: { type: string; url?: string }) => img.type === "cover");
-  const ogImage = coverImage?.url || `${SITE_URL}/og-image.png`;
+  const ogImage = coverImage?.url;
   return {
     title: `${guide.title} | PUBLIC-AX 가이드`,
     description: guide.summary,
@@ -33,13 +33,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       description: guide.summary,
       siteName: "PUBLIC-AX",
       locale: "ko_KR",
-      images: [{ url: ogImage, width: 1200, height: 630 }],
+      ...(ogImage ? { images: [{ url: ogImage, width: 1200, height: 630 }] } : {}),
     },
     twitter: {
       card: "summary_large_image",
       title: guide.title,
       description: guide.summary,
-      images: [ogImage],
+      ...(ogImage ? { images: [ogImage] } : {}),
     },
   };
 }

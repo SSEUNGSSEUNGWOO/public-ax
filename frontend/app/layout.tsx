@@ -33,11 +33,9 @@ export const metadata: Metadata = {
     locale: "ko_KR",
     siteName: "PUBLIC-AX",
     url: SITE_URL,
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "PUBLIC-AX" }],
   },
   twitter: {
     card: "summary_large_image",
-    images: ["/og-image.png"],
   },
 };
 

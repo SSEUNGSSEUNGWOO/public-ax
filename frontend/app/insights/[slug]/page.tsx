@@ -40,13 +40,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       publishedTime: insight.published_at,
       siteName: "PUBLIC-AX",
       locale: "ko_KR",
-      images: [{ url: insight.image_url || `${SITE_URL}/og-image.png`, width: 1200, height: 630 }],
+      ...(insight.image_url ? { images: [{ url: insight.image_url, width: 1200, height: 630 }] } : {}),
     },
     twitter: {
       card: "summary_large_image",
       title: insight.title,
       description,
-      images: [insight.image_url || `${SITE_URL}/og-image.png`],
+      ...(insight.image_url ? { images: [insight.image_url] } : {}),
     },
   };
 }
