@@ -5,6 +5,7 @@ pip install resend markdown
 import json
 import os
 import re
+import urllib.parse
 from datetime import date
 from pathlib import Path
 
@@ -33,15 +34,27 @@ def add_subscriber(email: str) -> bool:
     return True
 
 
-def insight_to_html(title: str, body: str, slug: str, published_at: str) -> str:
-    site_url = os.getenv("SITE_URL", "https://public-ax.kr")
+def insight_to_html(title: str, body: str, slug: str, published_at: str, unsubscribe_url: str = "") -> str:
+    site_url = os.getenv("SITE_URL", "https://public-ax.vercel.app")
     insight_url = f"{site_url}/insights/{slug}"
+
+    # 전처리
+    body = re.sub(r'^#[^\n]*\n+', '', body)  # H1 제거
+    body = re.sub(r'^\*\*\d{4}-\d{2}-\d{2}\*\*\n*', '', body, flags=re.MULTILINE)
+    body = re.sub(r'^\*\*리포트 날짜:[^\n]*\*\*\n*', '', body, flags=re.MULTILINE)
+    body = re.sub(r'\n*---\n+\*?본 리포트는[^\n]*\*?\n*', '', body)
+    # "N. ### 제목" → "### N. 제목" (번호 리셋 방지)
+    body = re.sub(r'^(\d+)\.\s+###\s+(.+)$', r'### \1. \2', body, flags=re.MULTILINE)
+    # --- 구분선 제거 (번호 리셋 원인)
+    body = re.sub(r'\n---\n', '\n\n', body)
 
     # 마크다운 → HTML 변환
     body_html = md_lib.markdown(body, extensions=["tables", "fenced_code"])
 
     # H1 제거 (제목은 따로 표시)
     body_html = re.sub(r"<h1[^>]*>.*?</h1>", "", body_html, flags=re.DOTALL)
+    # 이미지 제거
+    body_html = re.sub(r"<img[^>]*>", "", body_html)
 
     today_str = date.fromisoformat(published_at).strftime("%Y년 %m월 %d일")
 
@@ -89,6 +102,7 @@ def insight_to_html(title: str, body: str, slug: str, published_at: str) -> str:
         ul, ol {{ padding-left:20px;margin:0 0 16px; }}
         li {{ margin-bottom:6px; }}
         blockquote {{ border-left:3px solid #E94E1B;margin:16px 0;padding:8px 16px;color:#74705F; }}
+        img {{ max-width:100%;height:auto;border-radius:8px;margin:12px 0;display:block; }}
         code {{ background:#F5F5F0;padding:2px 6px;border-radius:4px;font-size:13px; }}
         table {{ border-collapse:collapse;width:100%;margin:16px 0; }}
         td, th {{ border:1px solid #E5E5E0;padding:8px 12px;font-size:14px; }}
@@ -103,8 +117,11 @@ def insight_to_html(title: str, body: str, slug: str, published_at: str) -> str:
         <a href="{site_url}" style="color:#E94E1B;text-decoration:none;">PUBLIC-AX</a>
         &nbsp;·&nbsp; 케이브레인 AI퍼블릭센터
       </p>
-      <p style="margin:0;">
+      <p style="margin:0 0 8px;">
         이 메일은 PUBLIC-AX 뉴스레터를 구독하신 분께 발송됩니다.
+      </p>
+      <p style="margin:0;">
+        <a href="{unsubscribe_url}" style="color:#bbb;text-decoration:underline;">구독 취소</a>
       </p>
     </div>
 
@@ -131,23 +148,24 @@ def send_newsletter(insight: dict) -> int:
         return 0
 
     title = insight["title"]
-    html = insight_to_html(
-        title=title,
-        body=insight["body"],
-        slug=insight["slug"],
-        published_at=insight["published_at"],
-    )
-
     sent = 0
     from_addr = os.getenv("NEWSLETTER_FROM", "PUBLIC-AX <newsletter@public-ax.kr>")
 
     # Resend는 배치 발송 지원 (최대 100개)
+    site_url = os.getenv("SITE_URL", "https://public-ax.vercel.app")
+
     batch = [
         {
             "from": from_addr,
             "to": [email],
             "subject": f"[PUBLIC-AX] {title}",
-            "html": html,
+            "html": insight_to_html(
+                title=title,
+                body=insight["body"],
+                slug=insight["slug"],
+                published_at=insight["published_at"],
+                unsubscribe_url=f"{site_url}/api/unsubscribe?email={urllib.parse.quote(email)}",
+            ),
         }
         for email in subscribers
     ]

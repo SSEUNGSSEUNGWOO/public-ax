@@ -18,6 +18,7 @@ export interface Guide {
   title: string;
   summary: string;
   category: string;
+  difficulty?: string;
   tags: string[];
   published_at: string;
   body: string;

@@ -44,7 +44,7 @@ export default async function GuidePage() {
             {guides.map((guide) => {
               const cover = (guide.images ?? []).find((img: GuideImage) => img.type === "cover");
               const colorClass = CATEGORY_COLORS[guide.category] ?? "text-primary";
-              const difficulty = (guide as Record<string, unknown>)["difficulty"] as string | undefined;
+              const difficulty = guide.difficulty;
               return (
                 <Link
                   key={guide.slug}
