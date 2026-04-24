@@ -115,11 +115,11 @@ export default function AboutPage() {
                 </div>
                 <div className="rounded-xl border overflow-hidden text-sm">
                   {[
-                    { k: "기관명", v: "PUBLIC-AX" },
-                    { k: "운영 주체", v: "Kbrain AI Public Center" },
+                    { k: "브랜드", v: "PUBLIC-AX" },
+                    { k: "법인명", v: "(주)케이브레인컴퍼니" },
+                    { k: "운영 주체", v: "케이브레인 AI퍼블릭센터" },
                     { k: "설립", v: "2024년 3월" },
-                    { k: "소재지", v: "서울특별시 중구" },
-                    { k: "서비스", v: "공공 AI 전환(AX)" },
+                    { k: "소재지", v: "서울 동작구 보라매로5길 51" },
                     { k: "이용 대상", v: "중앙부처 · 지자체 · 공공기관" },
                   ].map((f, i) => (
                     <div key={f.k} className={`flex flex-col gap-0.5 px-4 py-3 ${i > 0 ? "border-t" : ""} bg-muted/20`}>
@@ -259,8 +259,7 @@ export default function AboutPage() {
                     연락처 <span className="font-mono text-[10px] text-muted-foreground font-normal tracking-widest">CONTACT</span>
                   </h4>
                   {[
-                    { k: "대표 이메일", v: "contact@kbrain.ai", href: "mailto:contact@kbrain.ai" },
-                    { k: "도입 문의", v: "biz@kbrain.ai", href: "mailto:biz@kbrain.ai" },
+                    { k: "대표 이메일", v: "contact@public-ax.kr", href: "mailto:contact@public-ax.kr" },
                     { k: "업무 시간", v: "평일 10:00 – 18:00 (KST)" },
                   ].map((r) => (
                     <div key={r.k} className="grid grid-cols-[90px_1fr] gap-3 py-2 text-sm">
@@ -277,18 +276,18 @@ export default function AboutPage() {
                     오시는 길 <span className="font-mono text-[10px] text-muted-foreground font-normal tracking-widest">LOCATION</span>
                   </h4>
                   {[
-                    { k: "주소", v: "서울시 중구 세종대로" },
-                    { k: "지하철", v: "시청역(1·2호선) 도보 4분" },
-                    { k: "주차", v: "건물 지하 주차장 이용 가능" },
+                    { k: "영업소재지", v: "서울 동작구 보라매로5길 51 롯데타워 301~309호" },
+                    { k: "공개교육장", v: "서울 마포구 성암로 189 중소기업DMC타워 701호" },
+                    { k: "대표", v: "민상일" },
+                    { k: "사업자번호", v: "129-86-50144" },
                   ].map((r) => (
                     <div key={r.k} className="grid grid-cols-[90px_1fr] gap-3 py-2 text-sm">
                       <span className="font-mono text-[10px] text-muted-foreground tracking-wider uppercase pt-0.5">{r.k}</span>
                       <span className="text-foreground">{r.v}</span>
                     </div>
                   ))}
-                  {/* 지도 플레이스홀더 */}
-                  <div className="mt-4 rounded-xl bg-muted/30 border aspect-video flex items-center justify-center">
-                    <span className="text-xs text-muted-foreground font-mono tracking-widest">MAP PLACEHOLDER</span>
+                  <div className="mt-4 rounded-xl bg-muted/30 border p-3">
+                    <p className="text-[11px] text-muted-foreground/60 font-mono tracking-widest">통신판매업신고번호: 제2026-서울동작-0124호</p>
                   </div>
                 </div>
               </div>
