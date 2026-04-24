@@ -84,26 +84,38 @@ def fetch_article(url: str) -> str | None:
 
 
 def search_youtube(topic: str, n: int = 3) -> list[dict]:
-    """YouTube 영상 검색 (추천용, 자막 없이 제목/URL만)."""
-    query = f"{topic} tutorial"
+    """YouTube 영상 검색 - 한국어 우선, 부족하면 영어로 보충."""
     opts = {"quiet": True, "no_warnings": True, "extract_flat": True}
-    try:
-        with yt_dlp.YoutubeDL(opts) as ydl:
-            results = ydl.extract_info(f"ytsearch{n}:{query}", download=False)
-        videos = []
-        for entry in (results.get("entries") or []):
-            vid_id = entry.get("id") or ""
-            if not vid_id:
-                continue
-            videos.append({
-                "id": vid_id,
-                "title": entry.get("title", ""),
-                "url": f"https://www.youtube.com/watch?v={vid_id}",
-                "channel": entry.get("uploader") or entry.get("channel") or "",
-            })
-        return videos[:n]
-    except Exception:
-        return []
+    seen = set()
+    videos = []
+
+    def fetch(query: str, count: int) -> list[dict]:
+        try:
+            with yt_dlp.YoutubeDL(opts) as ydl:
+                results = ydl.extract_info(f"ytsearch{count}:{query}", download=False)
+            out = []
+            for entry in (results.get("entries") or []):
+                vid_id = entry.get("id") or ""
+                if not vid_id or vid_id in seen:
+                    continue
+                seen.add(vid_id)
+                out.append({
+                    "id": vid_id,
+                    "title": entry.get("title", ""),
+                    "url": f"https://www.youtube.com/watch?v={vid_id}",
+                    "channel": entry.get("uploader") or entry.get("channel") or "",
+                })
+            return out
+        except Exception:
+            return []
+
+    # 한국어 먼저
+    videos += fetch(f"{topic} 설명 강의", n)
+    # 부족하면 영어로 보충
+    if len(videos) < n:
+        videos += fetch(f"{topic} tutorial", n - len(videos))
+
+    return videos[:n]
 
 
 def write(topic: str, articles: list[dict], texts: list[str], youtube: list[dict], feedback: str = "") -> dict:
