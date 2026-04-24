@@ -5,8 +5,13 @@ import { fetchAIBids, fetchMonthlyStats } from "@/lib/g2b";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "정부 AI 공고 | PUBLIC-AX",
-  description: "나라장터 AI·디지털·빅데이터 관련 입찰공고 모니터링",
+  title: "K-AI PROC | PUBLIC-AX",
+  description: "나라장터 AI·디지털전환·빅데이터 관련 공공 입찰공고 실시간 모니터링. D-day 마감 임박순 정렬 및 키워드 필터 제공",
+  openGraph: {
+    title: "공공 AI 조달 모니터링 K-AI PROC | PUBLIC-AX",
+    description: "나라장터 AI·디지털전환·빅데이터 관련 공공 입찰공고 실시간 모니터링",
+    url: "https://public-ax.kr/proc",
+  },
 };
 
 export default async function ProcPage() {

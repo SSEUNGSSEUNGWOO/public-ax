@@ -20,12 +20,27 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (!guide) return {};
 
   const url = `${SITE_URL}/guide/${guide.slug}`;
+  const coverImage = (guide.images ?? []).find((img: { type: string; url?: string }) => img.type === "cover");
+  const ogImage = coverImage?.url || `${SITE_URL}/og-image.png`;
   return {
     title: `${guide.title} | PUBLIC-AX 가이드`,
     description: guide.summary,
     alternates: { canonical: url },
-    openGraph: { type: "article", url, title: guide.title, description: guide.summary, siteName: "PUBLIC-AX", locale: "ko_KR" },
-    twitter: { card: "summary", title: guide.title, description: guide.summary },
+    openGraph: {
+      type: "article",
+      url,
+      title: guide.title,
+      description: guide.summary,
+      siteName: "PUBLIC-AX",
+      locale: "ko_KR",
+      images: [{ url: ogImage, width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: guide.title,
+      description: guide.summary,
+      images: [ogImage],
+    },
   };
 }
 
@@ -66,7 +81,22 @@ export default async function GuideDetailPage({
     ...extractToc(guide.body),
   ];
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: guide.title,
+    description: guide.summary,
+    datePublished: guide.published_at,
+    dateModified: guide.published_at,
+    author: { "@type": "Organization", name: "케이브레인 AI퍼블릭센터" },
+    publisher: { "@type": "Organization", name: "PUBLIC-AX", url: SITE_URL },
+    url: `${SITE_URL}/guide/${guide.slug}`,
+    ...(coverImage?.url ? { image: coverImage.url } : {}),
+  };
+
   return (
+    <>
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
     <div className="container mx-auto px-4 py-16 max-w-5xl">
       <ViewTracker type="guide" slug={slug} />
 
@@ -165,5 +195,6 @@ export default async function GuideDetailPage({
         </div>
       </div>
     </div>
+    </>
   );
 }
