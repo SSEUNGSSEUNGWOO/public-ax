@@ -77,7 +77,7 @@ export default async function GuideDetailPage({
     <div className="container mx-auto px-4 py-16 max-w-3xl">
       {coverImage?.url && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={coverImage.url} alt={guide.title} className="w-full h-64 object-cover rounded-2xl mb-8" />
+        <img src={coverImage.url} alt={guide.title} className="w-full rounded-2xl mb-8" />
       )}
 
       <div className="mb-8">
