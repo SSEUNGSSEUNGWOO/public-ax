@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
         <hr style="border:none;border-top:1px solid #e5e7eb;margin:32px 0 24px;"/>
         <p style="font-size:12px;color:#9ca3af;margin:0;">
           케이브레인 AI퍼블릭센터 · PUBLIC-AX<br/>
-          수신을 원하지 않으시면 회신으로 알려주세요.
+          <a href="https://public-ax.vercel.app/api/unsubscribe?email=${encodeURIComponent(email)}" style="color:#9ca3af;">구독 취소</a>
         </p>
       </div>
     `,
