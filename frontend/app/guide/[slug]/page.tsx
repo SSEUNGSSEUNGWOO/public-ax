@@ -5,7 +5,7 @@ import { getGuideBySlug, getAllGuides, GuideVideo, GuideImage } from "@/lib/guid
 import { ContentCta } from "@/components/shared/content-cta";
 import { GuideBody } from "@/components/guide/guide-body";
 import { ViewTracker } from "@/components/shared/view-tracker";
-import { LikeButton } from "@/components/shared/like-button";
+import { TableOfContents } from "@/components/insights/toc";
 
 export async function generateStaticParams() {
   const guides = await getAllGuides();
@@ -29,6 +29,20 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   };
 }
 
+function slugify(text: string) {
+  return text.trim().toLowerCase().replace(/\s+/g, "-").replace(/[^\w가-힣-]/g, "");
+}
+
+function extractToc(body: string) {
+  const items: { id: string; text: string; level: number }[] = [];
+  for (const line of body.split("\n")) {
+    const h = line.match(/^(#{2,3})\s+(.+)/);
+    if (h) {
+      items.push({ id: slugify(h[2].trim()), text: h[2].trim(), level: h[1].length });
+    }
+  }
+  return items;
+}
 
 export default async function GuideDetailPage({
   params,
@@ -47,97 +61,106 @@ export default async function GuideDetailPage({
   );
   const coverImage = (guide.images ?? []).find((img: GuideImage) => img.type === "cover");
 
+  const tocItems = [
+    { id: "top", text: "제목", level: 2 },
+    ...extractToc(guide.body),
+  ];
 
   return (
-    <div className="container mx-auto px-4 py-16 max-w-3xl">
+    <div className="container mx-auto px-4 py-16 max-w-5xl">
       <ViewTracker type="guide" slug={slug} />
-      {coverImage?.url && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={coverImage.url} alt={guide.title} className="w-full rounded-2xl mb-8" />
-      )}
 
-      <div className="mb-8">
-        <Link href="/guide" className="text-xs text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1 mb-6">
-          ← 가이드 목록
-        </Link>
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_200px] gap-16">
+        <div className="min-w-0">
+          {coverImage?.url && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={coverImage.url} alt={guide.title} className="w-full rounded-2xl mb-8" />
+          )}
 
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-[10px] font-semibold uppercase tracking-widest text-primary">{guide.category}</span>
-        </div>
+          <div className="mb-8" id="top">
+            <Link href="/guide" className="text-xs text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1 mb-6">
+              ← 가이드 목록
+            </Link>
 
-        <h1 className="text-3xl font-bold leading-tight mb-3">{guide.title}</h1>
-        <p className="text-muted-foreground">{guide.summary}</p>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-primary">{guide.category}</span>
+            </div>
 
-        <div className="flex flex-wrap gap-2 mt-4">
-          {guide.tags.map((tag) => (
-            <span key={tag} className="text-xs font-medium px-2.5 py-1 rounded-full bg-muted text-muted-foreground">
-              {tag}
-            </span>
-          ))}
-        </div>
-      </div>
+            <h1 className="text-3xl font-bold leading-tight mb-3">{guide.title}</h1>
+            <p className="text-muted-foreground">{guide.summary}</p>
 
-      <hr className="border-border mb-10" />
+            <div className="flex flex-wrap gap-2 mt-4">
+              {guide.tags.map((tag) => (
+                <span key={tag} className="text-xs font-medium px-2.5 py-1 rounded-full bg-muted text-muted-foreground">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
 
-      <article className="prose prose-neutral dark:prose-invert max-w-none [&_h2]:border-b [&_h2]:border-border [&_h2]:pb-3 [&_h2]:text-2xl [&_h3]:text-lg [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_pre]:bg-muted [&_pre]:rounded-xl [&_pre]:p-4 [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_table]:border [&_table]:border-border [&_th]:bg-muted [&_th]:px-3 [&_th]:py-2 [&_td]:px-3 [&_td]:py-2 [&_td]:border-t [&_td]:border-border">
-        <GuideBody body={guide.body} imageMap={imageMap} />
-      </article>
+          <hr className="border-border mb-10" />
 
-      {guide.videos && guide.videos.length > 0 && (
-        <div className="mt-12 pt-8 border-t">
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">참고 영상</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {guide.videos.map((v: GuideVideo) => {
-              const videoId = v.url.match(/(?:v=|youtu\.be\/)([^&?/]+)/)?.[1];
-              const thumbnail = videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : null;
-              return (
-                <a key={v.url} href={v.url} target="_blank" rel="noopener noreferrer"
-                  className="group flex flex-col rounded-xl border bg-card overflow-hidden hover:shadow-md hover:bg-primary/5 transition-all duration-200"
-                >
-                  <div className="w-full aspect-video bg-muted overflow-hidden">
-                    {thumbnail ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={thumbnail} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                    ) : (
-                      <div className="w-full h-full bg-red-500/10 flex items-center justify-center">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" className="text-red-500">
-                          <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
-                        </svg>
+          <article className="prose prose-neutral dark:prose-invert max-w-none [&_h2]:border-b [&_h2]:border-border [&_h2]:pb-3 [&_h2]:text-2xl [&_h3]:text-lg [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_pre]:bg-muted [&_pre]:rounded-xl [&_pre]:p-4 [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_table]:border [&_table]:border-border [&_th]:bg-muted [&_th]:px-3 [&_th]:py-2 [&_td]:px-3 [&_td]:py-2 [&_td]:border-t [&_td]:border-border">
+            <GuideBody body={guide.body} imageMap={imageMap} />
+          </article>
+
+          {guide.videos && guide.videos.length > 0 && (
+            <div className="mt-12 pt-8 border-t">
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">참고 영상</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {guide.videos.map((v: GuideVideo) => {
+                  const videoId = v.url.match(/(?:v=|youtu\.be\/)([^&?/]+)/)?.[1];
+                  const thumbnail = videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : null;
+                  return (
+                    <a key={v.url} href={v.url} target="_blank" rel="noopener noreferrer"
+                      className="group flex flex-col rounded-xl border bg-card overflow-hidden hover:shadow-md hover:bg-primary/5 transition-all duration-200"
+                    >
+                      <div className="w-full aspect-video bg-muted overflow-hidden">
+                        {thumbnail ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={thumbnail} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                        ) : (
+                          <div className="w-full h-full bg-red-500/10 flex items-center justify-center">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" className="text-red-500">
+                              <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
+                            </svg>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                  <div className="p-3">
-                    <p className="text-xs font-medium leading-snug group-hover:text-primary transition-colors line-clamp-2">{v.title}</p>
-                    <p className="text-[11px] text-muted-foreground mt-1">{v.channel}</p>
-                  </div>
-                </a>
-              );
-            })}
-          </div>
-        </div>
-      )}
+                      <div className="p-3">
+                        <p className="text-xs font-medium leading-snug group-hover:text-primary transition-colors line-clamp-2">{v.title}</p>
+                        <p className="text-[11px] text-muted-foreground mt-1">{v.channel}</p>
+                      </div>
+                    </a>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
-      <div className="flex justify-center mt-12">
-        <LikeButton contentType="guide" contentId={guide.slug} />
+          <ContentCta />
+
+          {related.length > 0 && (
+            <div className="mt-16 pt-10 border-t">
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">관련 가이드</h2>
+              <div className="flex flex-col gap-3">
+                {related.map((g) => (
+                  <Link key={g.slug} href={`/guide/${g.slug}`}
+                    className="group flex flex-col rounded-2xl border bg-card p-4 hover:shadow-md hover:bg-primary/5 transition-all duration-200"
+                  >
+                    <span className="font-semibold text-sm group-hover:text-primary transition-colors">{g.title}</span>
+                    <span className="text-xs text-muted-foreground mt-1 line-clamp-1">{g.summary}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="hidden lg:block">
+          <TableOfContents items={tocItems} likeContentType="guide" likeContentId={guide.slug} />
+        </div>
       </div>
-
-      <ContentCta />
-
-      {related.length > 0 && (
-        <div className="mt-16 pt-10 border-t">
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">관련 가이드</h2>
-          <div className="flex flex-col gap-3">
-            {related.map((g) => (
-              <Link key={g.slug} href={`/guide/${g.slug}`}
-                className="group flex flex-col rounded-2xl border bg-card p-4 hover:shadow-md hover:bg-primary/5 transition-all duration-200"
-              >
-                <span className="font-semibold text-sm group-hover:text-primary transition-colors">{g.title}</span>
-                <span className="text-xs text-muted-foreground mt-1 line-clamp-1">{g.summary}</span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
