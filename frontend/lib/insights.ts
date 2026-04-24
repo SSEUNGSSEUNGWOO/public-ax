@@ -10,6 +10,7 @@ export interface Insight {
   image_url: string | null;
   evaluation_score: number | null;
   crawled_count: number;
+  views?: number;
 }
 
 function getClient() {

@@ -104,6 +104,9 @@ export default async function InsightsPage() {
                       <div className="flex items-center gap-3 mt-2 flex-wrap">
                         <time className="text-xs text-muted-foreground">{insight.published_at}</time>
                         <span className="text-xs text-muted-foreground/60">케이브레인 AI퍼블릭센터 · 장승우</span>
+                        {(insight.views ?? 0) > 0 && (
+                          <span className="text-xs text-muted-foreground/60">조회 {insight.views}</span>
+                        )}
                         {(counts[insight.slug]?.likes ?? 0) > 0 && (
                           <span className="flex items-center gap-1 text-xs text-muted-foreground/70">
                             <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" className="text-red-400">

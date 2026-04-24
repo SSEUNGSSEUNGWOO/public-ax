@@ -26,6 +26,7 @@ export interface Guide {
   images?: GuideImage[];
   evaluation_score?: number;
   status?: "draft" | "published";
+  views?: number;
 }
 
 function getClient() {

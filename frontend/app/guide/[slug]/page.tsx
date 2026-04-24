@@ -87,7 +87,12 @@ export default async function GuideDetailPage({
             </div>
 
             <h1 className="text-3xl font-bold leading-tight mb-3">{guide.title}</h1>
-            <p className="text-muted-foreground">{guide.summary}</p>
+            <div className="flex items-center gap-3 mb-2">
+              <p className="text-muted-foreground">{guide.summary}</p>
+            </div>
+            {(guide.views ?? 0) > 0 && (
+              <p className="text-xs text-muted-foreground/60">조회 {guide.views}회</p>
+            )}
 
             <div className="flex flex-wrap gap-2 mt-4">
               {guide.tags.map((tag) => (

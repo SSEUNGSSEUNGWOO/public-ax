@@ -123,7 +123,12 @@ export default async function InsightDetailPage({
             <h1 className="text-3xl font-bold leading-tight mb-4">{insight.title}</h1>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-6">
               <p className="text-sm text-muted-foreground">AI 동향 일일 리포트 — {insight.published_at}</p>
-              <p className="text-sm text-muted-foreground/70">케이브레인 AI퍼블릭센터 · 장승우</p>
+              <div className="flex items-center gap-3">
+                <p className="text-sm text-muted-foreground/70">케이브레인 AI퍼블릭센터 · 장승우</p>
+                {(insight.views ?? 0) > 0 && (
+                  <span className="text-xs text-muted-foreground/60">조회 {insight.views}회</span>
+                )}
+              </div>
             </div>
           </div>
 
