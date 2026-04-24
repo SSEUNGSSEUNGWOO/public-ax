@@ -125,9 +125,7 @@ export default async function InsightDetailPage({
               <p className="text-sm text-muted-foreground">AI 동향 일일 리포트 — {insight.published_at}</p>
               <div className="flex items-center gap-3">
                 <p className="text-sm text-muted-foreground/70">케이브레인 AI퍼블릭센터 · 장승우</p>
-                {(insight.views ?? 0) > 0 && (
-                  <span className="text-xs text-muted-foreground/60">조회 {insight.views}회</span>
-                )}
+                <span className="text-xs text-muted-foreground/60">조회 {insight.views ?? 0}회</span>
               </div>
             </div>
           </div>

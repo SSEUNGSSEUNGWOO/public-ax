@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getAllGuides, GuideImage } from "@/lib/guides";
 import { PageHeader } from "@/components/shared/page-header";
+import { getCountsForType } from "@/lib/counts";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +23,7 @@ export const metadata = {
 };
 
 export default async function GuidePage() {
-  const guides = await getAllGuides();
+  const [guides, counts] = await Promise.all([getAllGuides(), getCountsForType("guide")]);
 
   return (
     <div>
@@ -85,17 +86,17 @@ export default async function GuidePage() {
                     <p className="text-xs text-muted-foreground line-clamp-2 flex-1">
                       {guide.summary}
                     </p>
-                    <div className="flex items-center justify-between mt-3">
-                      <div className="flex flex-nowrap gap-1.5 overflow-hidden">
-                        {guide.tags.slice(0, 3).map((tag) => (
-                          <span key={tag} className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground whitespace-nowrap">
-                            #{tag}
-                          </span>
-                        ))}
-                      </div>
-                      {(guide.views ?? 0) > 0 && (
-                        <span className="text-[10px] text-muted-foreground/60 whitespace-nowrap ml-2">조회 {guide.views}</span>
-                      )}
+                    <div className="flex flex-nowrap gap-1.5 mt-3 overflow-hidden">
+                      {guide.tags.slice(0, 3).map((tag) => (
+                        <span key={tag} className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground whitespace-nowrap">
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="text-[10px] text-muted-foreground/60">조회 {guide.views ?? 0}</span>
+                      <span className="text-[10px] text-muted-foreground/40">·</span>
+                      <span className="text-[10px] text-muted-foreground/60">❤ {counts[guide.slug]?.likes ?? 0}</span>
                     </div>
                   </div>
                 </Link>

@@ -52,22 +52,19 @@ export default async function InsightsPage() {
               <div className="flex items-center gap-3 flex-wrap">
                 <time className="text-sm text-muted-foreground">{latest.published_at}</time>
                 <span className="text-sm text-muted-foreground/60">케이브레인 AI퍼블릭센터 · 장승우</span>
-                {(counts[latest.slug]?.likes ?? 0) > 0 && (
-                  <span className="flex items-center gap-1 text-sm text-muted-foreground/70">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" className="text-red-400">
-                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                    </svg>
-                    {counts[latest.slug].likes}
-                  </span>
-                )}
-                {(counts[latest.slug]?.comments ?? 0) > 0 && (
-                  <span className="flex items-center gap-1 text-sm text-muted-foreground/70">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                    </svg>
-                    {counts[latest.slug].comments}
-                  </span>
-                )}
+                <span className="flex items-center gap-1 text-sm text-muted-foreground/70">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" className="text-red-400">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                  </svg>
+                  {counts[latest.slug]?.likes ?? 0}
+                </span>
+                <span className="flex items-center gap-1 text-sm text-muted-foreground/70">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                  </svg>
+                  {counts[latest.slug]?.comments ?? 0}
+                </span>
+                <span className="text-sm text-muted-foreground/60">조회 {latest.views ?? 0}</span>
               </div>
             </div>
           </Link>
@@ -104,17 +101,13 @@ export default async function InsightsPage() {
                       <div className="flex items-center gap-3 mt-2 flex-wrap">
                         <time className="text-xs text-muted-foreground">{insight.published_at}</time>
                         <span className="text-xs text-muted-foreground/60">케이브레인 AI퍼블릭센터 · 장승우</span>
-                        {(insight.views ?? 0) > 0 && (
-                          <span className="text-xs text-muted-foreground/60">조회 {insight.views}</span>
-                        )}
-                        {(counts[insight.slug]?.likes ?? 0) > 0 && (
-                          <span className="flex items-center gap-1 text-xs text-muted-foreground/70">
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" className="text-red-400">
-                              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                            </svg>
-                            {counts[insight.slug].likes}
-                          </span>
-                        )}
+                        <span className="text-xs text-muted-foreground/60">조회 {insight.views ?? 0}</span>
+                        <span className="flex items-center gap-1 text-xs text-muted-foreground/70">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" className="text-red-400">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                          </svg>
+                          {counts[insight.slug]?.likes ?? 0}
+                        </span>
                         {(counts[insight.slug]?.comments ?? 0) > 0 && (
                           <span className="flex items-center gap-1 text-xs text-muted-foreground/70">
                             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
