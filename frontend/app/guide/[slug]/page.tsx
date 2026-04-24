@@ -1,3 +1,4 @@
+import React from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
@@ -74,35 +75,37 @@ export default async function GuideDetailPage({
       <hr className="border-border mb-10" />
 
       <article className="prose prose-neutral dark:prose-invert max-w-none [&_h2]:border-b [&_h2]:border-border [&_h2]:pb-3 [&_h2]:text-2xl [&_h3]:text-lg [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_pre]:bg-muted [&_pre]:rounded-xl [&_pre]:p-4 [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_table]:border [&_table]:border-border [&_th]:bg-muted [&_th]:px-3 [&_th]:py-2 [&_td]:px-3 [&_td]:py-2 [&_td]:border-t [&_td]:border-border">
-        <ReactMarkdown
-          remarkPlugins={[remarkGfm]}
-          components={{
-            h2: ({ children }) => <h2 id={slugify(String(children))} className="scroll-mt-24">{children}</h2>,
-            h3: ({ children }) => <h3 id={slugify(String(children))} className="scroll-mt-24">{children}</h3>,
-          }}
-        >
-          {guide.body}
-        </ReactMarkdown>
-      </article>
+        {(() => {
+          // ## 기준으로 섹션 분리
+          const sections = guide.body.split(/(?=^## )/m);
+          const mdProps = {
+            remarkPlugins: [remarkGfm] as [typeof remarkGfm],
+            components: {
+              h2: ({ children }: { children: React.ReactNode }) => <h2 id={slugify(String(children))} className="scroll-mt-24">{children}</h2>,
+              h3: ({ children }: { children: React.ReactNode }) => <h3 id={slugify(String(children))} className="scroll-mt-24">{children}</h3>,
+            },
+          };
 
-      {(guide.image_diagram || guide.image_example) && (
-        <div className="mt-12 pt-8 border-t space-y-6">
-          {guide.image_diagram && (
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-3">개념 다이어그램</p>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={guide.image_diagram} alt="개념 다이어그램" className="w-full rounded-xl border" />
+          // 활용 관련 섹션 인덱스 찾기
+          const exampleIdx = sections.findIndex(s => /활용|예시|사례|적용/.test(s));
+          const diagramAt = Math.min(2, sections.length - 1);
+          const exampleAt = exampleIdx > 0 ? exampleIdx : Math.min(4, sections.length - 1);
+
+          return sections.map((section, i) => (
+            <div key={i}>
+              <ReactMarkdown {...mdProps}>{section}</ReactMarkdown>
+              {i === diagramAt && guide.image_diagram && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={guide.image_diagram} alt="개념 다이어그램" className="w-full rounded-xl my-6 not-prose" />
+              )}
+              {i === exampleAt && i !== diagramAt && guide.image_example && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={guide.image_example} alt="활용 예시" className="w-full rounded-xl my-6 not-prose" />
+              )}
             </div>
-          )}
-          {guide.image_example && (
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-3">활용 예시</p>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={guide.image_example} alt="활용 예시" className="w-full rounded-xl border" />
-            </div>
-          )}
-        </div>
-      )}
+          ));
+        })()}
+      </article>
 
       {guide.videos && guide.videos.length > 0 && (
         <div className="mt-12 pt-8 border-t">
