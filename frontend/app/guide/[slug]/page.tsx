@@ -85,6 +85,25 @@ export default async function GuideDetailPage({
         </ReactMarkdown>
       </article>
 
+      {(guide.image_diagram || guide.image_example) && (
+        <div className="mt-12 pt-8 border-t space-y-6">
+          {guide.image_diagram && (
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-3">개념 다이어그램</p>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={guide.image_diagram} alt="개념 다이어그램" className="w-full rounded-xl border" />
+            </div>
+          )}
+          {guide.image_example && (
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-3">활용 예시</p>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={guide.image_example} alt="활용 예시" className="w-full rounded-xl border" />
+            </div>
+          )}
+        </div>
+      )}
+
       {guide.videos && guide.videos.length > 0 && (
         <div className="mt-12 pt-8 border-t">
           <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">참고 영상</h2>

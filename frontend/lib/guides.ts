@@ -18,6 +18,8 @@ export interface Guide {
   evaluation_score?: number;
   status?: "draft" | "published";
   image_cover?: string;
+  image_diagram?: string;
+  image_example?: string;
 }
 
 function getClient() {
@@ -56,5 +58,7 @@ function addImageCover(guide: Guide): Guide {
   return {
     ...guide,
     image_cover: `/guides/${guide.slug}-cover.png`,
+    image_diagram: `/guides/${guide.slug}-diagram.png`,
+    image_example: `/guides/${guide.slug}-example.png`,
   };
 }
