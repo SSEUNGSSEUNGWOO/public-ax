@@ -286,17 +286,20 @@ export default function AboutPage() {
                       <span className="text-foreground">{r.v}</span>
                     </div>
                   ))}
-                  <div className="mt-4 rounded-xl overflow-hidden border aspect-video">
-                    <iframe
-                      src="https://maps.google.com/maps?q=서울특별시+동작구+보라매로5길+51+롯데타워&t=&z=16&ie=UTF8&iwloc=&output=embed"
-                      width="100%"
-                      height="100%"
-                      style={{ border: 0 }}
-                      allowFullScreen
-                      loading="lazy"
-                      referrerPolicy="no-referrer-when-downgrade"
-                    />
-                  </div>
+                  <a
+                    href="https://map.kakao.com/link/search/서울 동작구 보라매로5길 51 롯데타워"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-4 flex items-center justify-between rounded-xl border bg-muted/30 hover:bg-muted/60 transition-colors px-5 py-4 group"
+                  >
+                    <div>
+                      <p className="text-xs font-semibold text-foreground mb-0.5">동작구 보라매로5길 51 롯데타워 301~309호</p>
+                      <p className="text-[11px] text-muted-foreground">카카오맵에서 길찾기</p>
+                    </div>
+                    <svg className="text-muted-foreground group-hover:text-primary transition-colors" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                    </svg>
+                  </a>
                   <p className="mt-2 text-[11px] text-muted-foreground/60 font-mono tracking-widest">통신판매업신고번호: 제2026-서울동작-0124호</p>
                 </div>
               </div>
