@@ -157,19 +157,11 @@ def run(topic: str) -> None:
             print(f"  프롬프트: {img['description']}")
         print(f"{'─' * 55}")
 
-    # ── 5. DALL-E 자동 생성 (OPENAI_API_KEY 있을 때만) ──
-    print(f"\n  [Image] DALL-E 이미지 생성 중...")
-    guide = generate_images(guide)
-
     save(guide)
 
     print(f"\n✅ 저장 완료: [{guide['category']}] {guide['title']} (평가 {score:.2f}점)")
     print(f"   참고 아티클 {len(articles_ok)}개 / YouTube 추천 {len(guide['videos'])}개 포함")
-    generated = len([i for i in guide.get('images', []) if i.get('url')])
-    if generated:
-        print(f"   이미지 {generated}개 자동 생성 완료")
-    else:
-        print(f"   이미지는 위 프롬프트로 수동 생성 후 경로에 저장하세요")
+    print(f"   위 프롬프트를 ChatGPT에 붙여넣어 이미지 생성 후 해당 경로에 저장하세요")
 
 
 if __name__ == "__main__":
