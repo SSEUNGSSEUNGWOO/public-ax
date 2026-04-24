@@ -149,17 +149,20 @@ def run(topic: str) -> None:
 
     guide["evaluation_score"] = round(score, 2)
 
-    # ── 4. 이미지 프롬프트 출력 ───────────────────
+    # ── 4. 이미지 프롬프트 출력 + url 미리 세팅 ──
     images = guide.get("images", [])
     if images:
         slug = guide["slug"]
         print(f"\n{'─' * 55}")
-        print(f"📸 이미지 프롬프트 ({len(images)}개) — claude.design 또는 DALL-E 사용")
+        print(f"📸 이미지 프롬프트 ({len(images)}개) — ChatGPT 또는 claude.design 사용")
         print(f"{'─' * 55}")
         for img in images:
+            url_path = f"/guides/{slug}-{img['id']}.png"
+            img["url"] = url_path  # 저장 후 표시될 URL 미리 세팅
             print(f"\n[{img['type'].upper()}] id: {img['id']}")
             print(f"  저장 경로: frontend/public/guides/{slug}-{img['id']}.png")
             print(f"  프롬프트: {img['description']}")
+        guide["images"] = images
         print(f"{'─' * 55}")
 
     save(guide)
