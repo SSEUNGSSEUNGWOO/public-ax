@@ -37,35 +37,22 @@ def save_cache(topic: str, articles: list[dict], texts: list[str], youtube: list
 
 
 def search_articles(topic: str, n: int = 6) -> list[dict]:
-    """DuckDuckGo HTML 검색으로 관련 아티클 URL 수집."""
-    query = f"{topic} explained guide tutorial"
+    """DuckDuckGo 검색으로 관련 아티클 URL 수집."""
+    from ddgs import DDGS
+    query = f"{topic} explained guide tutorial site:medium.com OR site:towardsdatascience.com OR site:ibm.com OR site:aws.amazon.com OR site:datacamp.com"
     try:
-        resp = requests.get(
-            "https://html.duckduckgo.com/html/",
-            params={"q": query},
-            headers=HEADERS,
-            timeout=10,
-        )
-        soup = BeautifulSoup(resp.text, "html.parser")
         results = []
-        for a in soup.select(".result__a"):
-            href = a.get("href", "")
-            # DuckDuckGo redirect URL 파싱
-            if "uddg=" in href:
-                from urllib.parse import unquote, urlparse, parse_qs
-                qs = parse_qs(urlparse(href).query)
-                url = unquote(qs.get("uddg", [""])[0])
-            else:
-                url = href
-            if not url.startswith("http"):
-                continue
-            # YouTube, Reddit 제외
-            if any(x in url for x in ["youtube.com", "reddit.com", "youtu.be"]):
-                continue
-            title = a.get_text(strip=True)
-            results.append({"title": title, "url": url})
-            if len(results) >= n:
-                break
+        EXCLUDE_DOMAINS = ["youtube.com", "youtu.be", "reddit.com", "zhihu.com", "csdn.net", "baidu.com", "weibo.com", "naver.com"]
+        with DDGS() as ddgs:
+            for r in ddgs.text(query, max_results=n * 3):
+                url = r.get("href", "")
+                if not url.startswith("http"):
+                    continue
+                if any(x in url for x in EXCLUDE_DOMAINS):
+                    continue
+                results.append({"title": r.get("title", ""), "url": url})
+                if len(results) >= n:
+                    break
         return results
     except Exception as e:
         print(f"  [검색 오류] {e}")
@@ -171,7 +158,7 @@ def write(topic: str, articles: list[dict], texts: list[str], youtube: list[dict
 - cover 이미지는 body에 플레이스홀더 삽입 금지
 
 제목 원칙:
-- 주제 키워드를 앞에 먼저. "{주제}: 부제" 또는 "{주제}란? 설명" 형식 권장
+- 주제 키워드를 앞에 먼저. "{{주제}}: 부제" 또는 "{{주제}}란? 설명" 형식 권장
 - 누구나 클릭하고 싶은 제목. "공공기관 실무자를 위한 ~" 같은 타겟 명시 금지
 - 궁금증·놀라움·실용성을 자극하는 부제 사용
 - 예시: "바이브코딩: 코딩 몰라도 앱을 만드는 법", "RAG란? AI가 틀린 말을 하지 않게 만드는 방법"
@@ -184,16 +171,17 @@ def write(topic: str, articles: list[dict], texts: list[str], youtube: list[dict
 - YouTube 영상은 본문 내 관련 섹션에 자연스럽게 추천
 - AI 상투어 금지: '살펴보겠습니다', '알아보겠습니다', '중요한 시사점' 등"""
 
+    import os
+    env = {k: v for k, v in os.environ.items() if k != "ANTHROPIC_API_KEY"}
     result = subprocess.run(
         ["claude", "-p", prompt],
         capture_output=True,
         text=True,
         timeout=180,
+        env=env,
     )
-
     if result.returncode != 0:
-        raise RuntimeError(f"claude CLI 실패: {result.stderr}")
-
+        raise RuntimeError(f"claude CLI 실패 (code={result.returncode}): {result.stderr or result.stdout[:200]}")
     raw = result.stdout
 
     # ```json ... ``` 블록 우선 추출
@@ -209,9 +197,16 @@ def write(topic: str, articles: list[dict], texts: list[str], youtube: list[dict
     try:
         guide = json.loads(json_str)
     except json.JSONDecodeError:
-        # body 필드 내 줄바꿈/따옴표 문제 완화 후 재시도
-        json_str = re.sub(r'(?<!\\)\n', '\\n', json_str)
-        guide = json.loads(json_str)
+        # body 필드만 추출해서 별도 처리
+        body_match = re.search(r'"body"\s*:\s*"([\s\S]*?)"\s*[,}]', json_str)
+        if body_match:
+            body_raw = body_match.group(1)
+            json_str = json_str[:body_match.start()] + f'"body": {json.dumps(body_raw)}' + json_str[body_match.end()-1:]
+        try:
+            guide = json.loads(json_str)
+        except json.JSONDecodeError:
+            json_str = re.sub(r'(?<!\\)\n', '\\n', json_str)
+            guide = json.loads(json_str)
     guide["published_at"] = date.today().isoformat()
     guide["status"] = "draft"
     guide["videos"] = [

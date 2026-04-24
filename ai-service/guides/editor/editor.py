@@ -50,16 +50,17 @@ def edit(guide: dict) -> dict:
   "body": "편집된 마크다운 본문"
 }}"""
 
+    import os
+    env = {k: v for k, v in os.environ.items() if k != "ANTHROPIC_API_KEY"}
     result = subprocess.run(
         ["claude", "-p", prompt],
         capture_output=True,
         text=True,
         timeout=180,
+        env=env,
     )
-
     if result.returncode != 0:
         raise RuntimeError(f"claude CLI 실패: {result.stderr}")
-
     output = result.stdout
     start = output.find("{")
     end = output.rfind("}") + 1
