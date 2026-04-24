@@ -107,6 +107,7 @@ export function LikeButton({ contentType, contentId }: LikeButtonProps) {
         </button>
       </div>
 
+      <span className="text-xs text-muted-foreground/50">마음에 드는 만큼 눌러주세요</span>
       {count > 0 && (
         <span className="text-xs text-muted-foreground/70">{count}개의 관심을 받았습니다</span>
       )}

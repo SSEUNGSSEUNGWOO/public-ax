@@ -1,110 +1,43 @@
 import { Hero } from "@/components/marketing/hero";
-import { ChampionCard } from "@/components/champion/champion-card";
-import { PortfolioCard } from "@/components/portfolio/portfolio-card";
-import { InsightCard } from "@/components/insights/insight-card";
 import { ProcWidget } from "@/components/marketing/proc-widget";
 import { JoinCta } from "@/components/marketing/join-cta";
 import { AboutSection } from "@/components/marketing/about-section";
 import { LinkButton } from "@/components/shared/link-button";
 import { NavCards } from "@/components/marketing/nav-cards";
-import { fetchUnsplashPhotos } from "@/lib/unsplash";
 import { getAllInsights } from "@/lib/insights";
+import { getAllGuides, GuideImage } from "@/lib/guides";
 import { getCountsForType } from "@/lib/counts";
+import { fetchAIBids } from "@/lib/g2b";
+import Link from "next/link";
 
-const champions = [
-  {
-    slug: "kim-minsoo",
-    name: "김민수",
-    title: "AI정책관",
-    affiliation: "행정안전부",
-    bio: "정부 AI 도입 가이드라인을 설계하고 10개 부처 AX 전환을 총괄",
-    yearAwarded: 2025,
-    domain: ["행정", "정책"],
-  },
-  {
-    slug: "lee-jihye",
-    name: "이지혜",
-    title: "데이터사이언스팀장",
-    affiliation: "서울디지털재단",
-    bio: "서울시 120 민원 AI 챗봇을 설계하여 응답 시간 70% 단축",
-    yearAwarded: 2025,
-    domain: ["행정", "AI챗봇"],
-  },
-  {
-    slug: "park-junhyeok",
-    name: "박준혁",
-    title: "CTO",
-    affiliation: "메디AI",
-    bio: "공공병원 의료영상 AI 판독 시스템을 구축하여 진단 정확도 95% 달성",
-    yearAwarded: 2024,
-    domain: ["의료", "영상AI"],
-  },
-];
+const CATEGORY_COLORS: Record<string, string> = {
+  "AI 기초": "text-blue-600 dark:text-blue-400",
+  "실무 활용": "text-emerald-600 dark:text-emerald-400",
+  "기술 심화": "text-violet-600 dark:text-violet-400",
+};
 
-const portfolioQueries = [
-  "chatbot artificial intelligence",
-  "medical AI xray hospital",
-  "legal document analysis",
-  "education technology learning",
-  "satellite remote sensing",
-  "data analytics fraud detection",
-];
-
-
-const portfolios = [
-  {
-    slug: "seoul-120-chatbot",
-    title: "서울시 120 AI 민원 챗봇",
-    summary: "RAG 기반 민원 상담 챗봇으로 월 50만 건 처리",
-    techStack: ["RAG", "LLM", "FastAPI"],
-    championName: "이지혜",
-  },
-  {
-    slug: "medi-ai-xray",
-    title: "공공병원 X-Ray AI 판독",
-    summary: "흉부 X-Ray 이상 소견 자동 판독 시스템",
-    techStack: ["Computer Vision", "PyTorch", "DICOM"],
-    championName: "박준혁",
-  },
-  {
-    slug: "moleg-doc-ai",
-    title: "법제처 법령 문서 AI 분석",
-    summary: "법령 개정안 자동 비교 및 영향 분석 시스템",
-    techStack: ["NLP", "문서AI", "Python"],
-    championName: "김민수",
-  },
-  {
-    slug: "education-tutor",
-    title: "교육부 AI 튜터 시범사업",
-    summary: "초등 수학 개인화 학습 AI 튜터",
-    techStack: ["LLM", "Adaptive Learning"],
-    championName: "정수연",
-  },
-  {
-    slug: "env-satellite-ai",
-    title: "환경부 위성영상 AI 모니터링",
-    summary: "불법 폐기물 투기 실시간 탐지",
-    techStack: ["Satellite", "Object Detection"],
-    championName: "최영호",
-  },
-  {
-    slug: "welfare-fraud-detect",
-    title: "복지부 부정수급 AI 탐지",
-    summary: "이상거래 패턴 분석으로 부정수급 예방",
-    techStack: ["Anomaly Detection", "ML"],
-    championName: "한소영",
-  },
-];
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [portfolioImages, allInsights, insightCounts] = await Promise.all([
-    fetchUnsplashPhotos(portfolioQueries),
+  const [allInsights, allGuides, insightCounts, guideCounts, aiBids] = await Promise.all([
     getAllInsights(),
+    getAllGuides(),
     getCountsForType("insight"),
+    getCountsForType("guide"),
+    fetchAIBids(),
   ]);
-  const recentInsights = allInsights.slice(0, 2);
+
+  const procTotalBudget = Math.round(
+    aiBids.reduce((sum, b) => sum + parseInt(b.asignBdgtAmt || b.presmptPrce || "0"), 0) / 100_000_000
+  );
+  const agencyCount: Record<string, number> = {};
+  for (const b of aiBids) {
+    if (b.ntceInsttNm) agencyCount[b.ntceInsttNm] = (agencyCount[b.ntceInsttNm] ?? 0) + 1;
+  }
+  const topAgency = Object.entries(agencyCount).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "-";
+  const todayInsight = allInsights[0] ?? null;
+  const recentGuides = allGuides.slice(0, 3);
 
   return (
     <>
@@ -114,58 +47,144 @@ export default async function Home() {
       <div className="mt-16" />
       <AboutSection
         insightCount={allInsights[0]?.crawled_count ?? 0}
-        championCount={champions.length}
-        portfolioCount={portfolios.length}
+        championCount={3}
+        portfolioCount={allGuides.length}
       />
 
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-bold">최근 인사이트</h2>
-            <LinkButton href="/insights" variant="ghost" size="sm">
-              전체 보기 &rarr;
-            </LinkButton>
+      {todayInsight && (
+        <section className="py-16">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-2xl font-bold">오늘의 인사이트</h2>
+              <LinkButton href="/insights" variant="ghost" size="sm">
+                전체 보기 &rarr;
+              </LinkButton>
+            </div>
+            <Link
+              href={`/insights/${todayInsight.slug}`}
+              className="group grid grid-cols-1 md:grid-cols-2 gap-0 rounded-2xl border bg-card overflow-hidden hover:shadow-lg transition-all duration-200"
+            >
+              {/* 왼쪽: 커버 이미지 + 기본 정보 */}
+              <div className="relative overflow-hidden">
+                {todayInsight.image_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={todayInsight.image_url}
+                    alt={todayInsight.title}
+                    className="w-full h-64 md:h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
+                  />
+                ) : (
+                  <div className="w-full h-64 md:h-full bg-muted flex items-center justify-center">
+                    <span className="text-muted-foreground/30 text-sm">Daily Report</span>
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                <div className="absolute bottom-0 left-0 p-5">
+                  <span className="text-[10px] font-semibold uppercase tracking-widest text-white/70 block mb-1">Daily Report</span>
+                  <h3 className="text-white font-bold text-lg leading-snug line-clamp-3 group-hover:text-primary transition-colors">
+                    {todayInsight.title}
+                  </h3>
+                </div>
+              </div>
+
+              {/* 오른쪽: 핵심 인사이트 제목 목록 */}
+              <div className="p-6 flex flex-col group-hover:bg-primary/5 transition-colors duration-200">
+                <div className="flex flex-col justify-center flex-1 py-4">
+                  <p className="text-sm font-semibold text-muted-foreground mb-4">이번 리포트 핵심 주제</p>
+                  <ul className="flex flex-col gap-3">
+                    {todayInsight.body
+                      .split("\n")
+                      .flatMap((line) => {
+                        const h = line.match(/^#{2,3}\s+(.+)/);
+                        if (h) return [h[1].trim()];
+                        const numbered = line.match(/^\d+\.\s+#{2,3}\s+(.+)/);
+                        if (numbered) return [numbered[1].trim()];
+                        return [];
+                      })
+                      .filter((t: string) => !["핵심인사이트", "핵심 인사이트", "공공 AI 시사점", "공공AI 시사점", "오늘의 인사이트"].some((kw) => t.includes(kw)))
+                      .slice(0, 7)
+                      .map((title: string, i: number) => (
+                        <li key={i} className="flex items-start gap-2.5 text-sm">
+                          <span className="mt-1 w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
+                          <span className="text-foreground/80 leading-snug text-base">{title}</span>
+                        </li>
+                      ))}
+                  </ul>
+                </div>
+                <div className="mt-4 pt-4 border-t flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-muted-foreground/60">케이브레인 AI퍼블릭센터 · 장승우</span>
+                    <span className="text-xs text-muted-foreground/50">조회 {todayInsight.views ?? 0}</span>
+                    <span className="flex items-center gap-1 text-xs text-muted-foreground/50">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" className="text-red-400">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                      </svg>
+                      {insightCounts[todayInsight.slug]?.likes ?? 0}
+                    </span>
+                  </div>
+                  <span className="text-xs font-medium text-primary group-hover:underline">전체 읽기 →</span>
+                </div>
+              </div>
+            </Link>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {recentInsights.map((insight) => (
-              <InsightCard
-                key={insight.slug}
-                slug={insight.slug}
-                title={insight.title}
-                publishedAt={insight.published_at}
-                coverImage={insight.image_url ?? undefined}
-                likeCount={insightCounts[insight.slug]?.likes ?? 0}
-                commentCount={insightCounts[insight.slug]?.comments ?? 0}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       <section className="py-16 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-bold">공공 AX 포트폴리오</h2>
-            <LinkButton href="/portfolio" variant="ghost" size="sm">
+            <h2 className="text-2xl font-bold">가이드</h2>
+            <LinkButton href="/guide" variant="ghost" size="sm">
               전체 보기 &rarr;
             </LinkButton>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {portfolios.slice(0, 3).map((portfolio, i) => (
-              <PortfolioCard
-                key={portfolio.slug}
-                {...portfolio}
-                coverImage={portfolioImages[i] ?? undefined}
-              />
-            ))}
+            {recentGuides.map((guide) => {
+              const cover = (guide.images ?? []).find((img: GuideImage) => img.type === "cover");
+              const colorClass = CATEGORY_COLORS[guide.category] ?? "text-primary";
+              return (
+                <Link
+                  key={guide.slug}
+                  href={`/guide/${guide.slug}`}
+                  className="group flex flex-col rounded-2xl border bg-card overflow-hidden hover:shadow-lg hover:bg-primary/10 transition-all duration-200 hover:-translate-y-1"
+                >
+                  <div className="relative w-full aspect-video bg-muted overflow-hidden">
+                    {cover?.url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={cover.url} alt={guide.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <span className={`text-xs font-semibold uppercase tracking-widest ${colorClass} opacity-40`}>{guide.category}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-5 flex flex-col flex-1">
+                    <span className={`text-[10px] font-semibold uppercase tracking-widest mb-2 ${colorClass}`}>{guide.category}</span>
+                    <h3 className="font-semibold text-sm leading-snug group-hover:text-primary transition-colors line-clamp-2 mb-1">{guide.title}</h3>
+                    <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{guide.summary}</p>
+                    <div className="flex items-center gap-2 mt-auto">
+                      <span className="text-[10px] text-muted-foreground/50">조회 {guide.views ?? 0}</span>
+                      <span className="text-[10px] text-muted-foreground/30">·</span>
+                      <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground/50">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" className="text-red-400">
+                          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                        </svg>
+                        {guideCounts[guide.slug]?.likes ?? 0}
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
 
       <ProcWidget
-        totalTenders={47}
-        totalBudget={283}
-        topAgency="행정안전부"
+        totalTenders={aiBids.length}
+        totalBudget={procTotalBudget}
+        topAgency={topAgency}
+        recentBids={aiBids}
       />
 
       <JoinCta />
