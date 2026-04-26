@@ -94,6 +94,22 @@ public-ax/
 - 폰트: 한글 Pretendard 없음, Inter(`--font-sans`) + Playfair Display(`--font-display`)
 - shadcn/ui 컴포넌트는 `components/ui/`에 위치, `cn()` 유틸은 `lib/utils.ts`
 
+## 커스텀 커맨드
+
+### /guide-publish
+사용자가 `/guide-publish`라고 하면 아래 순서로 실행:
+1. `cd ai-service && python3 guides/publish.py list` 실행해서 draft/published 목록 출력
+2. 사용자에게 발행할 슬러그 선택 요청
+3. `python3 guides/publish.py <slug>` 실행
+4. `python3 shared/upload_to_supabase.py` 실행해서 Supabase 반영
+5. 완료 확인
+
+### /insight-publish
+사용자가 `/insight-publish`라고 하면 아래 순서로 실행:
+1. `cd ai-service && python3 insights/run.py` 로 오늘 인사이트 파이프라인 실행
+2. 완료 후 결과(제목, 평가 점수) 출력
+3. Supabase 업로드 확인
+
 ## 폴더 구조 설계 원칙
 
 코드 작성 전 폴더 구조를 먼저 설계하고 사용자와 합의한다.
