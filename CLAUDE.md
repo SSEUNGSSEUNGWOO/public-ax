@@ -96,17 +96,18 @@ public-ax/
 
 ## 커스텀 커맨드
 
-### /guide-publish
-사용자가 `/guide-publish`라고 하면 아래 순서로 실행:
-1. `cd ai-service && python3 guides/publish.py list` 실행해서 draft/published 목록 출력
-2. 사용자에게 발행할 슬러그 선택 요청
-3. `python3 guides/publish.py <slug>` 실행
-4. `python3 shared/upload_to_supabase.py` 실행해서 Supabase 반영
-5. 완료 확인
+### 가이드 발행 워크플로우
+사용자가 "가이드 발행해줘"라고 하면:
+1. 현재 published 목록 확인 (`python3 guides/publish.py list`)
+2. 아직 없는 주제 중 공공기관 실무자에게 유용한 주제 3~5개 추천
+3. 사용자가 선택하면 `python3 guides/run.py "주제"` 실행
+4. 완료 후 이미지 프롬프트 출력 (COVER, DIAGRAM 등)
+5. 사용자가 이미지 생성해서 전달하면 지정 경로에 저장
+6. `python3 guides/publish.py <slug>` → `python3 shared/upload_to_supabase.py` 실행
 
-### /insight-publish
-사용자가 `/insight-publish`라고 하면 아래 순서로 실행:
-1. `cd ai-service && python3 insights/run.py` 로 오늘 인사이트 파이프라인 실행
+### 인사이트 발행 워크플로우
+사용자가 "인사이트 발행해줘" / "인사이트 돌려줘"라고 하면:
+1. `cd ai-service && python3 insights/run.py` 실행
 2. 완료 후 결과(제목, 평가 점수) 출력
 3. Supabase 업로드 확인
 
