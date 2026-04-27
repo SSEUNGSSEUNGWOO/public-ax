@@ -1,5 +1,5 @@
 import { PageHeader } from "@/components/shared/page-header";
-import { ProcList } from "@/components/proc/proc-list";
+import { ProcTabs } from "@/components/proc/proc-tabs";
 import { fetchAIBids, fetchThisMonthCount } from "@/lib/g2b";
 
 export const dynamic = "force-dynamic";
@@ -42,7 +42,7 @@ export default async function ProcPage() {
         </div>
       </div>
       <div className="container mx-auto px-4 py-12 max-w-5xl">
-        <ProcList
+        <ProcTabs
           bids={bids}
           stats={{
             active: bids.length,
