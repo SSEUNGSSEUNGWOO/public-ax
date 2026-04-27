@@ -1,3 +1,4 @@
+lookback_days: 3
 max_per_source: 5
 sources:
   - name: "OpenAI Blog"

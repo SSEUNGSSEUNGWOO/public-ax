@@ -1,9 +1,37 @@
 import json
+import re
 import subprocess
 from datetime import date
 
 from shared.storage import load_raw_items, save_draft
 from writer.prompts import CLUSTER_PROMPT_TEMPLATE, FEEDBACK_SECTION_TEMPLATE, SYSTEM_PROMPT, WRITER_PROMPT_TEMPLATE
+
+
+URL_LINK_PATTERN = re.compile(r'\[([^\]]+)\]\((https?://[^\)]+)\)')
+
+
+def build_allowed_urls_section(items: list[dict]) -> str:
+    lines = ["## 허용 URL 목록 (이 안에서만 출처 사용)"]
+    for item in items:
+        url = item.get("url", "").strip()
+        if not url:
+            continue
+        lines.append(f"- [{item['source_name']}] {item['title']} → {url}")
+    return "\n".join(lines)
+
+
+def sanitize_urls(draft: str, allowed_urls: set[str]) -> tuple[str, list[str]]:
+    removed: list[str] = []
+
+    def replace(match: re.Match) -> str:
+        text, url = match.group(1), match.group(2)
+        if url in allowed_urls:
+            return match.group(0)
+        removed.append(url)
+        return text
+
+    cleaned = URL_LINK_PATTERN.sub(replace, draft)
+    return cleaned, removed
 
 
 def run_claude(prompt: str, timeout: int = 180) -> str:
@@ -67,12 +95,20 @@ def write_report(items: list[dict], clusters: list[dict], feedback: str = "") ->
         FEEDBACK_SECTION_TEMPLATE.format(feedback=feedback)
         if feedback else ""
     )
+    allowed_urls_section = build_allowed_urls_section(items)
     prompt = SYSTEM_PROMPT + "\n\n" + WRITER_PROMPT_TEMPLATE.format(
         raw_items_text=raw_items_text,
+        allowed_urls_section=allowed_urls_section,
         date=date.today().isoformat(),
         feedback_section=feedback_section,
     )
-    return run_claude(prompt, timeout=300)
+    draft = run_claude(prompt, timeout=300)
+
+    allowed_urls = {item["url"].strip() for item in items if item.get("url")}
+    cleaned, removed = sanitize_urls(draft, allowed_urls)
+    if removed:
+        print(f"[writer] 화이트리스트 외 URL {len(removed)}개 자동 제거: {removed}")
+    return cleaned
 
 
 def run(feedback: str = "") -> str:

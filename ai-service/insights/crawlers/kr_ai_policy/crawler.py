@@ -1,7 +1,8 @@
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urljoin
+from zoneinfo import ZoneInfo
 
 import feedparser
 import requests
@@ -12,6 +13,11 @@ from shared.models import RawItem
 from shared.storage import append_raw_items, load_seen_hashes, save_seen_hashes
 from shared.utils import yesterday_kst
 
+
+def recent_dates_kst(days: int) -> set[str]:
+    today_kst = datetime.now(ZoneInfo("Asia/Seoul")).date()
+    return {(today_kst - timedelta(days=i)).isoformat() for i in range(1, days + 1)}
+
 HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; PublicAX-Crawler/1.0)"}
 
 
@@ -20,7 +26,7 @@ def load_config() -> dict:
         return yaml.safe_load(f)
 
 
-def collect_rss(source: dict, seen: set, yesterday: str = "") -> list[RawItem]:
+def collect_rss(source: dict, seen: set, target_dates: set[str], fallback_pub: str) -> list[RawItem]:
     try:
         resp = requests.get(source["url"], headers=HEADERS, timeout=15)
         feed = feedparser.parse(resp.content)
@@ -41,9 +47,9 @@ def collect_rss(source: dict, seen: set, yesterday: str = "") -> list[RawItem]:
         published_parsed = getattr(entry, "published_parsed", None)
         pub_str = (
             datetime(*published_parsed[:6], tzinfo=timezone.utc).strftime("%Y-%m-%d")
-            if published_parsed else yesterday
+            if published_parsed else fallback_pub
         )
-        if pub_str != yesterday:
+        if pub_str not in target_dates:
             continue
         items.append(RawItem(
             source_id="kr_ai_policy",
@@ -100,6 +106,9 @@ def collect_html(source: dict, seen: set, yesterday: str = "") -> list[RawItem]:
 def run() -> int:
     config = load_config()
     yesterday = yesterday_kst()
+    lookback_days = config.get("lookback_days", 3)
+    target_dates = recent_dates_kst(lookback_days)
+    fallback_pub = max(target_dates)
     seen = load_seen_hashes("kr_ai_policy")
     items = []
 
@@ -107,7 +116,7 @@ def run() -> int:
         if not source.get("enabled", True):
             continue
         if source["type"] == "rss":
-            items.extend(collect_rss(source, seen, yesterday))
+            items.extend(collect_rss(source, seen, target_dates, fallback_pub))
         elif source["type"] == "html":
             items.extend(collect_html(source, seen, yesterday))
         time.sleep(config.get("request_delay_seconds", 1))
