@@ -1,13 +1,26 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { BidItem, AI_KEYWORDS, AiKeyword, MonthStat } from "@/lib/g2b";
+import { BidItem, AI_CATEGORIES, AiCategory, MonthStat } from "@/lib/g2b";
 import { cn } from "@/lib/utils";
 
 const BIZ_COLORS: Record<string, string> = {
   "용역": "bg-blue-500/10 text-blue-600 dark:text-blue-400",
   "물품": "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
   "공사": "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+};
+
+const CATEGORY_COLORS: Record<string, string> = {
+  "LLM/생성형 AI": "bg-violet-500/10 text-violet-600 dark:text-violet-400",
+  "RAG/지식 검색": "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+  "컴퓨터 비전": "bg-rose-500/10 text-rose-600 dark:text-rose-400",
+  "음성/STT": "bg-pink-500/10 text-pink-600 dark:text-pink-400",
+  "빅데이터 분석": "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400",
+  "AI 인프라/MLOps": "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400",
+  "AI 정책/연구용역": "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+  "AI 교육/컨설팅": "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+  "디지털 전환": "bg-slate-500/10 text-slate-600 dark:text-slate-400",
+  "기타 AI": "bg-muted text-muted-foreground",
 };
 
 function getDday(dateStr: string, timeStr?: string): number {
@@ -88,7 +101,7 @@ export function ProcList({ bids, stats }: ProcListProps) {
       .catch(() => {})
       .finally(() => setStatsLoading(false));
   }, []);
-  const [activeKeyword, setActiveKeyword] = useState<AiKeyword | null>(null);
+  const [activeCategory, setActiveCategory] = useState<AiCategory | null>(null);
   const [sort, setSort] = useState<SortKey>("dday");
   const [query, setQuery] = useState("");
 
@@ -96,7 +109,7 @@ export function ProcList({ bids, stats }: ProcListProps) {
 
   const filtered = useMemo(() => {
     let list = bids;
-    if (activeKeyword) list = list.filter((b) => b.bidNtceNm?.includes(activeKeyword));
+    if (activeCategory) list = list.filter((b) => b.aiCategory === activeCategory);
     if (q) list = list.filter((b) => b.bidNtceNm?.toLowerCase().includes(q) || b.ntceInsttNm?.toLowerCase().includes(q));
     return list.slice().sort((a, b) => {
       if (sort === "dday") {
@@ -110,7 +123,7 @@ export function ProcList({ bids, stats }: ProcListProps) {
       if (sort === "budget") return parseInt(b.asignBdgtAmt ?? "0") - parseInt(a.asignBdgtAmt ?? "0");
       return 0;
     });
-  }, [bids, activeKeyword, sort, q]);
+  }, [bids, activeCategory, sort, q]);
 
   return (
     <div>
@@ -184,34 +197,34 @@ export function ProcList({ bids, stats }: ProcListProps) {
         </div>
       </div>
 
-      {/* 키워드 탭 */}
+      {/* 카테고리 탭 */}
       <div className="flex flex-wrap gap-2 mb-6">
         <button
-          onClick={() => setActiveKeyword(null)}
+          onClick={() => setActiveCategory(null)}
           className={cn(
             "text-xs font-medium px-3 py-1.5 rounded-full border transition-all duration-150",
-            activeKeyword === null
+            activeCategory === null
               ? "bg-foreground text-background border-foreground"
               : "bg-background text-muted-foreground border-border hover:border-foreground/40"
           )}
         >
           전체 <span className="opacity-60 ml-0.5">{bids.length}</span>
         </button>
-        {AI_KEYWORDS.map((kw) => {
-          const count = bids.filter((b) => b.bidNtceNm?.includes(kw)).length;
+        {AI_CATEGORIES.map((cat) => {
+          const count = bids.filter((b) => b.aiCategory === cat).length;
           if (count === 0) return null;
           return (
             <button
-              key={kw}
-              onClick={() => setActiveKeyword(activeKeyword === kw ? null : kw)}
+              key={cat}
+              onClick={() => setActiveCategory(activeCategory === cat ? null : cat)}
               className={cn(
                 "text-xs font-medium px-3 py-1.5 rounded-full border transition-all duration-150",
-                activeKeyword === kw
+                activeCategory === cat
                   ? "bg-primary text-primary-foreground border-transparent"
                   : "bg-background text-muted-foreground border-border hover:border-foreground/40"
               )}
             >
-              {kw} <span className="opacity-60 ml-0.5">{count}</span>
+              {cat} <span className="opacity-60 ml-0.5">{count}</span>
             </button>
           );
         })}
@@ -242,6 +255,14 @@ export function ProcList({ bids, stats }: ProcListProps) {
                     <span className={cn("text-[10px] font-medium px-2 py-0.5 rounded-full", bizColor)}>
                       {bid.bsnsDivNm || "기타"}
                     </span>
+                    {bid.aiCategory && bid.aiCategory !== "분류실패" && (
+                      <span className={cn(
+                        "text-[10px] font-medium px-2 py-0.5 rounded-full",
+                        CATEGORY_COLORS[bid.aiCategory] ?? "bg-muted text-muted-foreground"
+                      )}>
+                        {bid.aiCategory}
+                      </span>
+                    )}
                     <span className="text-xs text-muted-foreground/60">{bid.ntceInsttNm}</span>
                   </div>
                   <h3 className="text-sm font-semibold leading-snug group-hover:text-primary transition-colors line-clamp-2 mb-1">
