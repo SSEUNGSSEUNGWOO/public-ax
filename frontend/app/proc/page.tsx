@@ -1,6 +1,6 @@
 import { PageHeader } from "@/components/shared/page-header";
 import { ProcList } from "@/components/proc/proc-list";
-import { fetchAIBids, fetchMonthlyStats } from "@/lib/g2b";
+import { fetchAIBids, fetchThisMonthCount } from "@/lib/g2b";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +15,10 @@ export const metadata = {
 };
 
 export default async function ProcPage() {
-  const bids = await fetchAIBids();
+  const [bids, thisMonthCount] = await Promise.all([
+    fetchAIBids(),
+    fetchThisMonthCount(),
+  ]);
 
   const now = new Date();
   const urgentCount = bids.filter((b) => {
@@ -26,12 +29,6 @@ export default async function ProcPage() {
   }).length;
 
   const totalBudget = bids.reduce((sum, b) => sum + parseInt(b.asignBdgtAmt || b.presmptPrce || "0"), 0);
-
-  const agencyCount: Record<string, number> = {};
-  for (const b of bids) {
-    if (b.ntceInsttNm) agencyCount[b.ntceInsttNm] = (agencyCount[b.ntceInsttNm] ?? 0) + 1;
-  }
-  const topAgency = Object.entries(agencyCount).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "-";
 
   return (
     <div>
@@ -48,10 +45,10 @@ export default async function ProcPage() {
         <ProcList
           bids={bids}
           stats={{
-            total: bids.length,
+            active: bids.length,
+            thisMonth: thisMonthCount,
             totalBudget,
             urgent: urgentCount,
-            topAgency,
           }}
         />
       </div>

@@ -43,10 +43,10 @@ type SortKey = "dday" | "latest" | "budget";
 interface ProcListProps {
   bids: BidItem[];
   stats: {
-    total: number;
+    active: number;
+    thisMonth: number;
     totalBudget: number;
     urgent: number;
-    topAgency: string;
   };
 }
 
@@ -117,10 +117,10 @@ export function ProcList({ bids, stats }: ProcListProps) {
       {/* 통계 카드 */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
         {[
-          { label: "이번달 AI 공고", value: `${stats.total}건`, sub: "나라장터 기준" },
-          { label: "총 예산 규모", value: formatBudget(String(stats.totalBudget)), sub: "배정예산 합계" },
+          { label: "참여 가능", value: `${stats.active}건`, sub: "마감 미경과 공고" },
+          { label: "이번달 신규", value: `${stats.thisMonth}건`, sub: "이번달 등록" },
           { label: "마감 임박", value: `${stats.urgent}건`, sub: "D-7 이내", urgent: true },
-          { label: "최다 발주기관", value: stats.topAgency, sub: "공고 수 기준" },
+          { label: "총 사업 예산", value: formatBudget(String(stats.totalBudget)), sub: "참여 가능 합계" },
         ].map((s) => (
           <div key={s.label} className={cn(
             "rounded-2xl border bg-card p-5",
