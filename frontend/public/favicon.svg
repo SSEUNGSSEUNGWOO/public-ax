@@ -1,7 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="32" height="32" fill="none">
-  <path d="M18 26 L50 50 L18 74" stroke="#0A0A0B" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M50 26 L82 50 L50 74" stroke="oklch(0.68 0.18 50)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="18" cy="26" r="8" fill="#0A0A0B"/>
-  <circle cx="18" cy="74" r="8" fill="#0A0A0B"/>
-  <circle cx="82" cy="50" r="10" fill="oklch(0.68 0.18 50)"/>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none">
+  <rect width="32" height="32" rx="6" fill="#0A0A0B"></rect>
+  <path d="M11 6 L7 6 L7 26 L11 26" stroke="#fbfaf7" stroke-width="2.4" stroke-linecap="square" stroke-linejoin="miter" fill="none"></path>
+  <path d="M21 6 L25 6 L25 26 L21 26" stroke="#fbfaf7" stroke-width="2.4" stroke-linecap="square" stroke-linejoin="miter" fill="none"></path>
+  <rect x="14.6" y="11" width="2.8" height="2.8" fill="#fbfaf7"></rect>
+  <rect x="14.6" y="14.6" width="2.8" height="2.8" fill="#fbfaf7"></rect>
+  <rect x="14.6" y="18.2" width="2.8" height="2.8" fill="oklch(0.68 0.18 50)"></rect>
 </svg>

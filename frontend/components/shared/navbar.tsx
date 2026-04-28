@@ -35,13 +35,13 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b-2 border-primary/70 bg-background/80 backdrop-blur-lg">
-      <div className="container mx-auto flex h-14 items-center justify-between px-4">
+      <div className="container mx-auto flex h-[60px] items-center justify-between px-4">
         <Link href="/" className="flex items-center">
           <Image
             src="/logo-color.svg"
             alt="PUBLIC-AI"
-            width={130}
-            height={35}
+            width={170}
+            height={49}
             priority
           />
         </Link>

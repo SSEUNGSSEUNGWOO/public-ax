@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="420" height="120" viewBox="0 0 420 120" fill="none">
-  <rect width="420" height="120" fill="#0A0A0B"></rect>
-  <g transform="translate(50 28)">
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="200" viewBox="0 0 240 200" fill="none">
+  <rect width="240" height="200" fill="#0A0A0B"></rect>
+  <g transform="translate(88 28)">
     <path d="M22 8 L12 8 L12 56 L22 56" stroke="#fbfaf7" stroke-width="6" stroke-linecap="square" stroke-linejoin="miter" fill="none"></path>
     <path d="M42 8 L52 8 L52 56 L42 56" stroke="#fbfaf7" stroke-width="6" stroke-linecap="square" stroke-linejoin="miter" fill="none"></path>
     <rect x="29" y="20" width="6" height="6" fill="#fbfaf7"></rect>
     <rect x="29" y="29" width="6" height="6" fill="#fbfaf7"></rect>
     <rect x="29" y="38" width="6" height="6" fill="oklch(0.68 0.18 50)"></rect>
   </g>
-  <text x="138" y="62" dominant-baseline="central" font-family="&#39;Space Grotesk&#39;, system-ui, sans-serif" font-weight="600" font-size="44" letter-spacing="-0.02em" fill="#fbfaf7">PUBLIC<tspan fill="#fbfaf7" opacity="0.4">-</tspan><tspan fill="oklch(0.68 0.18 50)">AI</tspan></text>
+  <text x="120" y="156" text-anchor="middle" font-family="&#39;Space Grotesk&#39;, system-ui, sans-serif" font-weight="600" font-size="32" letter-spacing="-0.02em" fill="#fbfaf7">PUBLIC<tspan fill="#fbfaf7" opacity="0.4">-</tspan><tspan fill="oklch(0.68 0.18 50)">AI</tspan></text>
 </svg>
