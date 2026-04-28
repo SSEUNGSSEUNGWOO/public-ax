@@ -17,11 +17,11 @@ const marqueeWords = [
 
 interface PillarStats {
   insightCount: number;
-  championCount: number;
-  portfolioCount: number;
+  guideCount: number;
+  procCount: number;
 }
 
-export function AboutSection({ insightCount, championCount, portfolioCount }: PillarStats) {
+export function AboutSection({ insightCount, guideCount, procCount }: PillarStats) {
   const pillars = [
     {
       no: "01",
@@ -35,23 +35,23 @@ export function AboutSection({ insightCount, championCount, portfolioCount }: Pi
     },
     {
       no: "02",
-      tag: "PEOPLE · 사람",
-      title: "AX 챔피언",
-      sub: "Hall of Fame · 실무자 인증",
-      desc: "공공기관 AI 전환을 이끈 사람을 기록합니다. 추상이 아니라 이름과 얼굴로 남기는 아카이브.",
-      kpi: { n: championCount.toLocaleString(), l: "인증된 챔피언" },
-      cta: "명예의 전당",
-      href: "/champions",
+      tag: "GUIDE · 가이드",
+      title: "AI 도입 가이드",
+      sub: "주제별 단계 가이드 · 실무 체크리스트",
+      desc: "RAG·Agent·LLM 같은 핵심 주제를 공공기관 도입 관점에서 단계별로 정리. 실무 의사결정에 바로 쓸 수 있는 1차 자료.",
+      kpi: { n: guideCount.toLocaleString(), l: "발행된 가이드" },
+      cta: "가이드 보기",
+      href: "/guide",
     },
     {
       no: "03",
-      tag: "CASES · 사례",
-      title: "도입 사례",
-      sub: "AX 포트폴리오 · 현장 기반",
-      desc: "실제 배포된 시스템을 기술 스택·성과·실패·교훈까지 정직하게 정리. 공공 도입 담당자의 1차 참고자료.",
-      kpi: { n: portfolioCount.toLocaleString(), l: "아카이브 사례" },
-      cta: "포트폴리오",
-      href: "/portfolio",
+      tag: "PROC · 발주",
+      title: "정부 AI 공고",
+      sub: "나라장터 · 실시간 모니터링",
+      desc: "AI·디지털전환·빅데이터 관련 공공 입찰을 자동 분류·집계. 마감 임박순 정렬과 카테고리·예산 필터로 입찰 참여를 가속화.",
+      kpi: { n: procCount.toLocaleString(), l: "활성 공고" },
+      cta: "공고 보기",
+      href: "/proc",
     },
   ];
 

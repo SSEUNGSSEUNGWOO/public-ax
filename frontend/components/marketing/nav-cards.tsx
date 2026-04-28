@@ -10,18 +10,18 @@ const cards = [
     image: "/card-insights.jpg",
   },
   {
-    href: "/champions",
-    title: "AI Champion",
-    desc: "공공 AI를 이끄는 사람들",
-    badge: "127명+",
-    image: "/card-champions.jpg",
+    href: "/guide",
+    title: "Guide",
+    desc: "공공 AI 도입 실무 가이드",
+    badge: "단계별 가이드",
+    image: "/card-portfolio.jpg",
   },
   {
-    href: "/portfolio",
-    title: "Portfolio",
-    desc: "현장에서 만들어진 AI 작품들",
-    badge: "340개+",
-    image: "/card-portfolio.jpg",
+    href: "/proc",
+    title: "K-AI Proc",
+    desc: "정부 AI 발주 실시간 모니터링",
+    badge: "나라장터",
+    image: "/card-champions.jpg",
   },
 ];
 

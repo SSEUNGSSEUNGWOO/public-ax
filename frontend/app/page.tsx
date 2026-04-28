@@ -57,8 +57,8 @@ export default async function Home() {
       <div className="mt-16" />
       <AboutSection
         insightCount={allInsights[0]?.crawled_count ?? 0}
-        championCount={3}
-        portfolioCount={allGuides.length}
+        guideCount={allGuides.length}
+        procCount={aiBids.length}
       />
 
       {todayInsight && (

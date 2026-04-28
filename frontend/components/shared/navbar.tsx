@@ -12,8 +12,6 @@ const navItems = [
   { label: "소개", href: "/about" },
   { label: "인사이트", href: "/insights" },
   { label: "가이드", href: "/guide" },
-  { label: "AI 챔피언", href: "/champions" },
-  { label: "포트폴리오", href: "/portfolio" },
   { label: "정부 AI 공고", href: "/proc" },
   { label: "커뮤니티", href: "/join" },
 ];
