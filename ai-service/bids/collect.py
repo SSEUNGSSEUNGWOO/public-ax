@@ -18,7 +18,23 @@ from shared.supabase_client import get_client
 G2B_KEY = os.environ.get("G2B_API_KEY", "3393eec4c01364de879d496e848da7a9a067555abbff33f38f6293502956fc71")
 BASE = "https://apis.data.go.kr/1230000/ao/PubDataOpnStdService"
 
-AI_KEYWORDS = ["AI", "인공지능", "빅데이터", "머신러닝", "딥러닝", "자연어처리", "LLM", "챗봇", "지능형", "디지털전환", "클라우드"]
+AI_KEYWORDS = [
+    # 핵심 AI 용어
+    "AI", "인공지능", "머신러닝", "딥러닝", "자연어처리", "LLM", "챗봇",
+    "생성형", "에이전트",
+    # 데이터/빅데이터
+    "빅데이터", "데이터", "데이터셋", "학습데이터", "데이터플랫폼",
+    # 인프라/플랫폼
+    "클라우드", "AI플랫폼", "MLOps", "AIOps",
+    # 분야
+    "컴퓨터비전", "객체감지", "영상분석", "영상인식", "음성인식",
+    "RAG", "NLP",
+    # 정책/디지털
+    "지능형", "지능화", "지능정보", "디지털전환", "디지털", "스마트",
+    "정보화", "자동화", "전자정부",
+    # 약어
+    "AX", "DX", "ML", "GenAI",
+]
 
 
 def is_ai_bid(name: str) -> bool:

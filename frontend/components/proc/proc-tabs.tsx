@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { BidItem } from "@/lib/g2b";
 import { ProcList } from "./proc-list";
 import { RecommendTab } from "./recommend-tab";
+import { DashboardTab } from "./dashboard-tab";
 import { cn } from "@/lib/utils";
 
 const TABS = [
@@ -61,11 +62,7 @@ export function ProcTabs({ bids, stats }: ProcTabsProps) {
 
       {tab === "bids" && <ProcList bids={bids} stats={stats} />}
       {tab === "recommend" && <RecommendTab />}
-      {tab === "dashboard" && (
-        <div className="text-center py-20 text-muted-foreground">
-          <p className="text-sm">대시보드 탭은 곧 출시됩니다.</p>
-        </div>
-      )}
+      {tab === "dashboard" && <DashboardTab />}
       {tab === "analysis" && (
         <div className="text-center py-20 text-muted-foreground">
           <p className="text-sm">분석 탭은 곧 출시됩니다.</p>
