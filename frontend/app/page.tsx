@@ -47,6 +47,7 @@ export default async function Home() {
   }
   const topAgency = Object.entries(agencyCount).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "-";
   const todayInsight = allInsights[0] ?? null;
+  const recentInsights = allInsights.slice(1, 3);
   const recentGuides = allGuides.slice(0, 3);
 
   return (
@@ -136,6 +137,40 @@ export default async function Home() {
                 </div>
               </div>
             </Link>
+
+            {recentInsights.length > 0 && (
+              <div className="mt-10">
+                <div className="flex items-baseline justify-between mb-3 px-1">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+                    Daily Digest · 어제·그제
+                  </span>
+                </div>
+                <ul className="border-y divide-y">
+                  {recentInsights.map((insight) => {
+                    const d = new Date(insight.published_at);
+                    const dateStr = `${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
+                    return (
+                      <li key={insight.slug}>
+                        <Link
+                          href={`/insights/${insight.slug}`}
+                          className="group flex items-center gap-5 py-3.5 px-2 hover:bg-muted/40 transition-colors"
+                        >
+                          <span className="font-mono text-[11px] text-muted-foreground tabular-nums w-12 flex-shrink-0">
+                            {dateStr}
+                          </span>
+                          <span className="text-sm text-foreground line-clamp-1 flex-1 group-hover:text-primary transition-colors">
+                            {insight.title}
+                          </span>
+                          <span className="text-muted-foreground/50 group-hover:text-primary text-sm transition-all flex-shrink-0">
+                            →
+                          </span>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
           </div>
         </section>
       )}

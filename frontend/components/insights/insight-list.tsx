@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { Insight } from "@/lib/insights";
 import { ContentCounts } from "@/lib/counts";
@@ -158,14 +158,13 @@ function formatMonth(dateStr: string) {
   return `${d.getFullYear()}년 ${d.getMonth() + 1}월`;
 }
 
-const PAGE_SIZE = 8;
+const PAGE_SIZE = 6;
 
 export function InsightList({ insights, counts }: InsightListProps) {
   const [view, setView] = useState<"list" | "calendar">("list");
   const [activeMonth, setActiveMonth] = useState<string | null>(null);
   const [query, setQuery] = useState("");
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
-  const sentinelRef = useRef<HTMLDivElement>(null);
+  const [page, setPage] = useState(1);
 
   const months = useMemo(() => {
     const seen = new Set<string>();
@@ -184,27 +183,11 @@ export function InsightList({ insights, counts }: InsightListProps) {
     return true;
   });
 
-  // 필터/검색 변경 시 초기화
-  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [activeMonth, query]);
+  // 필터/검색 변경 시 첫 페이지로
+  useEffect(() => { setPage(1); }, [activeMonth, query]);
 
-  // IntersectionObserver로 무한 스크롤
-  const handleObserver = useCallback((entries: IntersectionObserverEntry[]) => {
-    if (entries[0].isIntersecting) {
-      setVisibleCount((c) => Math.min(c + PAGE_SIZE, filtered.length));
-    }
-  }, [filtered.length]);
-
-  useEffect(() => {
-    const el = sentinelRef.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(handleObserver, { threshold: 0.1 });
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [handleObserver]);
-
-  const visible = filtered.slice(0, visibleCount);
+  const visible = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   const [latest, ...rest] = visible;
-  const hasMore = visibleCount < filtered.length;
 
   return (
     <div>
@@ -366,17 +349,81 @@ export function InsightList({ insights, counts }: InsightListProps) {
                 </>
               )}
 
-              {/* 무한 스크롤 sentinel */}
-              <div ref={sentinelRef} className="h-4" />
-              {hasMore && (
-                <div className="flex justify-center py-6">
-                  <div className="w-5 h-5 border-2 border-muted-foreground/30 border-t-primary rounded-full animate-spin" />
-                </div>
-              )}
+              <Pagination
+                page={page}
+                total={filtered.length}
+                pageSize={PAGE_SIZE}
+                onChange={(p) => {
+                  setPage(p);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+              />
             </>
           )}
         </>
       )}
+    </div>
+  );
+}
+
+function Pagination({
+  page,
+  total,
+  pageSize,
+  onChange,
+}: {
+  page: number;
+  total: number;
+  pageSize: number;
+  onChange: (p: number) => void;
+}) {
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  if (totalPages <= 1) return null;
+
+  const pages: (number | "...")[] = [];
+  const window = 2;
+  pages.push(1);
+  if (page - window > 2) pages.push("...");
+  for (let i = Math.max(2, page - window); i <= Math.min(totalPages - 1, page + window); i++) {
+    pages.push(i);
+  }
+  if (page + window < totalPages - 1) pages.push("...");
+  if (totalPages > 1) pages.push(totalPages);
+
+  return (
+    <div className="mt-10 flex items-center justify-center gap-1.5">
+      <button
+        onClick={() => onChange(Math.max(1, page - 1))}
+        disabled={page === 1}
+        className="text-xs font-medium px-3 py-1.5 rounded-lg border bg-background text-muted-foreground hover:text-foreground hover:border-foreground/40 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+      >
+        이전
+      </button>
+      {pages.map((p, i) =>
+        p === "..." ? (
+          <span key={`dot-${i}`} className="text-xs text-muted-foreground/50 px-1">···</span>
+        ) : (
+          <button
+            key={p}
+            onClick={() => onChange(p)}
+            className={cn(
+              "text-xs font-medium min-w-[32px] px-2 py-1.5 rounded-lg border transition-colors",
+              p === page
+                ? "bg-foreground text-background border-foreground"
+                : "bg-background text-muted-foreground hover:text-foreground hover:border-foreground/40"
+            )}
+          >
+            {p}
+          </button>
+        )
+      )}
+      <button
+        onClick={() => onChange(Math.min(totalPages, page + 1))}
+        disabled={page === totalPages}
+        className="text-xs font-medium px-3 py-1.5 rounded-lg border bg-background text-muted-foreground hover:text-foreground hover:border-foreground/40 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+      >
+        다음
+      </button>
     </div>
   );
 }
