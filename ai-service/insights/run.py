@@ -189,7 +189,8 @@ if __name__ == "__main__":
     passed, result = run_evaluator()
     if passed:
         insight = save_to_insights(result)
-        run_embedding(insight)
+        # 임베딩 비활성화 (RAG 검색·맞춤 추천 미사용으로 불필요)
+        # run_embedding(insight)
         send_newsletter(vars(insight))
     else:
         print("[run] 최종 인사이트 저장 생략")
