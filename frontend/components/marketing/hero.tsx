@@ -1,11 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { LinkButton } from "@/components/shared/link-button";
-import { BorderBeam } from "@/components/ui/border-beam";
-import { AnimatedGradientText } from "@/components/ui/animated-gradient-text";
-import { NumberTicker } from "@/components/ui/number-ticker";
-import { HeroSearch } from "@/components/marketing/hero-search";
 
 interface HeroProps {
   bgImage?: string | null;
@@ -70,10 +65,6 @@ export function Hero({ bgImage }: HeroProps) {
           <h1 className="font-bold text-white drop-shadow-lg mb-4" style={{ fontSize: "clamp(2.5rem, 12vw, 11rem)", letterSpacing: "-0.03em", lineHeight: 0.95, fontFamily: "var(--font-display)", whiteSpace: "nowrap", opacity: 0, animation: "fadeUp 0.7s ease 0.3s forwards" }}>
             PUBLIC-AX
           </h1>
-          <div className="w-full px-4 mb-8 max-w-sm md:max-w-xl lg:max-w-2xl xl:max-w-3xl mx-auto mt-16" style={{ opacity: 0, animation: "fadeUp 0.7s ease 0.75s forwards" }}>
-            <HeroSearch />
-          </div>
-
         </div>
       </div>
     </section>
