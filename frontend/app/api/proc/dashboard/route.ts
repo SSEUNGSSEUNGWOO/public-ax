@@ -286,17 +286,20 @@ export async function GET() {
       .map(([type, count]) => ({ type, count }))
       .sort((a, b) => b.count - a.count);
 
-    return NextResponse.json({
-      kpi,
-      categoryDistribution,
-      monthlyTrend,
-      categoryChange,
-      topAgencies,
-      budgetDistribution,
-      ddayDistribution,
-      categoryAvgBudget,
-      agencyTypeDistribution,
-    });
+    return NextResponse.json(
+      {
+        kpi,
+        categoryDistribution,
+        monthlyTrend,
+        categoryChange,
+        topAgencies,
+        budgetDistribution,
+        ddayDistribution,
+        categoryAvgBudget,
+        agencyTypeDistribution,
+      },
+      { headers: { "Cache-Control": "s-maxage=300, stale-while-revalidate=600" } },
+    );
   } catch (e) {
     console.error("[proc/dashboard]", e);
     return NextResponse.json({ error: String(e) }, { status: 500 });

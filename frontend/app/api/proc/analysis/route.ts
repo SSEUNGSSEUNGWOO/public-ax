@@ -281,23 +281,26 @@ export async function GET() {
       .slice(0, 10);
     const regionLimit = { restricted: regionRestricted, free: regionFree, regions };
 
-    return NextResponse.json({
-      total: totalRows,
-      categories: CATEGORIES,
-      agencyTypes: AGENCY_TYPES,
-      bizDivs: BIZ_DIVS,
-      budgetRanges: BUDGET_RANGES.map((b) => b.label),
-      agencyMatrix,
-      bizMatrix,
-      budgetMatrix,
-      agencyInsights,
-      bizInsights,
-      budgetInsights,
-      industryTop15,
-      contractMethods,
-      decisionMethods,
-      regionLimit,
-    });
+    return NextResponse.json(
+      {
+        total: totalRows,
+        categories: CATEGORIES,
+        agencyTypes: AGENCY_TYPES,
+        bizDivs: BIZ_DIVS,
+        budgetRanges: BUDGET_RANGES.map((b) => b.label),
+        agencyMatrix,
+        bizMatrix,
+        budgetMatrix,
+        agencyInsights,
+        bizInsights,
+        budgetInsights,
+        industryTop15,
+        contractMethods,
+        decisionMethods,
+        regionLimit,
+      },
+      { headers: { "Cache-Control": "s-maxage=300, stale-while-revalidate=600" } },
+    );
   } catch (e) {
     console.error("[proc/analysis]", e);
     return NextResponse.json({ error: String(e) }, { status: 500 });

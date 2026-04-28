@@ -119,6 +119,18 @@ public-ax/
 4. Supabase `proc_reports` 테이블에 status='draft'로 적재
 5. 별도 명령으로 status='published'로 승격 (또는 수동 SQL)
 
+### 입찰 분류 검수 워크플로우 (`/bids-review`)
+사용자가 "분류 검수" / "기타 무관 검수해줘"라고 하면:
+1. 누적 미검수 건수 확인: `cd ai-service && .venv/bin/python bids/review.py count`
+2. 검수 대상 가져오기: `bids/review.py list-pending --limit 10` (마감 임박순, reviewed_at IS NULL)
+3. 한 건씩 정보 표시 → 사용자 응답:
+   - 카테고리 번호/이름 → `bids/review.py update <id> "<카테고리>"`
+   - `keep` → `bids/review.py keep <id>` (현재 분류 유지 + 검수 완료)
+   - `skip` → 아무것도 안 함 (다음 세션에 다시 등장)
+   - `quit` → 종료
+4. 검수한 건은 `bids.reviewed_at` 컬럼에 timestamp 세팅돼 다시 안 나옴
+5. 자동 분류 1차는 `bids/classifier.py` (OpenAI gpt-4o-mini, GitHub Actions 3시간마다). prompt에 "기타/무관은 last resort" 강제 → 미분류 비율 최소화. 그래도 남는 건 수동 검수.
+
 ## 폴더 구조 설계 원칙
 
 코드 작성 전 폴더 구조를 먼저 설계하고 사용자와 합의한다.
