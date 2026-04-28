@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { PageHeader } from "@/components/shared/page-header";
 
 const navItems = [
@@ -68,6 +69,34 @@ export default function AboutPage() {
       </div>
       {/* BODY */}
       <div className="container mx-auto px-4 max-w-6xl py-12">
+        {/* Identity hero */}
+        <section className="rounded-3xl border bg-card overflow-hidden mb-14">
+          <div className="grid grid-cols-1 md:grid-cols-[320px_1fr]">
+            <div className="bg-muted/40 p-10 md:p-12 flex items-center justify-center border-b md:border-b-0 md:border-r">
+              <Image
+                src="/logo-color.svg"
+                alt="PUBLIC-AI"
+                width={240}
+                height={69}
+                priority
+              />
+            </div>
+            <div className="p-10 md:p-12">
+              <div className="font-mono text-[10px] tracking-[0.22em] uppercase text-primary mb-4">
+                Brand · Identity
+              </div>
+              <p className="text-[15px] leading-[1.9] text-muted-foreground">
+                PUBLIC-AI의 마크는 관보·공시의 <strong className="text-foreground font-semibold">대괄호 [ ]</strong> 안에 정렬된 <strong className="text-foreground font-semibold">점</strong>입니다.
+                공공의 <strong className="text-foreground font-semibold">&lsquo;틀&rsquo;</strong>이 그 자체로 신호를 담는 그릇이 됩니다.
+              </p>
+              <p className="text-[15px] leading-[1.9] text-muted-foreground mt-1.5">
+                가운데 <strong className="text-foreground font-semibold">점 세 개</strong>는 쌓이는 신호,
+                마지막 한 점의 <span className="text-primary font-semibold">오렌지</span>는 <span className="text-primary font-semibold">전환(AI)</span>의 신호입니다.
+              </p>
+            </div>
+          </div>
+        </section>
+
         <div className="grid grid-cols-[200px_1fr] gap-14 items-start">
 
           {/* SIDE NAV */}
