@@ -6,41 +6,14 @@ const navItems = [
   { href: "#greeting", label: "인사말" },
   { href: "#mv", label: "미션 · 비전" },
   { href: "#services", label: "주요 서비스" },
-  { href: "#history", label: "연혁" },
   { href: "#contact", label: "오시는 길" },
 ];
 
 const services = [
-  { icon: "DI", label: "DAILY BRIEFING", name: "Daily Insight", ko: "데일리 인사이트", desc: "담당 직무와 현안에 맞춘 정책 브리프를 매일 아침 이메일로 전달합니다.", href: "/insights" },
-  { icon: "GD", label: "GUIDE", name: "AI Guide", ko: "AI 도입 가이드", desc: "RAG·Agent·LLM 같은 핵심 주제를 공공기관 도입 관점에서 단계별로 정리한 실무 가이드.", href: "/guide" },
-  { icon: "GP", label: "PROCUREMENT", name: "K-AI Proc", ko: "정부 AI 공고", desc: "나라장터 AI 발주를 자동 분류·집계하고 실시간 모니터링·맞춤 추천을 제공합니다.", href: "/proc" },
-  { icon: "CM", label: "COMMUNITY", name: "Community", ko: "커뮤니티", desc: "공공 AI 실무자가 사례·노하우·고민을 나누는 폐쇄형 커뮤니티. 인증 가입 후 참여.", href: "/join" },
-];
-
-const history = [
-  {
-    year: "2026",
-    events: [
-      { month: "04월", desc: "AX Portfolio 국내외 사례 300건 돌파" },
-      { month: "02월", desc: "조달 가이드(Gov AI Procurement) 정식 서비스 개시" },
-    ],
-  },
-  {
-    year: "2025",
-    events: [
-      { month: "11월", desc: "중앙부처·광역지자체 기관 파트너십 40개 확보" },
-      { month: "07월", desc: "AI Champion 1기 수료 · 수료생 58명 배출" },
-      { month: "03월", desc: "Daily Insight 정식 출시, 이용자 1만 명 돌파" },
-    ],
-  },
-  {
-    year: "2024",
-    events: [
-      { month: "09월", desc: "공공 도메인 특화 LLM 파이프라인 v1 완성" },
-      { month: "06월", desc: "Daily Insight 베타 오픈" },
-      { month: "03월", desc: "Kbrain AI Public Center 내 PUBLIC-AI 프로젝트 출범" },
-    ],
-  },
+  { icon: "1", label: "DAILY BRIEFING", name: "Daily Insight", ko: "데일리 인사이트", desc: "담당 직무와 현안에 맞춘 정책 브리프를 매일 아침 이메일로 전달합니다.", href: "/insights" },
+  { icon: "2", label: "GUIDE", name: "AI Guide", ko: "AI 도입 가이드", desc: "RAG·Agent·LLM 같은 핵심 주제를 공공기관 도입 관점에서 단계별로 정리한 실무 가이드.", href: "/guide" },
+  { icon: "3", label: "PROCUREMENT", name: "K-AI Proc", ko: "정부 AI 공고", desc: "나라장터 AI 발주를 자동 분류·집계하고 실시간 모니터링·맞춤 추천을 제공합니다.", href: "/proc" },
+  { icon: "4", label: "COMMUNITY", name: "Community", ko: "커뮤니티", desc: "공공 AI 실무자가 사례·노하우·고민을 나누는 폐쇄형 커뮤니티. 인증 가입 후 참여.", href: "/join" },
 ];
 
 function SectionHead({ num, title, meta }: { num: string; title: string; meta: string }) {
@@ -245,7 +218,7 @@ export default function AboutPage() {
                     href={s.href}
                     className={`grid grid-cols-[48px_180px_1fr_auto] gap-6 items-center px-6 py-5 hover:bg-muted/40 transition-colors group ${i > 0 ? "border-t" : ""}`}
                   >
-                    <div className="w-11 h-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-mono text-xs font-bold">
+                    <div className="w-11 h-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-mono text-lg font-bold">
                       {s.icon}
                     </div>
                     <div>
@@ -259,28 +232,9 @@ export default function AboutPage() {
               </div>
             </section>
 
-            {/* 06 HISTORY */}
-            <section className="scroll-mt-24" id="history">
-              <SectionHead num="06" title="연혁" meta="History" />
-              <div className="space-y-0">
-                {history.map((h, i) => (
-                  <div key={h.year} className={`grid grid-cols-[80px_1fr] gap-6 py-4 ${i < history.length - 1 ? "border-b" : ""}`}>
-                    <div className="font-mono text-sm font-semibold text-primary pt-0.5">{h.year}</div>
-                    <ul className="space-y-1.5">
-                      {h.events.map((e) => (
-                        <li key={e.month} className="text-sm text-muted-foreground">
-                          <span className="font-semibold text-foreground mr-2">{e.month}</span>{e.desc}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            {/* 07 LOCATION */}
+            {/* 06 LOCATION */}
             <section className="scroll-mt-24" id="contact">
-              <SectionHead num="07" title="오시는 길" meta="Location" />
+              <SectionHead num="06" title="오시는 길" meta="Location" />
               <div className="rounded-2xl border p-6">
                 {[
                   { k: "영업소재지", v: "서울 동작구 보라매로5길 51 롯데타워 301~309호" },
