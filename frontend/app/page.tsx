@@ -20,10 +20,10 @@ const CATEGORY_COLORS: Record<string, string> = {
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "PUBLIC-AX | 공공 AI 전환 플랫폼",
+  title: "PUBLIC-AI | 공공 AI 전환 플랫폼",
   description: "매일 AI 동향을 분석해 공공기관 실무자에게 인사이트를 제공하는 케이브레인 AI퍼블릭센터의 커뮤니티 포털",
   openGraph: {
-    title: "PUBLIC-AX | 공공 AI 전환 플랫폼",
+    title: "PUBLIC-AI | 공공 AI 전환 플랫폼",
     description: "매일 AI 동향을 분석해 공공기관 실무자에게 인사이트를 제공하는 커뮤니티 포털",
     url: "https://public-ax.kr",
   },

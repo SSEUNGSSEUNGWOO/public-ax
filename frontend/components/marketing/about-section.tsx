@@ -97,7 +97,7 @@ export function AboutSection({ insightCount, guideCount, procCount }: PillarStat
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end">
           <div className="lg:col-span-8">
             <div className="text-[11px] font-mono tracking-[0.22em] uppercase text-primary mb-6">
-              Public-AX · Manifesto
+              Public-AI · Manifesto
             </div>
             <h2 className="font-bold leading-[0.95] tracking-[-0.03em] text-foreground"
                 style={{ fontSize: "clamp(1.75rem, 7vw, 6.25rem)", lineHeight: 1.15 }}>

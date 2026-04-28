@@ -63,8 +63,15 @@ export function Hero({ bgImage }: HeroProps) {
           </div>
 
           <h1 className="font-bold text-white drop-shadow-lg mb-4" style={{ fontSize: "clamp(2.5rem, 12vw, 11rem)", letterSpacing: "-0.03em", lineHeight: 0.95, fontFamily: "var(--font-display)", whiteSpace: "nowrap", opacity: 0, animation: "fadeUp 0.7s ease 0.3s forwards" }}>
-            PUBLIC-AX
+            PUBLIC-AI
           </h1>
+
+          <p
+            className="text-white/90 drop-shadow-md mt-10 md:mt-14 text-base md:text-2xl font-medium tracking-tight"
+            style={{ opacity: 0, animation: "fadeUp 0.7s ease 0.55s forwards" }}
+          >
+            공공 AI 전환의 모든 신호를 한 곳에서.
+          </p>
         </div>
       </div>
     </section>

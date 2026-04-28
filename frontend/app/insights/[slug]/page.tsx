@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       title: insight.title,
       description,
       publishedTime: insight.published_at,
-      siteName: "PUBLIC-AX",
+      siteName: "PUBLIC-AI",
       locale: "ko_KR",
       ...(insight.image_url ? { images: [{ url: insight.image_url, width: 1200, height: 630 }] } : {}),
     },
@@ -104,7 +104,7 @@ export default async function InsightDetailPage({
     datePublished: insight.published_at,
     dateModified: insight.published_at,
     author: { "@type": "Organization", name: "케이브레인 AI퍼블릭센터" },
-    publisher: { "@type": "Organization", name: "PUBLIC-AX", url: `${SITE_URL}` },
+    publisher: { "@type": "Organization", name: "PUBLIC-AI", url: `${SITE_URL}` },
     url: `${SITE_URL}/insights/${insight.slug}`,
     ...(insight.image_url ? { image: insight.image_url } : {}),
   };

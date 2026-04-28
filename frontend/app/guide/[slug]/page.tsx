@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const coverImage = (guide.images ?? []).find((img: { type: string; url?: string }) => img.type === "cover");
   const ogImage = coverImage?.url;
   return {
-    title: `${guide.title} | PUBLIC-AX 가이드`,
+    title: `${guide.title} | PUBLIC-AI 가이드`,
     description: guide.summary,
     alternates: { canonical: url },
     openGraph: {
@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       url,
       title: guide.title,
       description: guide.summary,
-      siteName: "PUBLIC-AX",
+      siteName: "PUBLIC-AI",
       locale: "ko_KR",
       ...(ogImage ? { images: [{ url: ogImage, width: 1200, height: 630 }] } : {}),
     },
@@ -89,7 +89,7 @@ export default async function GuideDetailPage({
     datePublished: guide.published_at,
     dateModified: guide.published_at,
     author: { "@type": "Organization", name: "케이브레인 AI퍼블릭센터" },
-    publisher: { "@type": "Organization", name: "PUBLIC-AX", url: SITE_URL },
+    publisher: { "@type": "Organization", name: "PUBLIC-AI", url: SITE_URL },
     url: `${SITE_URL}/guide/${guide.slug}`,
     ...(coverImage?.url ? { image: coverImage.url } : {}),
   };

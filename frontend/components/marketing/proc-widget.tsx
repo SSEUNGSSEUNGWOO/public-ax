@@ -1,6 +1,5 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import { LinkButton } from "@/components/shared/link-button";
 import { NumberTicker } from "@/components/ui/number-ticker";
 import { BidItem } from "@/lib/g2b";
@@ -62,9 +61,6 @@ export function ProcWidget({
           <div>
             <div className="flex items-center gap-2.5 mb-1">
               <h2 className="text-2xl font-bold">K-AI PROC</h2>
-              <Badge variant="secondary" className="text-xs rounded-full font-normal">
-                Beta
-              </Badge>
             </div>
             <p className="text-muted-foreground text-sm">이번 달 공공 AI 조달 현황</p>
           </div>

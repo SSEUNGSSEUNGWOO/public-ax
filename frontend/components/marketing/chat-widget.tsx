@@ -79,7 +79,7 @@ export function ChatWidget() {
               </svg>
             </div>
             <div>
-              <p className="text-sm font-semibold">PUBLIC-AX 어시스턴트</p>
+              <p className="text-sm font-semibold">PUBLIC-AI 어시스턴트</p>
               <p className="text-[10px] text-muted-foreground">공공 AI 전환 질문에 답해드려요</p>
             </div>
           </div>

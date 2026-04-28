@@ -1,19 +1,19 @@
 import { PageHeader } from "@/components/shared/page-header";
 
 const navItems = [
-  { href: "#overview", label: "PUBLIC-AX 소개" },
+  { href: "#overview", label: "PUBLIC-AI 소개" },
   { href: "#greeting", label: "인사말" },
   { href: "#mv", label: "미션 · 비전" },
   { href: "#services", label: "주요 서비스" },
   { href: "#history", label: "연혁" },
-  { href: "#contact", label: "연락처" },
+  { href: "#contact", label: "오시는 길" },
 ];
 
 const services = [
   { icon: "DI", label: "DAILY BRIEFING", name: "Daily Insight", ko: "데일리 인사이트", desc: "담당 직무와 현안에 맞춘 정책 브리프를 매일 아침 이메일로 전달합니다.", href: "/insights" },
-  { icon: "AC", label: "LEARNING", name: "AI Champion", ko: "AI 챔피언", desc: "기관 내 AX 전환을 주도할 핵심 인재를 발굴·육성하는 6주 집중 프로그램.", href: "/champions" },
-  { icon: "AX", label: "CASE LIBRARY", name: "AX Portfolio", ko: "AX 포트폴리오", desc: "국내외 공공 AI 도입 사례 320여 건을 구조화해 제공하는 레퍼런스 라이브러리.", href: "/portfolio" },
-  { icon: "GP", label: "PROCUREMENT", name: "Gov AI Procurement", ko: "조달 가이드", desc: "과업지시서 템플릿과 예가 산정 기준, 검증 벤더 리스트를 제공하는 AI 조달 내비게이터.", href: "/proc" },
+  { icon: "GD", label: "GUIDE", name: "AI Guide", ko: "AI 도입 가이드", desc: "RAG·Agent·LLM 같은 핵심 주제를 공공기관 도입 관점에서 단계별로 정리한 실무 가이드.", href: "/guide" },
+  { icon: "GP", label: "PROCUREMENT", name: "K-AI Proc", ko: "정부 AI 공고", desc: "나라장터 AI 발주를 자동 분류·집계하고 실시간 모니터링·맞춤 추천을 제공합니다.", href: "/proc" },
+  { icon: "CM", label: "COMMUNITY", name: "Community", ko: "커뮤니티", desc: "공공 AI 실무자가 사례·노하우·고민을 나누는 폐쇄형 커뮤니티. 인증 가입 후 참여.", href: "/join" },
 ];
 
 const history = [
@@ -37,7 +37,7 @@ const history = [
     events: [
       { month: "09월", desc: "공공 도메인 특화 LLM 파이프라인 v1 완성" },
       { month: "06월", desc: "Daily Insight 베타 오픈" },
-      { month: "03월", desc: "Kbrain AI Public Center 내 PUBLIC-AX 프로젝트 출범" },
+      { month: "03월", desc: "Kbrain AI Public Center 내 PUBLIC-AI 프로젝트 출범" },
     ],
   },
 ];
@@ -61,8 +61,8 @@ export default function AboutPage() {
         <div className="container mx-auto px-4 py-10 max-w-6xl">
           <PageHeader
             eyebrow="About"
-            title="PUBLIC-AX 소개"
-            description="대한민국 공공 AI 전환(AX)을 위한 통합 플랫폼, PUBLIC-AX를 소개합니다."
+            title="PUBLIC-AI 소개"
+            description="대한민국 공공 AI 전환을 위한 통합 플랫폼, PUBLIC-AI를 소개합니다."
           />
         </div>
       </div>
@@ -97,25 +97,25 @@ export default function AboutPage() {
 
             {/* 01 OVERVIEW */}
             <section className="scroll-mt-24" id="overview">
-              <SectionHead num="01" title="PUBLIC-AX 소개" meta="Overview" />
+              <SectionHead num="01" title="PUBLIC-AI 소개" meta="Overview" />
               <div className="grid grid-cols-[1fr_240px] gap-10 items-start">
                 <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
                   <p>
-                    <strong className="text-foreground">PUBLIC-AX</strong>는 대한민국 공공부문의 AI 전환(AX)을 지원하기 위해{" "}
+                    <strong className="text-foreground">PUBLIC-AI</strong>는 대한민국 공공부문의 AI 전환을 지원하기 위해{" "}
                     <strong className="text-foreground">Kbrain AI Public Center</strong>가 운영하는 공공 전문 AI 플랫폼입니다.
                   </p>
                   <p>
                     공공 실무자가 매일 마주하는 방대한 정책 문서·법령·보고서를 한 곳에 모으고,{" "}
                     <mark className="bg-primary/15 text-foreground font-medium px-0.5 rounded">도메인 특화 AI가 실무자의 언어로 정리해 전달</mark>합니다.
-                    정보 탐색에 쓰이던 시간을 줄이고, 본질적인 정책 설계와 의사결정에 집중할 수 있도록 돕는 것이 PUBLIC-AX의 역할입니다.
+                    정보 탐색에 쓰이던 시간을 줄이고, 본질적인 정책 설계와 의사결정에 집중할 수 있도록 돕는 것이 PUBLIC-AI의 역할입니다.
                   </p>
                   <p>
-                    PUBLIC-AX는 <strong className="text-foreground">데일리 인사이트 · AI 챔피언 · AX 포트폴리오 · 정부 AI 조달 가이드</strong>의 네 축으로 구성된 통합 플랫폼입니다.
+                    PUBLIC-AI는 <strong className="text-foreground">데일리 인사이트 · AI 도입 가이드 · 정부 AI 공고 · 커뮤니티</strong>의 네 축으로 구성된 통합 플랫폼입니다.
                   </p>
                 </div>
                 <div className="rounded-xl border overflow-hidden text-sm">
                   {[
-                    { k: "브랜드", v: "PUBLIC-AX" },
+                    { k: "브랜드", v: "PUBLIC-AI" },
                     { k: "법인명", v: "(주)케이브레인컴퍼니" },
                     { k: "운영 주체", v: "케이브레인 AI퍼블릭센터" },
                     { k: "설립", v: "2010년 8월 20일" },
@@ -138,15 +138,15 @@ export default function AboutPage() {
                 <h3 className="text-xl font-bold text-foreground leading-snug">
                   기술은 수단이고, <span className="text-primary">행정은 본질</span>입니다.
                 </h3>
-                <p>PUBLIC-AX는 민간의 AI 도구를 공공에 단순 이식하는 프로젝트가 아닙니다. 공공의 언어, 절차, 그리고 책임의 무게를 먼저 이해한 위에 AI를 얹는 일입니다.</p>
+                <p>PUBLIC-AI는 민간의 AI 도구를 공공에 단순 이식하는 프로젝트가 아닙니다. 공공의 언어, 절차, 그리고 책임의 무게를 먼저 이해한 위에 AI를 얹는 일입니다.</p>
                 <p>저희는 중앙부처 · 지자체 · 국책연구원에서 정책을 만들어 온 전문가들과, 민간에서 AI 제품을 만들어 온 엔지니어들이 함께 모여 일합니다. 서로 다른 언어를 쓰는 두 세계를 이어, 신뢰할 수 있는 공공 AI 인프라를 구축하는 것이 우리의 역할입니다.</p>
-                <p>공공 AX는 한 번의 프로젝트가 아니라 10년의 여정입니다. PUBLIC-AX가 그 여정의 든든한 동반자가 되도록 노력하겠습니다.</p>
+                <p>공공 AI 전환은 한 번의 프로젝트가 아니라 10년의 여정입니다. PUBLIC-AI가 그 여정의 든든한 동반자가 되도록 노력하겠습니다.</p>
               </div>
             </section>
 
             {/* 03 WHY */}
             <section className="scroll-mt-24" id="why">
-              <SectionHead num="03" title="왜 PUBLIC-AX인가" meta="Background" />
+              <SectionHead num="03" title="왜 PUBLIC-AI인가" meta="Background" />
               <div className="grid grid-cols-2 gap-4">
                 <div className="rounded-2xl border bg-muted/20 p-6">
                   <div className="font-mono text-[10px] text-muted-foreground tracking-widest uppercase mb-3">● 공공 현장의 문제</div>
@@ -165,7 +165,7 @@ export default function AboutPage() {
                   </ul>
                 </div>
                 <div className="rounded-2xl border border-primary/30 bg-primary/5 p-6">
-                  <div className="font-mono text-[10px] text-primary tracking-widest uppercase mb-3">▲ PUBLIC-AX의 해법</div>
+                  <div className="font-mono text-[10px] text-primary tracking-widest uppercase mb-3">▲ PUBLIC-AI의 해법</div>
                   <h4 className="font-bold text-base mb-3 leading-snug">읽고, 이해하고, 실무 언어로 되돌려드립니다.</h4>
                   <p className="text-sm text-muted-foreground leading-relaxed mb-4">공공 도메인에 특화된 LLM과 검증된 공공 데이터 코퍼스를 결합해, 담당자 맥락에 맞춘 실무용 인사이트를 제공합니다.</p>
                   <ul className="space-y-2 text-sm text-muted-foreground">
@@ -201,7 +201,7 @@ export default function AboutPage() {
                     VISION · 비전
                   </div>
                   <h4 className="text-lg font-bold leading-snug mb-3">2030년, <span className="text-primary">모든</span> 공공 의사결정에 AI가 함께합니다.</h4>
-                  <p className="text-sm text-background/75 leading-relaxed">정책의 설계부터 집행·평가까지 AI가 보조 파일럿으로 상주하는 정부. PUBLIC-AX는 더 빠르고 더 공정한 행정을 위한 디지털 인프라를 지향합니다.</p>
+                  <p className="text-sm text-background/75 leading-relaxed">정책의 설계부터 집행·평가까지 AI가 보조 파일럿으로 상주하는 정부. PUBLIC-AI는 더 빠르고 더 공정한 행정을 위한 디지털 인프라를 지향합니다.</p>
                 </div>
               </div>
             </section>
@@ -249,58 +249,36 @@ export default function AboutPage() {
               </div>
             </section>
 
-            {/* 07 CONTACT */}
+            {/* 07 LOCATION */}
             <section className="scroll-mt-24" id="contact">
-              <SectionHead num="07" title="연락처" meta="Contact" />
-              <div className="grid grid-cols-2 gap-4">
-                <div className="rounded-2xl border p-6">
-                  <h4 className="text-sm font-bold mb-4 pb-3 border-b flex justify-between">
-                    연락처 <span className="font-mono text-[10px] text-muted-foreground font-normal tracking-widest">CONTACT</span>
-                  </h4>
-                  {[
-                    { k: "대표 이메일", v: "contact@public-ax.kr", href: "mailto:contact@public-ax.kr" },
-                    { k: "업무 시간", v: "평일 10:00 – 18:00 (KST)" },
-                  ].map((r) => (
-                    <div key={r.k} className="grid grid-cols-[90px_1fr] gap-3 py-2 text-sm">
-                      <span className="font-mono text-[10px] text-muted-foreground tracking-wider uppercase pt-0.5">{r.k}</span>
-                      {r.href
-                        ? <a href={r.href} className="text-primary hover:underline font-medium">{r.v}</a>
-                        : <span className="text-foreground">{r.v}</span>
-                      }
-                    </div>
-                  ))}
-                </div>
-                <div className="rounded-2xl border p-6">
-                  <h4 className="text-sm font-bold mb-4 pb-3 border-b flex justify-between">
-                    오시는 길 <span className="font-mono text-[10px] text-muted-foreground font-normal tracking-widest">LOCATION</span>
-                  </h4>
-                  {[
-                    { k: "영업소재지", v: "서울 동작구 보라매로5길 51 롯데타워 301~309호" },
-                    { k: "공개교육장", v: "서울 마포구 성암로 189 중소기업DMC타워 701호" },
-                    { k: "대표", v: "민상일" },
-                    { k: "사업자번호", v: "129-86-50144" },
-                  ].map((r) => (
-                    <div key={r.k} className="grid grid-cols-[90px_1fr] gap-3 py-2 text-sm">
-                      <span className="font-mono text-[10px] text-muted-foreground tracking-wider uppercase pt-0.5">{r.k}</span>
-                      <span className="text-foreground">{r.v}</span>
-                    </div>
-                  ))}
-                  <a
-                    href="https://map.kakao.com/link/search/서울 동작구 보라매로5길 51 롯데타워"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-4 flex items-center justify-between rounded-xl border bg-muted/30 hover:bg-muted/60 transition-colors px-5 py-4 group"
-                  >
-                    <div>
-                      <p className="text-xs font-semibold text-foreground mb-0.5">동작구 보라매로5길 51 롯데타워 301~309호</p>
-                      <p className="text-[11px] text-muted-foreground">카카오맵에서 길찾기</p>
-                    </div>
-                    <svg className="text-muted-foreground group-hover:text-primary transition-colors" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
-                    </svg>
-                  </a>
-                  <p className="mt-2 text-[11px] text-muted-foreground/60 font-mono tracking-widest">통신판매업신고번호: 제2026-서울동작-0124호</p>
-                </div>
+              <SectionHead num="07" title="오시는 길" meta="Location" />
+              <div className="rounded-2xl border p-6">
+                {[
+                  { k: "영업소재지", v: "서울 동작구 보라매로5길 51 롯데타워 301~309호" },
+                  { k: "공개교육장", v: "서울 마포구 성암로 189 중소기업DMC타워 701호" },
+                  { k: "대표", v: "민상일" },
+                  { k: "사업자번호", v: "129-86-50144" },
+                ].map((r) => (
+                  <div key={r.k} className="grid grid-cols-[90px_1fr] gap-3 py-2 text-sm">
+                    <span className="font-mono text-[10px] text-muted-foreground tracking-wider uppercase pt-0.5">{r.k}</span>
+                    <span className="text-foreground">{r.v}</span>
+                  </div>
+                ))}
+                <a
+                  href="https://map.kakao.com/link/search/서울 동작구 보라매로5길 51 롯데타워"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-4 flex items-center justify-between rounded-xl border bg-muted/30 hover:bg-muted/60 transition-colors px-5 py-4 group"
+                >
+                  <div>
+                    <p className="text-xs font-semibold text-foreground mb-0.5">동작구 보라매로5길 51 롯데타워 301~309호</p>
+                    <p className="text-[11px] text-muted-foreground">카카오맵에서 길찾기</p>
+                  </div>
+                  <svg className="text-muted-foreground group-hover:text-primary transition-colors" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                  </svg>
+                </a>
+                <p className="mt-2 text-[11px] text-muted-foreground/60 font-mono tracking-widest">통신판매업신고번호: 제2026-서울동작-0124호</p>
               </div>
             </section>
 

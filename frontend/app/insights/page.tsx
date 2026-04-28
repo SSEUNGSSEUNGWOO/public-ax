@@ -6,10 +6,10 @@ import { InsightList } from "@/components/insights/insight-list";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "인사이트 | PUBLIC-AX",
+  title: "인사이트 | PUBLIC-AI",
   description: "자는 사이 쌓인 AI 뉴스·기술·법안, 매일 아침 한 장으로. 공공기관 실무자를 위한 AI 동향 데일리 리포트",
   openGraph: {
-    title: "AI 인사이트 데일리 리포트 | PUBLIC-AX",
+    title: "AI 인사이트 데일리 리포트 | PUBLIC-AI",
     description: "자는 사이 쌓인 AI 뉴스·기술·법안, 매일 아침 한 장으로",
     url: "https://public-ax.kr/insights",
   },

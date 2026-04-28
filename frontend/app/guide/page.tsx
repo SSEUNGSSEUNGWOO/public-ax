@@ -6,10 +6,10 @@ import { GuideList } from "@/components/guide/guide-list";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "가이드 | PUBLIC-AX",
+  title: "가이드 | PUBLIC-AI",
   description: "공공기관 실무자를 위한 AI 개념·도구·활용법 정리. AI 기초부터 실무 활용, 기술 심화까지",
   openGraph: {
-    title: "공공기관 AI 활용 가이드 | PUBLIC-AX",
+    title: "공공기관 AI 활용 가이드 | PUBLIC-AI",
     description: "AI 기초부터 실무 활용, 기술 심화까지 공공기관 실무자를 위한 AI 가이드",
     url: "https://public-ax.kr/guide",
   },

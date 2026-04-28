@@ -37,7 +37,7 @@ export function Footer() {
               )}
             </nav>
           </div>
-          <p className="text-xs text-muted-foreground/70 font-mono tracking-wider">© 2026 PUBLIC-AX</p>
+          <p className="text-xs text-muted-foreground/70 font-mono tracking-wider">© 2026 PUBLIC-AI</p>
         </div>
 
         <p className="text-[11px] text-muted-foreground/60 mt-4 leading-relaxed">

@@ -39,7 +39,7 @@ export function Navbar() {
         <Link href="/" className="flex items-center">
           <Image
             src="/logo-color.svg"
-            alt="PUBLIC-AX"
+            alt="PUBLIC-AI"
             width={130}
             height={35}
             priority

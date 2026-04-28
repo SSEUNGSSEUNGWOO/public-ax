@@ -57,7 +57,7 @@ export async function GET(req: NextRequest) {
       const response = await anthropic.messages.stream({
         model: "claude-sonnet-4-6",
         max_tokens: 800,
-        system: `당신은 PUBLIC-AX의 공공 AI 전환 검색 어시스턴트입니다.
+        system: `당신은 PUBLIC-AI의 공공 AI 전환 검색 어시스턴트입니다.
 아래 컨텍스트를 바탕으로 질문에 3-4문장으로 간결하게 답하세요.
 컨텍스트에 없는 내용은 모른다고 하세요. 한국어로 답하세요.
 

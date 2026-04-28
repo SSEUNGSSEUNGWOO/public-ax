@@ -15,7 +15,7 @@ export default function UnsubscribePage({
           <p className="text-4xl mb-4">👋</p>
           <h1 className="text-2xl font-bold mb-3">구독이 취소됐습니다</h1>
           <p className="text-muted-foreground mb-8">
-            더 이상 PUBLIC-AX 뉴스레터를 받지 않습니다.<br />
+            더 이상 PUBLIC-AI 뉴스레터를 받지 않습니다.<br />
             언제든 다시 구독하실 수 있어요.
           </p>
           <Link href="/" className="text-sm text-primary hover:underline">홈으로 돌아가기</Link>

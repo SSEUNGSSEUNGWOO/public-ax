@@ -29,13 +29,13 @@ export async function POST(req: NextRequest) {
 
   const resend = new Resend(process.env.RESEND_API_KEY);
   await resend.emails.send({
-    from: "PUBLIC-AX <onboarding@resend.dev>",
+    from: "PUBLIC-AI <onboarding@resend.dev>",
     to: email,
-    subject: "PUBLIC-AX 뉴스레터 구독을 환영합니다 🎉",
+    subject: "PUBLIC-AI 뉴스레터 구독을 환영합니다 🎉",
     html: `
       <div style="max-width:560px;margin:0 auto;font-family:-apple-system,sans-serif;color:#111;">
         <div style="padding:40px 0 24px;">
-          <p style="font-size:10px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:#6b7280;margin:0 0 16px;">PUBLIC-AX</p>
+          <p style="font-size:10px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:#6b7280;margin:0 0 16px;">PUBLIC-AI</p>
           <h1 style="font-size:24px;font-weight:700;margin:0 0 12px;line-height:1.3;">구독해 주셔서 감사합니다</h1>
           <p style="font-size:15px;color:#374151;line-height:1.7;margin:0 0 24px;">
             매일 아침, 공공 AI 전환에 꼭 필요한 인사이트를 이메일로 보내드릴게요.<br/>
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
         </div>
         <hr style="border:none;border-top:1px solid #e5e7eb;margin:32px 0 24px;"/>
         <p style="font-size:12px;color:#9ca3af;margin:0;">
-          케이브레인 AI퍼블릭센터 · PUBLIC-AX<br/>
+          케이브레인 AI퍼블릭센터 · PUBLIC-AI<br/>
           <a href="https://public-ax.vercel.app/api/unsubscribe?email=${encodeURIComponent(email)}" style="color:#9ca3af;">구독 취소</a>
         </p>
       </div>

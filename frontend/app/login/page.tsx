@@ -26,7 +26,7 @@ export default function LoginPage() {
     <div className="min-h-[60vh] flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <p className="text-[10px] font-mono tracking-[0.22em] uppercase text-primary mb-3">PUBLIC-AX</p>
+          <p className="text-[10px] font-mono tracking-[0.22em] uppercase text-primary mb-3">PUBLIC-AI</p>
           <h1 className="text-2xl font-bold mb-2">로그인</h1>
           <p className="text-sm text-muted-foreground">공공 AI 전환 커뮤니티에 참여하세요</p>
         </div>
