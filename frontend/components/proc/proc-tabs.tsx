@@ -4,7 +4,6 @@ import { ReactNode, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { BidItem } from "@/lib/g2b";
 import { ProcList } from "./proc-list";
-import { RecommendTab } from "./recommend-tab";
 import { DashboardTab } from "./dashboard-tab";
 import { AnalysisTab } from "./analysis-tab";
 import { cn } from "@/lib/utils";
@@ -14,7 +13,6 @@ const TABS = [
   { id: "bids", label: "공고" },
   { id: "analysis", label: "데이터 통계" },
   { id: "report", label: "분석" },
-  { id: "recommend", label: "맞춤 공고" },
 ] as const;
 
 type TabId = typeof TABS[number]["id"];
@@ -58,7 +56,6 @@ export function ProcTabs({ bids, reportSlot }: ProcTabsProps) {
       </div>
 
       {tab === "bids" && <ProcList bids={bids} />}
-      {tab === "recommend" && <RecommendTab />}
       {tab === "dashboard" && <DashboardTab />}
       {tab === "analysis" && <AnalysisTab />}
       <div className={tab === "report" ? "block" : "hidden"}>{reportSlot}</div>
