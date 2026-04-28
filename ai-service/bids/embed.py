@@ -29,6 +29,16 @@ from shared.supabase_client import get_client
 EMBED_MODEL = "text-embedding-3-small"  # 1536 dim
 
 
+def is_unit_contract(row: dict) -> bool:
+    name = row.get("bid_ntce_nm") or ""
+    dmnd = row.get("dmnd_instt_nm") or ""
+    if "_제3자단가" in name or "단가계약" in name or "단가입찰" in name:
+        return True
+    if dmnd == "각 수요기관":
+        return True
+    return False
+
+
 def build_embed_text(bid: dict) -> str:
     parts = [
         bid.get("bid_ntce_nm") or "",
@@ -63,7 +73,7 @@ def embed_text(text: str, max_retries: int = 5) -> list[float] | None:
 def fetch_targets(client, scope: str, reembed: bool, from_date: str | None, limit: int | None) -> list[dict]:
     today = date.today().isoformat()
     query = client.table("bids").select(
-        "id, bid_ntce_nm, ntce_instt_nm, bsns_div_nm, ai_category, embedding"
+        "id, bid_ntce_nm, ntce_instt_nm, dmnd_instt_nm, bsns_div_nm, ai_category, embedding"
     )
     if scope == "active":
         query = query.gte("bid_clse_date", today).order("bid_clse_date", desc=False)
@@ -73,6 +83,7 @@ def fetch_targets(client, scope: str, reembed: bool, from_date: str | None, limi
         query = query.gte("bid_ntce_date", from_date)
     if not reembed:
         query = query.is_("embedding", "null")
+    query = query.neq("ai_category", "무관")
 
     rows: list[dict] = []
     page = 1000
@@ -85,6 +96,7 @@ def fetch_targets(client, scope: str, reembed: bool, from_date: str | None, limi
         offset += page
         if limit and len(rows) >= limit:
             break
+    rows = [r for r in rows if not is_unit_contract(r)]
     return rows[:limit] if limit else rows
 
 

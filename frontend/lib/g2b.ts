@@ -93,7 +93,7 @@ function dedupeBids(items: BidItem[]): BidItem[] {
   return Array.from(seen.values()).sort((a, b) => a.bidClseDate.localeCompare(b.bidClseDate));
 }
 
-// 참여 가능한 공고 (마감 미경과 + 사업 단위 dedupe + 단가계약 제외)
+// 참여 가능한 공고 (마감 미경과 + 사업 단위 dedupe + 단가계약·무관 제외)
 export async function fetchAIBids(): Promise<BidItem[]> {
   const today = new Date().toISOString().slice(0, 10);
   const { data, error } = await getClient()
@@ -104,7 +104,7 @@ export async function fetchAIBids(): Promise<BidItem[]> {
     .limit(1000);
 
   if (error || !data) return [];
-  const filtered = data.filter((r) => !isUnitContract(r));
+  const filtered = data.filter((r) => !isUnitContract(r) && r.ai_category !== "무관");
   return dedupeBids(filtered.map(rowToBidItem));
 }
 

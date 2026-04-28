@@ -1,6 +1,7 @@
 import { PageHeader } from "@/components/shared/page-header";
 import { ProcTabs } from "@/components/proc/proc-tabs";
-import { fetchAIBids, fetchThisMonthCount } from "@/lib/g2b";
+import { ReportTab } from "@/components/proc/report-tab";
+import { fetchAIBids } from "@/lib/g2b";
 
 export const dynamic = "force-dynamic";
 
@@ -15,20 +16,7 @@ export const metadata = {
 };
 
 export default async function ProcPage() {
-  const [bids, thisMonthCount] = await Promise.all([
-    fetchAIBids(),
-    fetchThisMonthCount(),
-  ]);
-
-  const now = new Date();
-  const urgentCount = bids.filter((b) => {
-    if (!b.bidClseDate) return false;
-    const close = new Date(b.bidClseDate);
-    const diff = Math.ceil((close.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    return diff >= 0 && diff <= 7;
-  }).length;
-
-  const totalBudget = bids.reduce((sum, b) => sum + parseInt(b.asignBdgtAmt || b.presmptPrce || "0"), 0);
+  const bids = await fetchAIBids();
 
   return (
     <div>
@@ -42,15 +30,7 @@ export default async function ProcPage() {
         </div>
       </div>
       <div className="container mx-auto px-4 py-12 max-w-5xl">
-        <ProcTabs
-          bids={bids}
-          stats={{
-            active: bids.length,
-            thisMonth: thisMonthCount,
-            totalBudget,
-            urgent: urgentCount,
-          }}
-        />
+        <ProcTabs bids={bids} reportSlot={<ReportTab />} />
       </div>
     </div>
   );

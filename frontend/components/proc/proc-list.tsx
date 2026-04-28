@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { BidItem, AI_CATEGORIES, AiCategory } from "@/lib/g2b";
 import { cn } from "@/lib/utils";
+
+const PAGE_SIZE = 10;
 
 const BIZ_COLORS: Record<string, string> = {
   "용역": "bg-blue-500/10 text-blue-600 dark:text-blue-400",
@@ -58,20 +60,20 @@ type SortKey = "dday" | "latest" | "budget";
 
 interface ProcListProps {
   bids: BidItem[];
-  stats: {
-    active: number;
-    thisMonth: number;
-    totalBudget: number;
-    urgent: number;
-  };
 }
 
-export function ProcList({ bids, stats }: ProcListProps) {
+export function ProcList({ bids }: ProcListProps) {
   const [activeCategory, setActiveCategory] = useState<AiCategory | null>(null);
   const [sort, setSort] = useState<SortKey>("dday");
   const [query, setQuery] = useState("");
+  const [page, setPage] = useState(1);
 
   const q = query.trim().toLowerCase();
+
+  // 필터·정렬·검색 변경 시 페이지 1로 리셋
+  useEffect(() => {
+    setPage(1);
+  }, [activeCategory, sort, q]);
 
   const filtered = useMemo(() => {
     let list = bids;
@@ -93,27 +95,6 @@ export function ProcList({ bids, stats }: ProcListProps) {
 
   return (
     <div>
-      {/* 통계 카드 */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-        {[
-          { label: "참여 가능", value: `${stats.active}건`, sub: "마감 미경과 공고" },
-          { label: "이번달 신규", value: `${stats.thisMonth}건`, sub: "이번달 등록" },
-          { label: "마감 임박", value: `${stats.urgent}건`, sub: "D-7 이내", urgent: true },
-          { label: "총 사업 예산", value: formatBudget(String(stats.totalBudget)), sub: "참여 가능 합계" },
-        ].map((s) => (
-          <div key={s.label} className={cn(
-            "rounded-2xl border bg-card p-5",
-            s.urgent && stats.urgent > 0 && "border-red-400/40"
-          )}>
-            <p className="text-xs text-muted-foreground mb-1">{s.label}</p>
-            <p className={cn(
-              "text-xl font-bold leading-tight mb-0.5 truncate",
-              s.urgent && stats.urgent > 0 && "text-red-500 dark:text-red-400"
-            )}>{s.value}</p>
-            <p className="text-[11px] text-muted-foreground/60">{s.sub}</p>
-          </div>
-        ))}
-      </div>
 
       {/* 툴바 */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
@@ -187,14 +168,25 @@ export function ProcList({ bids, stats }: ProcListProps) {
       </div>
 
       {/* 결과 수 */}
-      <p className="text-xs text-muted-foreground mb-4">{filtered.length}개 공고</p>
+      {(() => {
+        const total = filtered.length;
+        const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+        const start = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+        const end = Math.min(page * PAGE_SIZE, total);
+        return (
+          <p className="text-xs text-muted-foreground mb-4">
+            {total === 0 ? "0개 공고" : `${total}개 공고 중 ${start}-${end}`}
+            {totalPages > 1 && <span className="text-muted-foreground/60"> · {page}/{totalPages} 페이지</span>}
+          </p>
+        );
+      })()}
 
       {/* 공고 리스트 */}
       {filtered.length === 0 ? (
         <p className="text-center text-muted-foreground py-20">해당하는 공고가 없습니다.</p>
       ) : (
         <div className="flex flex-col gap-3">
-          {filtered.map((bid, idx) => {
+          {filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((bid, idx) => {
             const dday = getDday(bid.bidClseDate, bid.bidClseTm);
             const budget = formatBudget(bid.asignBdgtAmt || bid.presmptPrce);
             const bizColor = BIZ_COLORS[bid.bsnsDivNm] ?? "bg-muted text-muted-foreground";
@@ -242,6 +234,83 @@ export function ProcList({ bids, stats }: ProcListProps) {
           })}
         </div>
       )}
+
+      {/* 페이지네이션 */}
+      {filtered.length > PAGE_SIZE && (
+        <Pagination
+          page={page}
+          total={filtered.length}
+          pageSize={PAGE_SIZE}
+          onChange={(p) => {
+            setPage(p);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function Pagination({
+  page,
+  total,
+  pageSize,
+  onChange,
+}: {
+  page: number;
+  total: number;
+  pageSize: number;
+  onChange: (p: number) => void;
+}) {
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  if (totalPages <= 1) return null;
+
+  // 표시할 페이지 번호: 현재 ±2 + 처음·마지막
+  const pages: (number | "...")[] = [];
+  const window = 2;
+  const add = (n: number) => pages.push(n);
+  add(1);
+  if (page - window > 2) pages.push("...");
+  for (let i = Math.max(2, page - window); i <= Math.min(totalPages - 1, page + window); i++) {
+    add(i);
+  }
+  if (page + window < totalPages - 1) pages.push("...");
+  if (totalPages > 1) add(totalPages);
+
+  return (
+    <div className="mt-8 flex items-center justify-center gap-1.5">
+      <button
+        onClick={() => onChange(Math.max(1, page - 1))}
+        disabled={page === 1}
+        className="text-xs font-medium px-3 py-1.5 rounded-lg border bg-background text-muted-foreground hover:text-foreground hover:border-foreground/40 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+      >
+        이전
+      </button>
+      {pages.map((p, i) =>
+        p === "..." ? (
+          <span key={`dot-${i}`} className="text-xs text-muted-foreground/50 px-1">···</span>
+        ) : (
+          <button
+            key={p}
+            onClick={() => onChange(p)}
+            className={cn(
+              "text-xs font-medium min-w-[32px] px-2 py-1.5 rounded-lg border transition-colors",
+              p === page
+                ? "bg-foreground text-background border-foreground"
+                : "bg-background text-muted-foreground hover:text-foreground hover:border-foreground/40"
+            )}
+          >
+            {p}
+          </button>
+        )
+      )}
+      <button
+        onClick={() => onChange(Math.min(totalPages, page + 1))}
+        disabled={page === totalPages}
+        className="text-xs font-medium px-3 py-1.5 rounded-lg border bg-background text-muted-foreground hover:text-foreground hover:border-foreground/40 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+      >
+        다음
+      </button>
     </div>
   );
 }

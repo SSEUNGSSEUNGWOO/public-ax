@@ -7,12 +7,19 @@ interface BidRow {
   ai_category: string | null;
   ntce_instt_nm: string | null;
   dmnd_instt_nm: string | null;
+  bid_ntce_no: string | null;
+  bid_ntce_ord: string | null;
   bid_ntce_nm: string | null;
   bsns_div_nm: string | null;
   bid_ntce_date: string | null;
   bid_clse_date: string | null;
   assign_bdgt_amt: string | null;
   presmpt_prce: string | null;
+  bidprc_psbl_indstrty_nm: string | null;
+  cntrct_cncls_mthd_nm: string | null;
+  bidwinr_dcsn_mthd_nm: string | null;
+  rgn_lmt_yn: string | null;
+  prtcpt_psbl_rgn_nm: string | null;
 }
 
 function isUnitContract(r: BidRow): boolean {
@@ -21,6 +28,24 @@ function isUnitContract(r: BidRow): boolean {
   if (name.includes("_제3자단가") || name.includes("단가계약") || name.includes("단가입찰")) return true;
   if (dmnd === "각 수요기관") return true;
   return false;
+}
+
+function dedupeRows(rows: BidRow[]): BidRow[] {
+  const map = new Map<string, BidRow>();
+  for (const r of rows) {
+    const key = `${r.bid_ntce_nm ?? ""}|${r.ntce_instt_nm ?? ""}|${r.bid_clse_date ?? ""}`;
+    const existing = map.get(key);
+    if (!existing) {
+      map.set(key, r);
+    } else {
+      const aNo = r.bid_ntce_no ?? "";
+      const bNo = existing.bid_ntce_no ?? "";
+      if (aNo > bNo || (aNo === bNo && (r.bid_ntce_ord ?? "") > (existing.bid_ntce_ord ?? ""))) {
+        map.set(key, r);
+      }
+    }
+  }
+  return Array.from(map.values());
 }
 
 const CATEGORIES = [
@@ -89,7 +114,7 @@ export async function GET() {
     while (true) {
       const { data, error } = await supabase
         .from("bids")
-        .select("ai_category, ntce_instt_nm, dmnd_instt_nm, bid_ntce_nm, bsns_div_nm, bid_ntce_date, bid_clse_date, assign_bdgt_amt, presmpt_prce")
+        .select("ai_category, ntce_instt_nm, dmnd_instt_nm, bid_ntce_no, bid_ntce_ord, bid_ntce_nm, bsns_div_nm, bid_ntce_date, bid_clse_date, assign_bdgt_amt, presmpt_prce, bidprc_psbl_indstrty_nm, cntrct_cncls_mthd_nm, bidwinr_dcsn_mthd_nm, rgn_lmt_yn, prtcpt_psbl_rgn_nm")
         .gte("bid_ntce_date", sixMoAgo)
         .range(offset, offset + PAGE - 1);
       if (error) throw error;
@@ -98,7 +123,7 @@ export async function GET() {
       if (page.length < PAGE) break;
       offset += PAGE;
     }
-    const rows = rawRows.filter((r) => !isUnitContract(r));
+    const rows = dedupeRows(rawRows.filter((r) => !isUnitContract(r)));
 
     // 카테고리 × 기관유형 매트릭스
     const agencyMatrix: Record<string, Record<string, number>> = {};
@@ -203,6 +228,59 @@ export async function GET() {
     const bizInsights = buildInsights(bizMatrix, CATEGORIES, BIZ_DIVS);
     const budgetInsights = buildInsights(budgetMatrix, CATEGORIES, BUDGET_RANGES.map((b) => b.label));
 
+    // 참여 가능 업종 Top 15 (콤마 구분 다중 업종 split)
+    const industryMap: Record<string, number> = {};
+    for (const r of rows) {
+      const raw = (r.bidprc_psbl_indstrty_nm || "").trim();
+      if (!raw) continue;
+      for (const item of raw.split(/[,;]/).map((s) => s.trim()).filter(Boolean)) {
+        industryMap[item] = (industryMap[item] ?? 0) + 1;
+      }
+    }
+    const industryTop15 = Object.entries(industryMap)
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 15);
+
+    // 계약방법 / 낙찰자 결정방법 (top 6 + 그 외 묶음)
+    function topNplusOther(map: Record<string, number>, n: number): { name: string; count: number }[] {
+      const sorted = Object.entries(map).sort((a, b) => b[1] - a[1]);
+      const top = sorted.slice(0, n).map(([name, count]) => ({ name, count }));
+      const rest = sorted.slice(n).reduce((s, [, c]) => s + c, 0);
+      if (rest > 0) top.push({ name: "기타", count: rest });
+      return top;
+    }
+    const contractMap: Record<string, number> = {};
+    const decisionMap: Record<string, number> = {};
+    for (const r of rows) {
+      const c = (r.cntrct_cncls_mthd_nm || "").trim();
+      if (c) contractMap[c] = (contractMap[c] ?? 0) + 1;
+      const d = (r.bidwinr_dcsn_mthd_nm || "").trim();
+      if (d) decisionMap[d] = (decisionMap[d] ?? 0) + 1;
+    }
+    const contractMethods = topNplusOther(contractMap, 6);
+    const decisionMethods = topNplusOther(decisionMap, 6);
+
+    // 지역 제한 분포
+    let regionRestricted = 0;
+    let regionFree = 0;
+    const regionMap: Record<string, number> = {};
+    for (const r of rows) {
+      const yn = (r.rgn_lmt_yn || "").trim();
+      if (yn === "Y") {
+        regionRestricted += 1;
+        const reg = (r.prtcpt_psbl_rgn_nm || "").trim() || "(미상)";
+        regionMap[reg] = (regionMap[reg] ?? 0) + 1;
+      } else {
+        regionFree += 1;
+      }
+    }
+    const regions = Object.entries(regionMap)
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
+    const regionLimit = { restricted: regionRestricted, free: regionFree, regions };
+
     return NextResponse.json({
       total: totalRows,
       categories: CATEGORIES,
@@ -215,6 +293,10 @@ export async function GET() {
       agencyInsights,
       bizInsights,
       budgetInsights,
+      industryTop15,
+      contractMethods,
+      decisionMethods,
+      regionLimit,
     });
   } catch (e) {
     console.error("[proc/analysis]", e);

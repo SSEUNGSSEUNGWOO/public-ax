@@ -7,11 +7,32 @@ interface BidRow {
   ai_category: string | null;
   ntce_instt_nm: string | null;
   dmnd_instt_nm: string | null;
+  bid_ntce_no: string | null;
+  bid_ntce_ord: string | null;
   bid_ntce_nm: string | null;
   bid_ntce_date: string | null;
   bid_clse_date: string | null;
   assign_bdgt_amt: string | null;
   presmpt_prce: string | null;
+}
+
+// 같은 사업(공고명+발주기관+마감일)이면 최신 차수/공고번호만 남김
+function dedupeRows(rows: BidRow[]): BidRow[] {
+  const map = new Map<string, BidRow>();
+  for (const r of rows) {
+    const key = `${r.bid_ntce_nm ?? ""}|${r.ntce_instt_nm ?? ""}|${r.bid_clse_date ?? ""}`;
+    const existing = map.get(key);
+    if (!existing) {
+      map.set(key, r);
+    } else {
+      const aNo = r.bid_ntce_no ?? "";
+      const bNo = existing.bid_ntce_no ?? "";
+      if (aNo > bNo || (aNo === bNo && (r.bid_ntce_ord ?? "") > (existing.bid_ntce_ord ?? ""))) {
+        map.set(key, r);
+      }
+    }
+  }
+  return Array.from(map.values());
 }
 
 // 조달청 제3자단가·각수요기관 같은 표준 단가계약은 잠재 사용한도라 통계 왜곡 → 제외
@@ -83,15 +104,15 @@ export async function GET() {
     const sixMoAgo = new Date(Date.now() - SIX_MONTH_DAYS * 86400000).toISOString().slice(0, 10);
     const todayKst = new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
-    // 6개월 누적 데이터 페이지네이션 fetch
+    // fetch: 6개월 이내 등록 OR 마감 미경과 (장기 계약도 active로 잡기 위해)
     const rawRows: BidRow[] = [];
     const PAGE = 1000;
     let offset = 0;
     while (true) {
       const { data, error } = await supabase
         .from("bids")
-        .select("ai_category, ntce_instt_nm, dmnd_instt_nm, bid_ntce_nm, bid_ntce_date, bid_clse_date, assign_bdgt_amt, presmpt_prce")
-        .gte("bid_ntce_date", sixMoAgo)
+        .select("ai_category, ntce_instt_nm, dmnd_instt_nm, bid_ntce_no, bid_ntce_ord, bid_ntce_nm, bid_ntce_date, bid_clse_date, assign_bdgt_amt, presmpt_prce")
+        .or(`bid_ntce_date.gte.${sixMoAgo},bid_clse_date.gte.${todayKst}`)
         .range(offset, offset + PAGE - 1);
       if (error) throw error;
       const page = data ?? [];
@@ -99,8 +120,9 @@ export async function GET() {
       if (page.length < PAGE) break;
       offset += PAGE;
     }
-    // 단가계약·무관 사업 제외 (진짜 AI 사업만 통계에 반영)
-    const rows = rawRows.filter((r) => !isUnitContract(r) && r.ai_category !== "무관");
+    // 단가계약·무관 제외 + 사업 단위 dedupe (모든 통계 동일 기준)
+    const filtered = rawRows.filter((r) => !isUnitContract(r) && r.ai_category !== "무관");
+    const rows = dedupeRows(filtered);
 
     // KPI
     const active = rows.filter((r) => r.bid_clse_date && r.bid_clse_date >= todayKst);
@@ -186,10 +208,10 @@ export async function GET() {
       return { category, thisMonth: cur, lastMonth: prev, diff, changePct };
     }).filter((c) => c.thisMonth + c.lastMonth > 0);
 
-    // Top 10 발주기관 (active 기준, 조달청·지방조달청은 위탁 거점이라 제외)
+    // Top 10 발주기관 (수요기관 = 진짜 발주처 사용. 조달청은 공고 처리 거점일 뿐)
     const agencyMap: Record<string, { count: number; totalBudget: number }> = {};
     for (const r of active) {
-      const name = (r.ntce_instt_nm || "").trim();
+      const name = (r.dmnd_instt_nm || r.ntce_instt_nm || "").trim();
       if (!name || name.startsWith("조달청")) continue;
       const a = agencyMap[name] ?? { count: 0, totalBudget: 0 };
       a.count += 1;
@@ -257,7 +279,7 @@ export async function GET() {
     // 기관 유형별 분포 (active 기준)
     const agencyTypeMap: Record<string, number> = {};
     for (const r of active) {
-      const t = classifyAgency(r.ntce_instt_nm);
+      const t = classifyAgency(r.dmnd_instt_nm || r.ntce_instt_nm);
       agencyTypeMap[t] = (agencyTypeMap[t] ?? 0) + 1;
     }
     const agencyTypeDistribution = Object.entries(agencyTypeMap)

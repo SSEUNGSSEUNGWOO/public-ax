@@ -118,7 +118,7 @@ export default function AboutPage() {
                     { k: "브랜드", v: "PUBLIC-AX" },
                     { k: "법인명", v: "(주)케이브레인컴퍼니" },
                     { k: "운영 주체", v: "케이브레인 AI퍼블릭센터" },
-                    { k: "설립", v: "2024년 3월" },
+                    { k: "설립", v: "2010년 8월 20일" },
                     { k: "소재지", v: "서울 동작구 보라매로5길 51" },
                   ].map((f, i) => (
                     <div key={f.k} className={`flex flex-col gap-0.5 px-4 py-3 ${i > 0 ? "border-t" : ""} bg-muted/20`}>

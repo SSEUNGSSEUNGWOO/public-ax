@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { BidItem } from "@/lib/g2b";
 import { ProcList } from "./proc-list";
@@ -12,23 +12,19 @@ import { cn } from "@/lib/utils";
 const TABS = [
   { id: "dashboard", label: "대시보드" },
   { id: "bids", label: "공고" },
-  { id: "recommend", label: "내 회사 추천" },
-  { id: "analysis", label: "분석" },
+  { id: "analysis", label: "데이터 통계" },
+  { id: "report", label: "분석" },
+  { id: "recommend", label: "맞춤 공고" },
 ] as const;
 
 type TabId = typeof TABS[number]["id"];
 
 interface ProcTabsProps {
   bids: BidItem[];
-  stats: {
-    active: number;
-    thisMonth: number;
-    totalBudget: number;
-    urgent: number;
-  };
+  reportSlot: ReactNode;
 }
 
-export function ProcTabs({ bids, stats }: ProcTabsProps) {
+export function ProcTabs({ bids, reportSlot }: ProcTabsProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initial = (searchParams.get("tab") as TabId) || "dashboard";
@@ -61,10 +57,11 @@ export function ProcTabs({ bids, stats }: ProcTabsProps) {
         ))}
       </div>
 
-      {tab === "bids" && <ProcList bids={bids} stats={stats} />}
+      {tab === "bids" && <ProcList bids={bids} />}
       {tab === "recommend" && <RecommendTab />}
       {tab === "dashboard" && <DashboardTab />}
       {tab === "analysis" && <AnalysisTab />}
+      <div className={tab === "report" ? "block" : "hidden"}>{reportSlot}</div>
     </>
   );
 }

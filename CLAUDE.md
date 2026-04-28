@@ -111,6 +111,14 @@ public-ax/
 2. 완료 후 결과(제목, 평가 점수) 출력
 3. Supabase 업로드 확인
 
+### 분석 리포트 발행 워크플로우 (`/proc` 분석 탭용)
+사용자가 "분석 리포트 발행해줘" / "리포트 돌려줘"라고 하면:
+1. `cd ai-service && .venv/bin/python reports/run.py` 실행
+2. 흐름: Analyzer (30일 vs 90일 평균) → Writer (Claude CLI) → Evaluator (6기준) → Reviewer
+3. 평가 통과 기준 4.0/5.0. 미달 시 Writer 최대 3회 재실행
+4. Supabase `proc_reports` 테이블에 status='draft'로 적재
+5. 별도 명령으로 status='published'로 승격 (또는 수동 SQL)
+
 ## 폴더 구조 설계 원칙
 
 코드 작성 전 폴더 구조를 먼저 설계하고 사용자와 합의한다.

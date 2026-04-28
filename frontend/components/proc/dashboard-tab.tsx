@@ -83,10 +83,13 @@ function pctChange(cur: number, prev: number): number {
   return Math.round(((cur - prev) / prev) * 100);
 }
 
+const TOTAL_KEY = "전체";
+
 export function DashboardTab() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set([TOTAL_KEY]));
 
   useEffect(() => {
     fetch("/api/proc/dashboard")
@@ -94,10 +97,23 @@ export function DashboardTab() {
         if (!r.ok) throw new Error(`status ${r.status}`);
         return r.json();
       })
-      .then(setData)
+      .then((d: DashboardData) => {
+        setData(d);
+        // 처음엔 상위 5개 카테고리만 활성 ("전체"는 사용자가 켜야 보임)
+        setSelected(new Set(d.categoryDistribution.slice(0, 5).map((c) => c.category)));
+      })
       .catch((e) => setError(String(e)))
       .finally(() => setLoading(false));
   }, []);
+
+  const toggleCategory = (cat: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(cat)) next.delete(cat);
+      else next.add(cat);
+      return next;
+    });
+  };
 
   if (loading) {
     return (
@@ -115,7 +131,12 @@ export function DashboardTab() {
   const monthChange = pctChange(data.kpi.thisMonthCount, data.kpi.lastMonthCount);
   const budgetChange = pctChange(data.kpi.thisMonthBudget, data.kpi.lastMonthBudget);
 
-  const sortedCategoryChange = [...data.categoryChange].sort((a, b) => b.changePct - a.changePct);
+  // "기타 AI"는 카테고리 분포 차트에서 제외 (분류 모호한 잔여)
+  const categoryDist = data.categoryDistribution.filter((c) => c.category !== "기타 AI");
+  const categoryAvg = data.categoryAvgBudget.filter((c) => c.category !== "기타 AI");
+  const sortedCategoryChange = [...data.categoryChange]
+    .filter((c) => c.category !== "기타 AI")
+    .sort((a, b) => b.changePct - a.changePct);
 
   return (
     <div className="space-y-8">
@@ -146,6 +167,64 @@ export function DashboardTab() {
         />
       </div>
 
+      {/* 카테고리별 6개월 추이 (Multi-line, 체크박스 토글) */}
+      <Card title="카테고리별 6개월 추이" subtitle="체크박스로 보고 싶은 카테고리만 선택">
+        <div className="flex flex-wrap gap-1.5 mb-4">
+          <CategoryChip
+            label={TOTAL_KEY}
+            active={selected.has(TOTAL_KEY)}
+            color="#0f172a"
+            onClick={() => toggleCategory(TOTAL_KEY)}
+          />
+          {categoryDist.map((c) => (
+            <CategoryChip
+              key={c.category}
+              label={`${c.category} (${c.count})`}
+              active={selected.has(c.category)}
+              color={CATEGORY_COLORS[c.category] ?? "#94a3b8"}
+              onClick={() => toggleCategory(c.category)}
+            />
+          ))}
+        </div>
+        <div className="h-72">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={data.monthlyTrend}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
+              <XAxis dataKey="month" tick={{ fontSize: 10 }} />
+              <YAxis tick={{ fontSize: 10 }} />
+              <Tooltip
+                contentStyle={{ borderRadius: 12, fontSize: 12, border: "1px solid rgba(0,0,0,0.08)" }}
+              />
+              <Legend wrapperStyle={{ fontSize: 11 }} iconSize={10} />
+              {selected.has(TOTAL_KEY) && (
+                <Line
+                  type="monotone"
+                  dataKey="total"
+                  name="전체"
+                  stroke="#0f172a"
+                  strokeWidth={2.5}
+                  dot={{ r: 3 }}
+                  activeDot={{ r: 5 }}
+                />
+              )}
+              {categoryDist
+                .filter((c) => selected.has(c.category))
+                .map((c) => (
+                  <Line
+                    key={c.category}
+                    type="monotone"
+                    dataKey={c.category}
+                    stroke={CATEGORY_COLORS[c.category] ?? "#94a3b8"}
+                    strokeWidth={2}
+                    dot={{ r: 2.5 }}
+                    activeDot={{ r: 4 }}
+                  />
+                ))}
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </Card>
+
       {/* 카테고리 분포 + 월별 추이 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card title="카테고리 분포" subtitle="참여 가능 공고 기준">
@@ -153,7 +232,7 @@ export function DashboardTab() {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={data.categoryDistribution}
+                  data={categoryDist}
                   dataKey="count"
                   nameKey="category"
                   cx="50%"
@@ -162,13 +241,17 @@ export function DashboardTab() {
                   outerRadius={95}
                   paddingAngle={1}
                 >
-                  {data.categoryDistribution.map((entry) => (
+                  {categoryDist.map((entry) => (
                     <Cell key={entry.category} fill={CATEGORY_COLORS[entry.category] ?? "#94a3b8"} />
                   ))}
                 </Pie>
                 <Tooltip
                   contentStyle={{ borderRadius: 12, fontSize: 12, border: "1px solid rgba(0,0,0,0.08)" }}
-                  formatter={(value, name) => [`${value}건`, String(name)]}
+                  formatter={(value, name, p) => {
+                    const total = categoryDist.reduce((s, c) => s + c.count, 0);
+                    const pct = total > 0 ? Math.round((Number(value) / total) * 100) : 0;
+                    return [`${value}건 (${pct}%)`, String(name)];
+                  }}
                 />
                 <Legend
                   layout="vertical"
@@ -220,85 +303,31 @@ export function DashboardTab() {
         </Card>
       </div>
 
-      {/* D-day 분포 + 카테고리별 평균 예산 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card title="마감 D-day 분포" subtitle="참여 가능 공고">
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data.ddayDistribution}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
-                <XAxis dataKey="range" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 10 }} />
-                <Tooltip
-                  contentStyle={{ borderRadius: 12, fontSize: 12, border: "1px solid rgba(0,0,0,0.08)" }}
-                  formatter={(value) => [`${value}건`, "공고"]}
-                />
-                <Bar dataKey="count" radius={[6, 6, 0, 0]}>
-                  {data.ddayDistribution.map((d, i) => (
-                    <Cell
-                      key={d.range}
-                      fill={i === 0 ? "#ef4444" : i === 1 ? "#f59e0b" : i === 2 ? "#3b82f6" : "#94a3b8"}
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
-
-        <Card title="카테고리별 평균 예산" subtitle="참여 가능 공고">
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data.categoryAvgBudget} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
-                <XAxis
-                  type="number"
-                  tick={{ fontSize: 10 }}
-                  tickFormatter={(v: number) => `${(v / 100_000_000).toFixed(0)}억`}
-                />
-                <YAxis dataKey="category" type="category" tick={{ fontSize: 10 }} width={110} />
-                <Tooltip
-                  contentStyle={{ borderRadius: 12, fontSize: 12, border: "1px solid rgba(0,0,0,0.08)" }}
-                  formatter={(value, _name, p) => [
-                    `${formatBudget(Number(value))} (${(p.payload as { count: number }).count}건)`,
-                    "평균",
-                  ]}
-                />
-                <Bar dataKey="avgBudget" radius={[0, 6, 6, 0]}>
-                  {data.categoryAvgBudget.map((c) => (
-                    <Cell key={c.category} fill={CATEGORY_COLORS[c.category] ?? "#94a3b8"} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
-      </div>
-
-      {/* 카테고리별 6개월 추이 (Multi-line) */}
-      <Card title="카테고리별 6개월 추이" subtitle="상위 5개 카테고리 등록 건수">
+      {/* 카테고리별 평균 예산 (풀폭) */}
+      <Card title="카테고리별 평균 예산" subtitle="참여 가능 공고">
         <div className="h-72">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data.monthlyTrend}>
+            <BarChart data={categoryAvg} layout="vertical">
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
-              <XAxis dataKey="month" tick={{ fontSize: 10 }} />
-              <YAxis tick={{ fontSize: 10 }} />
+              <XAxis
+                type="number"
+                tick={{ fontSize: 10 }}
+                tickFormatter={(v: number) => `${(v / 100_000_000).toFixed(0)}억`}
+              />
+              <YAxis dataKey="category" type="category" tick={{ fontSize: 11 }} width={160} interval={0} />
               <Tooltip
                 contentStyle={{ borderRadius: 12, fontSize: 12, border: "1px solid rgba(0,0,0,0.08)" }}
+                formatter={(value, _name, p) => [
+                  `${formatBudget(Number(value))} (${(p.payload as { count: number }).count}건)`,
+                  "평균",
+                ]}
               />
-              <Legend wrapperStyle={{ fontSize: 11 }} iconSize={10} />
-              {data.categoryDistribution.slice(0, 5).map((c) => (
-                <Line
-                  key={c.category}
-                  type="monotone"
-                  dataKey={c.category}
-                  stroke={CATEGORY_COLORS[c.category] ?? "#94a3b8"}
-                  strokeWidth={2}
-                  dot={{ r: 3 }}
-                  activeDot={{ r: 5 }}
-                />
-              ))}
-            </LineChart>
+              <Bar dataKey="avgBudget" radius={[0, 6, 6, 0]}>
+                {categoryAvg.map((c) => (
+                  <Cell key={c.category} fill={CATEGORY_COLORS[c.category] ?? "#94a3b8"} />
+                ))}
+              </Bar>
+            </BarChart>
           </ResponsiveContainer>
         </div>
       </Card>
@@ -391,7 +420,11 @@ export function DashboardTab() {
                 </Pie>
                 <Tooltip
                   contentStyle={{ borderRadius: 12, fontSize: 12, border: "1px solid rgba(0,0,0,0.08)" }}
-                  formatter={(value, name) => [`${value}건`, String(name)]}
+                  formatter={(value, name) => {
+                    const total = data.agencyTypeDistribution.reduce((s, c) => s + c.count, 0);
+                    const pct = total > 0 ? Math.round((Number(value) / total) * 100) : 0;
+                    return [`${value}건 (${pct}%)`, String(name)];
+                  }}
                 />
                 <Legend
                   layout="vertical"
@@ -406,6 +439,34 @@ export function DashboardTab() {
         </Card>
       </div>
     </div>
+  );
+}
+
+function CategoryChip({
+  label,
+  active,
+  color,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  color: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "text-[11px] font-medium px-2.5 py-1 rounded-full border transition-all duration-150",
+        active
+          ? "text-white border-transparent"
+          : "text-muted-foreground border-border bg-background hover:border-foreground/40"
+      )}
+      style={active ? { backgroundColor: color } : undefined}
+    >
+      {label}
+    </button>
   );
 }
 

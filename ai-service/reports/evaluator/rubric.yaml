@@ -1,0 +1,47 @@
+pass_threshold: 4.0
+max_retries: 3
+
+criteria:
+  - name: factual_accuracy
+    weight: 1.5
+    max_score: 5
+    description: |
+      본문의 모든 수치·이름·날짜가 분석 데이터와 정확히 일치하는지.
+      과장·창작·추측은 감점. 추측은 "...로 보인다", "...할 가능성" 명시 시 감점 없음.
+
+  - name: insight_quality
+    weight: 1.5
+    max_score: 5
+    description: |
+      단순 분포 나열이 아닌 "왜 이런 변화가 생겼는지"에 대한 해석과
+      입찰 참여자가 행동에 옮길 수 있는 시사점을 포함하는지.
+
+  - name: readability
+    weight: 1.0
+    max_score: 5
+    description: |
+      문장 흐름·구조가 자연스러운지. H1·H2 구조 명확, 단락 적절히 구분,
+      차트 placeholder 자연스러운 위치.
+
+  - name: seo_quality
+    weight: 1.0
+    max_score: 5
+    description: |
+      핵심 키워드("공공 AI 발주", "정부 AI 입찰", "AI 조달") 자연스러운 밀도,
+      H1/H2/H3 구조, 본문 길이 1,000~1,500자, 메타 description 자동 추출 가능 여부.
+
+  - name: geo_quality
+    weight: 1.0
+    max_score: 5
+    description: |
+      AI 검색(Perplexity·ChatGPT search·Claude search)이 인용하기 좋은 구조인지.
+      명확한 단언문, 데이터 직접 명시, 표·목록 활용, 출처 명시(g2b 나라장터 + 분석 기간),
+      Q&A 또는 핵심 사실 단언 섹션.
+
+  - name: human_voice
+    weight: 0.5
+    max_score: 5
+    description: |
+      AI 상투어 회피 — "주목할 만합니다", "살펴보겠습니다",
+      "핵심은 다음과 같습니다", "...할 시점이다", 상투형 결말.
+      자연스러운 사람 목소리.
