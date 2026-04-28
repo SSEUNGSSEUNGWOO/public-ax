@@ -99,8 +99,8 @@ export async function GET() {
       if (page.length < PAGE) break;
       offset += PAGE;
     }
-    // 단가계약 사업 제외
-    const rows = rawRows.filter((r) => !isUnitContract(r));
+    // 단가계약·무관 사업 제외 (진짜 AI 사업만 통계에 반영)
+    const rows = rawRows.filter((r) => !isUnitContract(r) && r.ai_category !== "무관");
 
     // KPI
     const active = rows.filter((r) => r.bid_clse_date && r.bid_clse_date >= todayKst);
