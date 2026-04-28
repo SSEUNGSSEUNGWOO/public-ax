@@ -170,6 +170,7 @@ const CHART_LABELS: Record<string, string> = {
   cold_categories: "❄️ Cold 카테고리",
   new_categories: "🆕 신규 등장 카테고리",
   disappeared_categories: "🪦 사라진 카테고리",
+  category_changes_all: "📊 카테고리 변화 (최근 30일 vs 직전 90일 월평균)",
   top_agencies: "🎯 주요 발주처 (수요기관 기준)",
   large_bids: "💰 큰 사업 Top 10",
   monthly_trend: "📈 월별 발주 추이 (최근 6개월)",
@@ -186,10 +187,10 @@ export function ReportChart({ type, dataKey, data }: { type: string; dataKey: st
   if (dataKey === "biz_distribution") {
     return <BizDistributionChart recent={data.biz_distribution.recent} label={label} />;
   }
-  if (dataKey === "large_bids" || type === "bigbids") {
+  if (dataKey === "large_bids") {
     return <LargeBidsList items={data.large_bids} label={label} />;
   }
-  if (dataKey === "top_agencies" || type === "hbar") {
+  if (dataKey === "top_agencies") {
     return <AgencyBarChart items={data.top_agencies} label={label} />;
   }
 
@@ -198,6 +199,7 @@ export function ReportChart({ type, dataKey, data }: { type: string; dataKey: st
     cold_categories: data.cold_categories,
     new_categories: data.new_categories,
     disappeared_categories: data.disappeared_categories,
+    category_changes_all: data.category_changes_all,
   };
 
   if (dataKey === "budget_by_category") {

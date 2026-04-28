@@ -1,0 +1,45 @@
+name: Bids Pipeline
+
+on:
+  schedule:
+    - cron: "0 */3 * * *"  # 3시간마다 (UTC) → KST 0/3/6/9/12/15/18/21시
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r ai-service/requirements.txt
+
+      - name: 1) Collect bids (G2B → Supabase)
+        working-directory: ai-service
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          G2B_API_KEY: ${{ secrets.G2B_API_KEY }}
+        run: python bids/collect.py
+
+      - name: 2) Classify (OpenAI mini, active scope)
+        working-directory: ai-service
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: python bids/classify.py --provider openai --scope active
+
+      - name: 3) Embed (active scope, NULL only)
+        working-directory: ai-service
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: python bids/embed.py --scope active

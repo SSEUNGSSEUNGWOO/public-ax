@@ -1,9 +1,10 @@
+import { Suspense } from "react";
 import { PageHeader } from "@/components/shared/page-header";
 import { ProcTabs } from "@/components/proc/proc-tabs";
 import { ReportTab } from "@/components/proc/report-tab";
 import { fetchAIBids } from "@/lib/g2b";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export const metadata = {
   title: "K-AI PROC | PUBLIC-AI",
@@ -30,7 +31,9 @@ export default async function ProcPage() {
         </div>
       </div>
       <div className="container mx-auto px-4 py-12 max-w-5xl">
-        <ProcTabs bids={bids} reportSlot={<ReportTab />} />
+        <Suspense fallback={<div className="py-20 text-center text-muted-foreground text-sm">불러오는 중…</div>}>
+          <ProcTabs bids={bids} reportSlot={<ReportTab />} />
+        </Suspense>
       </div>
     </div>
   );

@@ -17,7 +17,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 };
 
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export const metadata = {
   title: "PUBLIC-AI | 공공 AI 전환 플랫폼",
