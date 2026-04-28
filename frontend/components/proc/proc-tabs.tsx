@@ -6,12 +6,13 @@ import { BidItem } from "@/lib/g2b";
 import { ProcList } from "./proc-list";
 import { RecommendTab } from "./recommend-tab";
 import { DashboardTab } from "./dashboard-tab";
+import { AnalysisTab } from "./analysis-tab";
 import { cn } from "@/lib/utils";
 
 const TABS = [
+  { id: "dashboard", label: "대시보드" },
   { id: "bids", label: "공고" },
   { id: "recommend", label: "내 회사 추천" },
-  { id: "dashboard", label: "대시보드" },
   { id: "analysis", label: "분석" },
 ] as const;
 
@@ -30,13 +31,13 @@ interface ProcTabsProps {
 export function ProcTabs({ bids, stats }: ProcTabsProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const initial = (searchParams.get("tab") as TabId) || "bids";
-  const [tab, setTab] = useState<TabId>(TABS.some((t) => t.id === initial) ? initial : "bids");
+  const initial = (searchParams.get("tab") as TabId) || "dashboard";
+  const [tab, setTab] = useState<TabId>(TABS.some((t) => t.id === initial) ? initial : "dashboard");
 
   const handleChange = (next: TabId) => {
     setTab(next);
     const params = new URLSearchParams(searchParams.toString());
-    if (next === "bids") params.delete("tab");
+    if (next === "dashboard") params.delete("tab");
     else params.set("tab", next);
     router.replace(`/proc${params.toString() ? `?${params.toString()}` : ""}`, { scroll: false });
   };
@@ -63,11 +64,7 @@ export function ProcTabs({ bids, stats }: ProcTabsProps) {
       {tab === "bids" && <ProcList bids={bids} stats={stats} />}
       {tab === "recommend" && <RecommendTab />}
       {tab === "dashboard" && <DashboardTab />}
-      {tab === "analysis" && (
-        <div className="text-center py-20 text-muted-foreground">
-          <p className="text-sm">분석 탭은 곧 출시됩니다.</p>
-        </div>
-      )}
+      {tab === "analysis" && <AnalysisTab />}
     </>
   );
 }

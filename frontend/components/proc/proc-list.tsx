@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
-import { BidItem, AI_CATEGORIES, AiCategory, MonthStat } from "@/lib/g2b";
+import { useState, useMemo } from "react";
+import { BidItem, AI_CATEGORIES, AiCategory } from "@/lib/g2b";
 import { cn } from "@/lib/utils";
 
 const BIZ_COLORS: Record<string, string> = {
@@ -17,6 +17,9 @@ const CATEGORY_COLORS: Record<string, string> = {
   "음성/STT": "bg-pink-500/10 text-pink-600 dark:text-pink-400",
   "빅데이터 분석": "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400",
   "AI 인프라/MLOps": "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400",
+  "AI 자율주행/로봇": "bg-orange-500/10 text-orange-600 dark:text-orange-400",
+  "AI 의료/헬스케어": "bg-red-500/10 text-red-600 dark:text-red-400",
+  "AI 보안": "bg-teal-500/10 text-teal-600 dark:text-teal-400",
   "AI 정책/연구용역": "bg-amber-500/10 text-amber-600 dark:text-amber-400",
   "AI 교육/컨설팅": "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
   "디지털 전환": "bg-slate-500/10 text-slate-600 dark:text-slate-400",
@@ -63,44 +66,7 @@ interface ProcListProps {
   };
 }
 
-function MonthlyTrend({ data }: { data: MonthStat[] }) {
-  const maxCount = Math.max(...data.map((d) => d.count), 1);
-  return (
-    <div className="rounded-2xl border bg-card p-5 mb-8">
-      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-4">월별 AI 공고 추이 (최근 6개월)</p>
-      <div className="flex items-end gap-2 h-28">
-        {data.map((d, i) => {
-          const height = Math.max((d.count / maxCount) * 100, 4);
-          const isLast = i === data.length - 1;
-          return (
-            <div key={d.label} className="flex flex-col items-center gap-1 flex-1">
-              <span className="text-[10px] font-semibold text-muted-foreground">{d.count}</span>
-              <div
-                className={cn("w-full rounded-t-md transition-all", isLast ? "bg-primary" : "bg-primary/30")}
-                style={{ height: `${height}%` }}
-              />
-              <span className="text-[10px] text-muted-foreground/60 whitespace-nowrap">
-                {d.label.slice(5)}월
-              </span>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
 export function ProcList({ bids, stats }: ProcListProps) {
-  const [monthlyStats, setMonthlyStats] = useState<MonthStat[]>([]);
-  const [statsLoading, setStatsLoading] = useState(true);
-
-  useEffect(() => {
-    fetch("/api/proc/stats")
-      .then((r) => r.json())
-      .then(setMonthlyStats)
-      .catch(() => {})
-      .finally(() => setStatsLoading(false));
-  }, []);
   const [activeCategory, setActiveCategory] = useState<AiCategory | null>(null);
   const [sort, setSort] = useState<SortKey>("dday");
   const [query, setQuery] = useState("");
@@ -148,16 +114,6 @@ export function ProcList({ bids, stats }: ProcListProps) {
           </div>
         ))}
       </div>
-
-      {/* 월별 트렌드 */}
-      {statsLoading ? (
-        <div className="rounded-2xl border bg-card p-5 mb-8 flex items-center gap-3">
-          <div className="w-4 h-4 border-2 border-muted-foreground/30 border-t-primary rounded-full animate-spin flex-shrink-0" />
-          <span className="text-sm text-muted-foreground">과거 데이터 불러오는 중...</span>
-        </div>
-      ) : monthlyStats.length > 1 && (
-        <MonthlyTrend data={monthlyStats} />
-      )}
 
       {/* 툴바 */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
@@ -255,7 +211,7 @@ export function ProcList({ bids, stats }: ProcListProps) {
                     <span className={cn("text-[10px] font-medium px-2 py-0.5 rounded-full", bizColor)}>
                       {bid.bsnsDivNm || "기타"}
                     </span>
-                    {bid.aiCategory && bid.aiCategory !== "분류실패" && (
+                    {bid.aiCategory && bid.aiCategory !== "무관" && (
                       <span className={cn(
                         "text-[10px] font-medium px-2 py-0.5 rounded-full",
                         CATEGORY_COLORS[bid.aiCategory] ?? "bg-muted text-muted-foreground"

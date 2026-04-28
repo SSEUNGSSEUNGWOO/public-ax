@@ -96,7 +96,7 @@ export default function AboutPage() {
           <main className="min-w-0 space-y-16">
 
             {/* 01 OVERVIEW */}
-            <section id="overview">
+            <section className="scroll-mt-24" id="overview">
               <SectionHead num="01" title="PUBLIC-AX 소개" meta="Overview" />
               <div className="grid grid-cols-[1fr_240px] gap-10 items-start">
                 <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
@@ -120,7 +120,6 @@ export default function AboutPage() {
                     { k: "운영 주체", v: "케이브레인 AI퍼블릭센터" },
                     { k: "설립", v: "2024년 3월" },
                     { k: "소재지", v: "서울 동작구 보라매로5길 51" },
-                    { k: "이용 대상", v: "중앙부처 · 지자체 · 공공기관" },
                   ].map((f, i) => (
                     <div key={f.k} className={`flex flex-col gap-0.5 px-4 py-3 ${i > 0 ? "border-t" : ""} bg-muted/20`}>
                       <span className="font-mono text-[10px] text-muted-foreground tracking-wider uppercase">{f.k}</span>
@@ -132,7 +131,7 @@ export default function AboutPage() {
             </section>
 
             {/* 02 GREETING */}
-            <section id="greeting">
+            <section className="scroll-mt-24" id="greeting">
               <SectionHead num="02" title="인사말" meta="Greeting" />
               <div className="max-w-2xl space-y-4 text-sm text-muted-foreground leading-relaxed">
                 <p className="font-mono text-xs text-primary tracking-widest uppercase mb-3">Letter from the Director</p>
@@ -146,7 +145,7 @@ export default function AboutPage() {
             </section>
 
             {/* 03 WHY */}
-            <section id="why">
+            <section className="scroll-mt-24" id="why">
               <SectionHead num="03" title="왜 PUBLIC-AX인가" meta="Background" />
               <div className="grid grid-cols-2 gap-4">
                 <div className="rounded-2xl border bg-muted/20 p-6">
@@ -185,7 +184,7 @@ export default function AboutPage() {
             </section>
 
             {/* 04 MISSION / VISION */}
-            <section id="mv">
+            <section className="scroll-mt-24" id="mv">
               <SectionHead num="04" title="미션 · 비전" meta="Mission · Vision" />
               <div className="grid grid-cols-2 gap-4">
                 <div className="rounded-2xl border p-6">
@@ -208,7 +207,7 @@ export default function AboutPage() {
             </section>
 
             {/* 05 SERVICES */}
-            <section id="services">
+            <section className="scroll-mt-24" id="services">
               <SectionHead num="05" title="주요 서비스" meta="4 Services" />
               <div className="rounded-2xl border overflow-hidden">
                 {services.map((s, i) => (
@@ -232,7 +231,7 @@ export default function AboutPage() {
             </section>
 
             {/* 06 HISTORY */}
-            <section id="history">
+            <section className="scroll-mt-24" id="history">
               <SectionHead num="06" title="연혁" meta="History" />
               <div className="space-y-0">
                 {history.map((h, i) => (
@@ -251,7 +250,7 @@ export default function AboutPage() {
             </section>
 
             {/* 07 CONTACT */}
-            <section id="contact">
+            <section className="scroll-mt-24" id="contact">
               <SectionHead num="07" title="연락처" meta="Contact" />
               <div className="grid grid-cols-2 gap-4">
                 <div className="rounded-2xl border p-6">

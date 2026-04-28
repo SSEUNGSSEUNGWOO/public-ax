@@ -17,6 +17,9 @@ export const AI_CATEGORIES = [
   "음성/STT",
   "빅데이터 분석",
   "AI 인프라/MLOps",
+  "AI 자율주행/로봇",
+  "AI 의료/헬스케어",
+  "AI 보안",
   "AI 정책/연구용역",
   "AI 교육/컨설팅",
   "디지털 전환",
@@ -66,6 +69,15 @@ function rowToBidItem(row: Record<string, string | null>): BidItem {
   };
 }
 
+// 조달청 제3자단가·각수요기관 같은 표준 단가계약은 잠재 사용한도라 통계 왜곡 → 제외
+function isUnitContract(row: Record<string, string | null>): boolean {
+  const name = row.bid_ntce_nm || "";
+  const dmnd = row.dmnd_instt_nm || "";
+  if (name.includes("_제3자단가") || name.includes("단가계약") || name.includes("단가입찰")) return true;
+  if (dmnd === "각 수요기관") return true;
+  return false;
+}
+
 // 같은 사업(공고명+발주기관+마감일)이면 가장 최신 공고번호·차수만 남김
 function dedupeBids(items: BidItem[]): BidItem[] {
   const key = (b: BidItem) => `${b.bidNtceNm}|${b.ntceInsttNm}|${b.bidClseDate}`;
@@ -81,7 +93,7 @@ function dedupeBids(items: BidItem[]): BidItem[] {
   return Array.from(seen.values()).sort((a, b) => a.bidClseDate.localeCompare(b.bidClseDate));
 }
 
-// 참여 가능한 공고 (마감 미경과 + 사업 단위 dedupe)
+// 참여 가능한 공고 (마감 미경과 + 사업 단위 dedupe + 단가계약 제외)
 export async function fetchAIBids(): Promise<BidItem[]> {
   const today = new Date().toISOString().slice(0, 10);
   const { data, error } = await getClient()
@@ -92,7 +104,8 @@ export async function fetchAIBids(): Promise<BidItem[]> {
     .limit(1000);
 
   if (error || !data) return [];
-  return dedupeBids(data.map(rowToBidItem));
+  const filtered = data.filter((r) => !isUnitContract(r));
+  return dedupeBids(filtered.map(rowToBidItem));
 }
 
 // 이번달 신규 등록 건수 (bid_ntce_date 기준)

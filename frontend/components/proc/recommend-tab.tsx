@@ -39,6 +39,9 @@ const CATEGORY_COLORS: Record<string, string> = {
   "음성/STT": "bg-pink-500/10 text-pink-600 dark:text-pink-400",
   "빅데이터 분석": "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400",
   "AI 인프라/MLOps": "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400",
+  "AI 자율주행/로봇": "bg-orange-500/10 text-orange-600 dark:text-orange-400",
+  "AI 의료/헬스케어": "bg-red-500/10 text-red-600 dark:text-red-400",
+  "AI 보안": "bg-teal-500/10 text-teal-600 dark:text-teal-400",
   "AI 정책/연구용역": "bg-amber-500/10 text-amber-600 dark:text-amber-400",
   "AI 교육/컨설팅": "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
   "디지털 전환": "bg-slate-500/10 text-slate-600 dark:text-slate-400",
@@ -267,7 +270,7 @@ export function RecommendTab() {
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/15 text-primary">
                         매칭 {matchPct}%
                       </span>
-                      {bid.aiCategory && bid.aiCategory !== "분류실패" && (
+                      {bid.aiCategory && bid.aiCategory !== "무관" && (
                         <span className={cn(
                           "text-[10px] font-medium px-2 py-0.5 rounded-full",
                           CATEGORY_COLORS[bid.aiCategory] ?? "bg-muted text-muted-foreground"

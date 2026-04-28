@@ -118,9 +118,9 @@ def main():
             title = (bid.get("bid_ntce_nm") or "")[:50]
             if not result:
                 failed += 1
-                client.table("bids").update({"ai_category": "분류실패"}).eq("id", bid["id"]).execute()
-                results["분류실패"] += 1
-                print(f"  [{done}/{len(targets)}] ⚠️ 분류실패: {title}")
+                client.table("bids").update({"ai_category": "무관"}).eq("id", bid["id"]).execute()
+                results["무관"] += 1
+                print(f"  [{done}/{len(targets)}] ⚠️ 무관(파싱실패): {title}")
                 continue
             client.table("bids").update({"ai_category": result["category"]}).eq("id", bid["id"]).execute()
             results[result["category"]] += 1

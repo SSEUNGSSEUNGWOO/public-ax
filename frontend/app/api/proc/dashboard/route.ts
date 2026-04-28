@@ -6,10 +6,21 @@ const SIX_MONTH_DAYS = 180;
 interface BidRow {
   ai_category: string | null;
   ntce_instt_nm: string | null;
+  dmnd_instt_nm: string | null;
+  bid_ntce_nm: string | null;
   bid_ntce_date: string | null;
   bid_clse_date: string | null;
   assign_bdgt_amt: string | null;
   presmpt_prce: string | null;
+}
+
+// 조달청 제3자단가·각수요기관 같은 표준 단가계약은 잠재 사용한도라 통계 왜곡 → 제외
+function isUnitContract(r: BidRow): boolean {
+  const name = r.bid_ntce_nm || "";
+  const dmnd = r.dmnd_instt_nm || "";
+  if (name.includes("_제3자단가") || name.includes("단가계약") || name.includes("단가입찰")) return true;
+  if (dmnd === "각 수요기관") return true;
+  return false;
 }
 
 const KNOWN_CATEGORIES = [
@@ -19,6 +30,9 @@ const KNOWN_CATEGORIES = [
   "음성/STT",
   "빅데이터 분석",
   "AI 인프라/MLOps",
+  "AI 자율주행/로봇",
+  "AI 의료/헬스케어",
+  "AI 보안",
   "AI 정책/연구용역",
   "AI 교육/컨설팅",
   "디지털 전환",
@@ -70,21 +84,23 @@ export async function GET() {
     const todayKst = new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
     // 6개월 누적 데이터 페이지네이션 fetch
-    const rows: BidRow[] = [];
+    const rawRows: BidRow[] = [];
     const PAGE = 1000;
     let offset = 0;
     while (true) {
       const { data, error } = await supabase
         .from("bids")
-        .select("ai_category, ntce_instt_nm, bid_ntce_date, bid_clse_date, assign_bdgt_amt, presmpt_prce")
+        .select("ai_category, ntce_instt_nm, dmnd_instt_nm, bid_ntce_nm, bid_ntce_date, bid_clse_date, assign_bdgt_amt, presmpt_prce")
         .gte("bid_ntce_date", sixMoAgo)
         .range(offset, offset + PAGE - 1);
       if (error) throw error;
       const page = data ?? [];
-      rows.push(...(page as BidRow[]));
+      rawRows.push(...(page as BidRow[]));
       if (page.length < PAGE) break;
       offset += PAGE;
     }
+    // 단가계약 사업 제외
+    const rows = rawRows.filter((r) => !isUnitContract(r));
 
     // KPI
     const active = rows.filter((r) => r.bid_clse_date && r.bid_clse_date >= todayKst);
@@ -116,7 +132,7 @@ export async function GET() {
     const categoryDistMap: Record<string, number> = {};
     for (const r of active) {
       const c = r.ai_category || "미분류";
-      if (c === "분류실패") continue;
+      if (c === "무관") continue;
       categoryDistMap[c] = (categoryDistMap[c] ?? 0) + 1;
     }
     const categoryDistribution = Object.entries(categoryDistMap)
@@ -135,11 +151,13 @@ export async function GET() {
       }
       entry.total += 1;
       entry.totalBudget += getBudget(r);
-      const c = r.ai_category && r.ai_category !== "분류실패" ? r.ai_category : "미분류";
+      const c = r.ai_category && r.ai_category !== "무관" ? r.ai_category : "미분류";
       entry.byCategory[c] = (entry.byCategory[c] ?? 0) + 1;
     }
+    // 최근 6개월만 (부분 적재된 가장 오래된 월 자동 제외)
     const monthlyTrend = Array.from(monthlyMap.entries())
       .sort(([a], [b]) => a.localeCompare(b))
+      .slice(-6)
       .map(([month, entry]) => ({
         month,
         total: entry.total,
@@ -153,11 +171,11 @@ export async function GET() {
     const thisMonthByCat: Record<string, number> = {};
     const lastMonthByCat: Record<string, number> = {};
     for (const r of thisMonthRows) {
-      const c = r.ai_category && r.ai_category !== "분류실패" ? r.ai_category : "미분류";
+      const c = r.ai_category && r.ai_category !== "무관" ? r.ai_category : "미분류";
       thisMonthByCat[c] = (thisMonthByCat[c] ?? 0) + 1;
     }
     for (const r of lastMonthRows) {
-      const c = r.ai_category && r.ai_category !== "분류실패" ? r.ai_category : "미분류";
+      const c = r.ai_category && r.ai_category !== "무관" ? r.ai_category : "미분류";
       lastMonthByCat[c] = (lastMonthByCat[c] ?? 0) + 1;
     }
     const categoryChange = KNOWN_CATEGORIES.map((category) => {
@@ -205,7 +223,7 @@ export async function GET() {
     // 카테고리별 평균 예산 (active 기준, 예산 > 0)
     const catBudgetMap: Record<string, { count: number; sum: number }> = {};
     for (const r of active) {
-      const c = r.ai_category && r.ai_category !== "분류실패" ? r.ai_category : "미분류";
+      const c = r.ai_category && r.ai_category !== "무관" ? r.ai_category : "미분류";
       const b = getBudget(r);
       if (b === 0) continue;
       const e = catBudgetMap[c] ?? { count: 0, sum: 0 };

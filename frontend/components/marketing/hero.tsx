@@ -16,14 +16,16 @@ export function Hero({ bgImage }: HeroProps) {
     <section className="relative flex flex-col overflow-hidden" style={{ height: "100svh", minHeight: "600px" }}>
       {bgImage && (
         <>
-          <Image
-            src={bgImage}
-            alt="hero background"
-            fill
-            className="object-cover object-center -z-20"
-            priority
-            sizes="100vw"
-          />
+          <div className="absolute inset-0 -z-20 overflow-hidden">
+            <Image
+              src={bgImage}
+              alt="hero background"
+              fill
+              className="object-cover object-center kenburns"
+              priority
+              sizes="100vw"
+            />
+          </div>
           <div className="absolute inset-0 -z-10 bg-gradient-to-b from-black/50 via-black/40 to-black/60" />
         </>
       )}
@@ -37,6 +39,16 @@ export function Hero({ bgImage }: HeroProps) {
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(24px); }
           to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes kenburns {
+          0% { transform: scale(1.05) translate(0%, 0%); }
+          50% { transform: scale(1.15) translate(-1.5%, 1%); }
+          100% { transform: scale(1.05) translate(0%, 0%); }
+        }
+        .kenburns {
+          animation: kenburns 30s ease-in-out infinite;
+          transform-origin: center center;
+          will-change: transform;
         }
       `}</style>
 

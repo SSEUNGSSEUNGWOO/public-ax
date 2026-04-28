@@ -32,7 +32,7 @@ interface MatchedRow {
 export async function POST(req: Request) {
   try {
     const body: RequestBody = await req.json();
-    const categories = (body.categories ?? []).filter((c) => c && c !== "분류실패");
+    const categories = (body.categories ?? []).filter((c) => c && c !== "무관");
     const budgetMin = body.budgetMin ?? 0;
     const budgetMax = body.budgetMax ?? 100_000_000_000;
     const description = (body.description ?? "").trim();
