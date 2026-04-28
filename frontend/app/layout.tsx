@@ -33,9 +33,18 @@ export const metadata: Metadata = {
     locale: "ko_KR",
     siteName: "PUBLIC-AI",
     url: SITE_URL,
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "PUBLIC-AI",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
+    images: ["/opengraph-image"],
   },
 };
 
