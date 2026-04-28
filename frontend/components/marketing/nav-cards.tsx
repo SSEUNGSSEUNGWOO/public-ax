@@ -14,14 +14,14 @@ const cards = [
     title: "Guide",
     desc: "공공 AI 도입 실무 가이드",
     badge: "단계별 가이드",
-    image: "/card-portfolio.jpg",
+    image: "/card-guide.jpg",
   },
   {
     href: "/proc",
     title: "K-AI Proc",
     desc: "정부 AI 발주 실시간 모니터링",
     badge: "나라장터",
-    image: "/card-champions.jpg",
+    image: "/card-proc.jpg",
   },
 ];
 
