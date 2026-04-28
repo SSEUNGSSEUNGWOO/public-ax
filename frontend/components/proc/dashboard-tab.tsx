@@ -265,19 +265,20 @@ export function DashboardTab() {
           </div>
         </Card>
 
-        <Card title="월별 등록 + 예산 추이" subtitle="6개월 (막대=건수, 선=예산 합)">
+        <Card title="월별 등록 + 예산 추이" subtitle="6개월 (막대=예산 합, 선=건수)">
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={data.monthlyTrend}>
+              <ComposedChart data={data.monthlyTrend} margin={{ top: 8, right: 12, bottom: 0, left: 8 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
                 <XAxis dataKey="month" tick={{ fontSize: 10 }} />
-                <YAxis yAxisId="count" tick={{ fontSize: 10 }} />
                 <YAxis
                   yAxisId="budget"
-                  orientation="right"
+                  orientation="left"
+                  width={56}
                   tick={{ fontSize: 10 }}
-                  tickFormatter={(v: number) => `${(v / 100_000_000).toFixed(0)}억`}
+                  tickFormatter={(v: number) => `${Math.round(v / 100_000_000)}억`}
                 />
+                <YAxis yAxisId="count" orientation="right" width={40} tick={{ fontSize: 10 }} />
                 <Tooltip
                   contentStyle={{ borderRadius: 12, fontSize: 12, border: "1px solid rgba(0,0,0,0.08)" }}
                   formatter={(value, name) => {
@@ -286,12 +287,12 @@ export function DashboardTab() {
                   }}
                 />
                 <Legend wrapperStyle={{ fontSize: 11 }} iconSize={10} />
-                <Bar yAxisId="count" dataKey="total" name="건수" fill="#3b82f6" radius={[6, 6, 0, 0]} />
+                <Bar yAxisId="budget" dataKey="totalBudget" name="예산" fill="#3b82f6" radius={[6, 6, 0, 0]} />
                 <Line
-                  yAxisId="budget"
+                  yAxisId="count"
                   type="monotone"
-                  dataKey="totalBudget"
-                  name="예산"
+                  dataKey="total"
+                  name="건수"
                   stroke="#f59e0b"
                   strokeWidth={2.5}
                   dot={{ r: 3, fill: "#f59e0b" }}
