@@ -72,7 +72,7 @@ def chunk_raw_items(items: list[dict]) -> list[dict]:
 def chunk_site_info() -> list[dict]:
     sections = [
         {
-            "content": "PUBLIC-AX는 케이브레인 AI퍼블릭센터가 운영하는 공공 AI 전환(AX) 플랫폼입니다. 매일 AI 동향을 수집하고 분석해 공공기관 실무자에게 인사이트를 제공합니다.",
+            "content": "PUBLIC-AX는 케이브레인컴퍼니 공공AI센터가 운영하는 공공 AI 전환(AX) 플랫폼입니다. 매일 AI 동향을 수집하고 분석해 공공기관 실무자에게 인사이트를 제공합니다.",
             "heading": "서비스 소개",
         },
         {

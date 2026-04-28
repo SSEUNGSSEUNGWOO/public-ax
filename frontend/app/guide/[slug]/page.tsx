@@ -88,7 +88,7 @@ export default async function GuideDetailPage({
     description: guide.summary,
     datePublished: guide.published_at,
     dateModified: guide.published_at,
-    author: { "@type": "Organization", name: "케이브레인 AI퍼블릭센터" },
+    author: { "@type": "Organization", name: "케이브레인컴퍼니 공공AI센터" },
     publisher: { "@type": "Organization", name: "PUBLIC-AI", url: SITE_URL },
     url: `${SITE_URL}/guide/${guide.slug}`,
     ...(coverImage?.url ? { image: coverImage.url } : {}),

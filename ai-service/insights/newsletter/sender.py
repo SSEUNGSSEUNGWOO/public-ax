@@ -115,7 +115,7 @@ def insight_to_html(title: str, body: str, slug: str, published_at: str, unsubsc
     <div style="text-align:center;font-size:12px;color:#999;line-height:1.8;">
       <p style="margin:0 0 8px;">
         <a href="{site_url}" style="color:#E94E1B;text-decoration:none;">PUBLIC-AX</a>
-        &nbsp;·&nbsp; 케이브레인 AI퍼블릭센터
+        &nbsp;·&nbsp; 케이브레인컴퍼니 공공AI센터
       </p>
       <p style="margin:0 0 8px;">
         이 메일은 PUBLIC-AX 뉴스레터를 구독하신 분께 발송됩니다.

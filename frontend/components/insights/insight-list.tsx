@@ -300,7 +300,7 @@ export function InsightList({ insights, counts }: InsightListProps) {
                   <h2 className="text-2xl font-bold leading-snug mb-3 group-hover:text-primary transition-colors">{latest.title}</h2>
                   <div className="flex items-center gap-3 flex-wrap">
                     <time className="text-sm text-muted-foreground">{latest.published_at}</time>
-                    <span className="text-sm text-muted-foreground/60">케이브레인 AI퍼블릭센터 · 장승우</span>
+                    <span className="text-sm text-muted-foreground/60">케이브레인컴퍼니 공공AI센터 · 장승우</span>
                     <span className="flex items-center gap-1 text-sm text-muted-foreground/70">
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" className="text-red-400">
                         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
@@ -333,7 +333,7 @@ export function InsightList({ insights, counts }: InsightListProps) {
                           </div>
                           <div className="flex items-center gap-3 mt-2 flex-wrap">
                             <time className="text-xs text-muted-foreground">{insight.published_at}</time>
-                            <span className="text-xs text-muted-foreground/60">케이브레인 AI퍼블릭센터 · 장승우</span>
+                            <span className="text-xs text-muted-foreground/60">케이브레인컴퍼니 공공AI센터 · 장승우</span>
                             <span className="text-xs text-muted-foreground/60">조회 {insight.views ?? 0}</span>
                             <span className="flex items-center gap-1 text-xs text-muted-foreground/70">
                               <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" className="text-red-400">

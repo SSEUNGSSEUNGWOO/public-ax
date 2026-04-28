@@ -21,7 +21,7 @@ export const revalidate = 300;
 
 export const metadata = {
   title: "PUBLIC-AI | 공공 AI 전환 플랫폼",
-  description: "매일 AI 동향을 분석해 공공기관 실무자에게 인사이트를 제공하는 케이브레인 AI퍼블릭센터의 커뮤니티 포털",
+  description: "매일 AI 동향을 분석해 공공기관 실무자에게 인사이트를 제공하는 케이브레인컴퍼니 공공AI센터의 커뮤니티 포털",
   openGraph: {
     title: "PUBLIC-AI | 공공 AI 전환 플랫폼",
     description: "매일 AI 동향을 분석해 공공기관 실무자에게 인사이트를 제공하는 커뮤니티 포털",
@@ -124,7 +124,7 @@ export default async function Home() {
                 </div>
                 <div className="mt-4 pt-4 border-t flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <span className="text-xs text-muted-foreground/60">케이브레인 AI퍼블릭센터 · 장승우</span>
+                    <span className="text-xs text-muted-foreground/60">케이브레인컴퍼니 공공AI센터 · 장승우</span>
                     <span className="text-xs text-muted-foreground/50">조회 {todayInsight.views ?? 0}</span>
                     <span className="flex items-center gap-1 text-xs text-muted-foreground/50">
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" className="text-red-400">

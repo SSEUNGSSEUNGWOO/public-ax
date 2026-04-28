@@ -113,7 +113,7 @@ export function AboutSection({ insightCount, guideCount, procCount }: PillarStat
 
           <div className="lg:col-span-4 pb-1">
             <p className="text-sm leading-[1.8] text-muted-foreground mb-5">
-              케이브레인 AI퍼블릭센터는 대한민국 공공기관의 AI 전환(AX)을 지원합니다.
+              케이브레인컴퍼니 공공AI센터는 대한민국 공공기관의 AI 전환(AX)을 지원합니다.
               정책 · 기술 · 현장 사례를 분석해, 실무자가 바로 쓸 수 있는 인사이트로 재구성합니다.
             </p>
             <div className="border-t pt-4 font-mono text-[10.5px] tracking-[0.14em] uppercase flex items-center justify-between text-muted-foreground">

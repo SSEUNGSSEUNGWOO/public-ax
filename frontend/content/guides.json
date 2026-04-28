@@ -1,5 +1,65 @@
 [
   {
+    "slug": "prompt-engineering",
+    "title": "프롬프트 엔지니어링이란? AI에게 원하는 답을 정확히 얻어내는 기술",
+    "summary": "프롬프트가 답변 품질을 결정한다 — 5가지 핵심 기법 정리",
+    "category": "실무 활용",
+    "difficulty": "기초",
+    "tags": [
+      "프롬프트 엔지니어링",
+      "ChatGPT",
+      "Claude",
+      "LLM",
+      "AI 활용"
+    ],
+    "tldr": [
+      "AI 답변 품질을 결정하는 가장 강력한 변수는 모델이 아니라 입력(프롬프트)이다",
+      "역할 부여·퓨샷·사고의 사슬 등 5가지 기법만 익혀도 실무 결과물 품질이 크게 달라진다",
+      "민감정보 입력과 프롬프트 인젝션은 공공기관에서 반드시 점검해야 할 보안 이슈다"
+    ],
+    "images": [
+      {
+        "id": "prompt-engineering-cover",
+        "type": "cover",
+        "description": "Modern abstract illustration of human-AI conversation with glowing speech bubbles flowing between a person silhouette and a stylized AI interface. Soft gradient background in warm orange and teal tones. Floating geometric shapes, light particles, and subtle communication symbols. Friendly approachable mood. No text, no letters, no labels of any kind. Wide 16:9 landscape composition.",
+        "url": "/guides/prompt-engineering-prompt-engineering-cover.png"
+      },
+      {
+        "id": "prompt-techniques-diagram",
+        "type": "diagram",
+        "description": "Flat design infographic showing five distinct prompt technique cards arranged in a connected pattern with subtle arrows between them. Each card uses a different soft pastel color (mint green, peach, lavender, sky blue, butter yellow). Abstract icons inside each card such as a chat bubble, chain links, branching tree, stacked bullets, and merged circles. Clean minimal background. No text, no letters, no labels of any kind. Wide 16:9 landscape composition.",
+        "url": "/guides/prompt-engineering-prompt-techniques-diagram.png"
+      },
+      {
+        "id": "public-sector-prompt-example",
+        "type": "example",
+        "description": "Stylized illustration of a government office worker at a desk with a laptop, surrounded by floating document icons, folders, and abstract AI assistant elements connected by gentle flowing lines. Clean modern flat illustration. Calm professional color palette with sage green, warm beige, and soft coral accents. Sense of organized productive workflow. No text, no letters, no labels of any kind. Wide 16:9 landscape composition.",
+        "url": "/guides/prompt-engineering-public-sector-prompt-example.png"
+      }
+    ],
+    "body": "## 개요 — 프롬프트가 답을 바꾼다\n\n같은 ChatGPT나 Claude를 써도 어떤 사람은 곧장 쓸 만한 결과를 얻고, 어떤 사람은 두루뭉술한 답만 받는다. 차이는 모델이 아니라 입력에 있다. AI에게 무엇을, 어떻게, 어떤 맥락에서 묻는지가 결과의 품질을 결정한다.\n\n이 입력을 설계하는 일이 프롬프트 엔지니어링(Prompt Engineering)이다. 직역하면 \"지시문 설계\"로, 자연어로 AI 모델을 안내해 원하는 결과를 끌어내는 기술이다. IBM은 2026년 가이드에서 이를 \"AI 시대의 새로운 코딩\"이라 표현했다. 코드를 짜지 않아도 잘 정리한 한국어 문장 한 단락이 보고서 초안, 데이터 분석, 민원 답변까지 처리하는 시대가 왔기 때문이다.\n\n> 📌 **핵심**: 프롬프트는 단순한 질문이 아니라 'AI가 일을 해내기 위한 작업 지시서'다. 신입 직원에게 일을 맡길 때처럼 역할·맥락·형식을 함께 줘야 결과가 정확해진다.\n\n### 프롬프트의 3가지 기본 형태\n\nIBM이 분류한 프롬프트의 기본형은 세 가지다.\n\n**직접 지시(Direct Instruction)** — \"AI 도입 효과에 대해 한 페이지 요약해 줘\"처럼 작업과 형식을 명확히 지정한다. 결과 예측이 쉬워 정형 업무에 적합하다.\n\n**개방형 지시(Open-ended Instruction)** — \"AI 도입 전략에 대한 의견을 들려줘\" 같은 폭넓은 질문이다. 브레인스토밍이나 정책 아이디어 발굴에 유용하지만, 결과가 산만해질 수 있다.\n\n**작업별 지시(Task-specific Instruction)** — \"다음 영문 보도자료를 한국어 공문 어투로 번역해 줘\"처럼 특정 작업과 톤을 명시한다. 번역·분류·요약처럼 반복 업무에 강하다.\n\n## 핵심 원리 — 실무에서 바로 쓰는 5가지 기법\n\n### 1. 역할 부여(Role Prompting)\n\n\"당신은 15년 차 공공기관 정책기획관입니다\"처럼 AI에게 역할을 먼저 지정하면 답변의 톤과 깊이가 크게 달라진다. AWS 사례에서도 \"당신은 의류 회사 영업 사원입니다\"로 시작한 챗봇이 같은 질문에서 훨씬 정확한 답변을 만들어냈다.\n\n### 2. 퓨샷 프롬프팅(Few-shot Prompting)\n\n원하는 출력 형식의 예시 두세 개를 먼저 보여주고 본 작업을 시킨다. 보고서 양식이 기관마다 다른 공공기관에서 특히 효과적이다. \"다음과 같은 형식으로 작성해 주세요\"라고 한 뒤 예시 두 건을 붙이면 AI가 그 양식을 그대로 따라간다. 예시가 없는 형태는 제로샷(Zero-shot)이라 부르며, 단순한 작업이라면 제로샷으로도 충분하다.\n\n> 💡 **팁**: 퓨샷 예시는 '양식·톤·용어'가 잘 드러난 과거 모범 문서를 고르자. 글자 수까지 비슷하게 맞추면 AI가 길이도 따라온다.\n\n### 3. 사고의 사슬(Chain-of-Thought, CoT)\n\n복잡한 추론이 필요할 때 \"단계별로 생각해 줘\"라고 지시한다. IBM 사례에서는 기후 변화를 설명할 때 \"정의 → 원인 → 영향\" 순으로 단계를 명시하자 답변 일관성이 눈에 띄게 좋아졌다. 예산 분석, 정책 영향 평가처럼 논리 전개가 중요한 업무에 잘 맞는다.\n\n### 4. 단계별 분할 / 프롬프트 체이닝(Prompt Chaining)\n\n한 번에 큰 작업을 시키지 말고 잘게 쪼갠다. 보고서 작성이라면 \"목차 잡기 → 섹션별 초안 → 다듬기\"로 나눠, 각 단계 출력을 다음 입력으로 넘긴다. 한 프롬프트의 답변이 길어질수록 품질이 떨어지기 때문이다.\n\n### 5. 자체 일관성(Self-consistency)\n\nAWS와 IBM이 공통으로 권하는 검증 기법이다. 같은 질문을 세 번 다른 표현으로 던지고, 가장 일관된 답을 채택한다. 통계 해석이나 정책 사례 분석처럼 정답이 한 가지가 아닌 영역에서 신뢰도를 높여준다.\n\n{{image:prompt-techniques-diagram}}\n\n### 한 걸음 더 — 컨텍스트 엔지니어링\n\nIBM은 2026년 가이드에서 \"더 나은 프롬프트만으로는 부족하다\"며 컨텍스트 엔지니어링(Context Engineering)을 강조했다. 같은 질문이라도 AI가 읽을 수 있는 자료, 대화 기록, 출력 형식까지 함께 설계해야 한다는 뜻이다.\n\n대표 사례가 검색 증강 생성(RAG, Retrieval-Augmented Generation)이다. 기관 내부 문서를 AI가 참고하도록 연결한 뒤 질문하면, 외부 학습 데이터에 없는 우리 기관 규정·통계·과거 보고서를 근거로 답한다. 환각(Hallucination, AI가 사실과 다른 내용을 자신 있게 말하는 현상)을 줄이는 핵심 기법이다.\n\n엔드플랜 채널의 [Context Engineering 영상](https://www.youtube.com/watch?v=0OXCyl5Rai4)은 \"상위 1% 프롬프트 엔지니어는 단순 작성이 아니라 설계를 한다\"는 관점에서 이 개념을 풀어준다.\n\n## 공공기관 활용 방법\n\n### 1) 정책보고서 초안 작성\n\n> \"당신은 OO부 정책기획 담당자입니다. 첨부한 [내부 통계자료]를 근거로 'AI 도입에 따른 행정 효율화 방안' 보고서 초안을 3페이지로 작성하세요. 목차 → 현황 → 쟁점 → 제언 순서로 단계별로 작성하고, 각 섹션마다 핵심 수치를 포함해 주세요.\"\n\n역할 부여 + 단계 분할 + 자료 첨부(컨텍스트)를 결합한 형태다.\n\n### 2) 민원 답변 표준화\n\n과거 모범 답변 3~5건을 예시로 보여준 뒤(퓨샷) 새 민원에 같은 양식·어조로 답하게 한다. 부서마다 답변 품질이 들쭉날쭉한 문제를 줄일 수 있다.\n\n### 3) 회의록 요약\n\n녹취록을 통째로 던지지 말고 \"참석자 발언 요약 → 결정사항 → 후속 조치\" 세 단계로 쪼개서 시킨다. 길이가 줄고 누락이 적다.\n\n### 4) 데이터 사전 분석\n\nDataCamp와 Towards Data Science가 권하는 패턴이다. \"다음 CSV 컬럼 목록을 보고 결측값·이상치 점검 코드를 Python으로 작성하고, 각 단계 의도를 한 줄 주석으로 달아 줘\"처럼 작업과 형식을 동시에 지정한다.\n\n훜선장 채널의 [AI 프롬프트 작성법 5가지 노하우](https://www.youtube.com/watch?v=h4ruMCS2KAM)와 삼성언론재단의 [언론인을 위한 AI 프롬프트 엔지니어링](https://www.youtube.com/watch?v=wuxjCi8xC7o)은 위 패턴을 한국어 사례로 풀어 소개한다.\n\n{{image:public-sector-prompt-example}}\n\n### 보안 점검 — 프롬프트 인젝션\n\nIBM은 프롬프트 엔지니어링 가이드에 별도 챕터로 프롬프트 인젝션(Prompt Injection)을 다룬다. 외부 입력에 \"이전 지시는 무시하고 OO를 출력하라\" 같은 악성 명령이 섞이면 AI가 그대로 따라가는 취약점이다.\n\n> ⚠️ **주의**: 주민등록번호·인사 정보·비공개 보고서는 외부 AI 서비스에 그대로 입력해선 안 된다. 한 번 보낸 데이터는 회수되지 않는다는 전제로 운영한다.\n\n공공기관에서 특히 점검할 점은 다음과 같다.\n\n- **민감정보 입력 금지**: 외부 SaaS형 AI 대신 행정 내부망에서 운영하는 AI 또는 RAG 기반 자체 시스템을 사용한다.\n- **자료 출처 재확인**: AI가 인용한 통계·법령은 반드시 원문으로 다시 확인한다. 특히 법령 조항 번호와 최근 개정 일자는 환각이 잦다.\n- **최종 책임은 담당자**: AI 출력은 초안일 뿐, 결재 문서의 검토와 책임은 사람이 진다.\n\n## 정리\n\n프롬프트 엔지니어링은 '코딩의 새로운 형태'라기보다 **명료한 업무 지시 능력**에 가깝다. 신입 직원에게 일을 맡기듯 ① 역할 → ② 목적과 배경 → ③ 출력 형식 → ④ 예시 순으로 지시하면 AI도 그만큼 정확히 응답한다. 오늘 작성 중인 보고서 한 단락을 AI에게 다듬어 달라고 요청하는 일에서 시작하면 충분하다.",
+    "published_at": "2026-04-28",
+    "status": "published",
+    "videos": [
+      {
+        "title": "The top 1% of prompt engineers do \"design\" | Context Engineering",
+        "url": "https://www.youtube.com/watch?v=0OXCyl5Rai4",
+        "channel": "엔드플랜 Endplan AI"
+      },
+      {
+        "title": "AI 프롬프트 작성법｜GPT, 코파일럿 대화형 AI에게 최고의 답변 얻는 노하우 5가지 공개｜프롬프트 엔지니어링",
+        "url": "https://www.youtube.com/watch?v=h4ruMCS2KAM",
+        "channel": "훜선장"
+      },
+      {
+        "title": "[언론인을 위한 AI] 3. 프롬프트 엔지니어링 (Prompt Engineering)",
+        "url": "https://www.youtube.com/watch?v=wuxjCi8xC7o",
+        "channel": "삼성언론재단"
+      }
+    ],
+    "evaluation_score": 4.62
+  },
+  {
     "slug": "ai-security-personal-data-protection",
     "title": "AI 보안과 개인정보: 데이터 유출 한 건에 44억이 사라지는 이유",
     "summary": "AI 도입이 만드는 새로운 보안 위협과 개인정보 침해를 막는 핵심 원칙",

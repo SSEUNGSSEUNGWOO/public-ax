@@ -103,7 +103,7 @@ export default async function InsightDetailPage({
     description: insight.body.replace(/[#*`>\[\]]/g, "").replace(/\n+/g, " ").trim().slice(0, 160),
     datePublished: insight.published_at,
     dateModified: insight.published_at,
-    author: { "@type": "Organization", name: "케이브레인 AI퍼블릭센터" },
+    author: { "@type": "Organization", name: "케이브레인컴퍼니 공공AI센터" },
     publisher: { "@type": "Organization", name: "PUBLIC-AI", url: `${SITE_URL}` },
     url: `${SITE_URL}/insights/${insight.slug}`,
     ...(insight.image_url ? { image: insight.image_url } : {}),
@@ -124,7 +124,7 @@ export default async function InsightDetailPage({
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-6">
               <p className="text-sm text-muted-foreground">AI 동향 일일 리포트 — {insight.published_at}</p>
               <div className="flex items-center gap-3">
-                <p className="text-sm text-muted-foreground/70">케이브레인 AI퍼블릭센터 · 장승우</p>
+                <p className="text-sm text-muted-foreground/70">케이브레인컴퍼니 공공AI센터 · 장승우</p>
                 <span className="text-xs text-muted-foreground/60">조회 {insight.views ?? 0}회</span>
               </div>
             </div>
