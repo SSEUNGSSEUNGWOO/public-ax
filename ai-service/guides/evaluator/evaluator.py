@@ -53,14 +53,14 @@ TL;DR:
     import os
     env = {k: v for k, v in os.environ.items() if k != "ANTHROPIC_API_KEY"}
     result = subprocess.run(
-        ["claude", "-p", prompt],
+        ["codex", "exec", "--skip-git-repo-check", "-s", "read-only", prompt],
         capture_output=True,
         text=True,
-        timeout=120,
+        timeout=240,
         env=env,
     )
     if result.returncode != 0:
-        raise RuntimeError(f"claude CLI 실패: {result.stderr}")
+        raise RuntimeError(f"codex CLI 실패: {result.stderr}")
     output = result.stdout
     start = output.find("{")
     end = output.rfind("}") + 1

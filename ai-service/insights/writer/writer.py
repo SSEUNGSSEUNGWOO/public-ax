@@ -56,7 +56,7 @@ def cluster_items(items: list[dict]) -> list[dict]:
     )
     prompt = CLUSTER_PROMPT_TEMPLATE.format(items_text=items_text)
     try:
-        output = run_claude(prompt)
+        output = run_claude(prompt, timeout=480)
         start = output.find("{")
         end = output.rfind("}") + 1
         return json.loads(output[start:end]).get("clusters", [])

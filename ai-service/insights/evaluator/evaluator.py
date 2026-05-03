@@ -31,7 +31,9 @@ def check_urls(draft: str) -> list[str]:
     return invalid
 
 
-def evaluate_with_claude_cli(draft: str, rubric: dict) -> dict:
+def evaluate_with_codex_cli(draft: str, rubric: dict) -> dict:
+    import os
+
     criteria_text = "\n".join(
         f"- **{c['name']}** (가중치 {c['weight']}, 최대 {c['max_score']}점): {c['description']}"
         for c in rubric["criteria"]
@@ -61,21 +63,23 @@ def evaluate_with_claude_cli(draft: str, rubric: dict) -> dict:
   "strengths": "잘 된 부분"
 }}"""
 
+    env = {k: v for k, v in os.environ.items() if k != "ANTHROPIC_API_KEY"}
     result = subprocess.run(
-        ["claude", "-p", prompt],
+        ["codex", "exec", "--skip-git-repo-check", "-s", "read-only", prompt],
         capture_output=True,
         text=True,
-        timeout=120,
+        timeout=240,
+        env=env,
     )
 
     if result.returncode != 0:
-        raise RuntimeError(f"claude CLI 실패: {result.stderr}")
+        raise RuntimeError(f"codex CLI 실패: {result.stderr}")
 
     output = result.stdout
     start = output.find("{")
     end = output.rfind("}") + 1
     if start == -1:
-        raise ValueError("claude CLI 응답에서 JSON을 찾을 수 없음")
+        raise ValueError("codex CLI 응답에서 JSON을 찾을 수 없음")
 
     return json.loads(output[start:end])
 
@@ -99,7 +103,7 @@ def run() -> tuple[bool, dict]:
             print(f"[evaluator] 유효하지 않은 URL {len(invalid_urls)}개: {invalid_urls}")
 
         try:
-            result = evaluate_with_claude_cli(draft, rubric)
+            result = evaluate_with_codex_cli(draft, rubric)
         except Exception as e:
             print(f"[evaluator] 평가 실패: {e}")
             return False, {}
