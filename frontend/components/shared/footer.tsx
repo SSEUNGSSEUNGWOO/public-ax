@@ -14,7 +14,7 @@ export function Footer() {
       <div className="container mx-auto px-4 py-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex items-center gap-5 flex-wrap">
-            <Image src="/kbrain-logo.png" alt="K-BRAIN" width={120} height={32} className="object-contain" />
+            <Image src="/logo-color.svg" alt="PUBLIC-AI" width={170} height={49} className="object-contain" />
             <nav className="flex items-center gap-4 text-sm">
               {links.map((link) =>
                 link.external ? (
@@ -37,7 +37,7 @@ export function Footer() {
               )}
             </nav>
           </div>
-          <p className="text-xs text-muted-foreground/70 font-mono tracking-wider">© 2026 PUBLIC-AI</p>
+          <p className="text-xs text-muted-foreground/70 font-mono tracking-wider">© 2026 PUBLIC-AI by K-BRAIN</p>
         </div>
 
         <p className="text-[11px] text-muted-foreground/60 mt-4 leading-relaxed">

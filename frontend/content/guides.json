@@ -1,5 +1,59 @@
 [
   {
+    "slug": "ai-sovereignty-explained",
+    "title": "AI 주권이란? 데이터·모델·운영을 내 손 안에 두는 법",
+    "summary": "AI 시대에 데이터·모델·운영 통제권을 지키는 전략",
+    "category": "AI 기초",
+    "difficulty": "기초",
+    "tags": [
+      "AI 주권",
+      "데이터 주권",
+      "AI 거버넌스",
+      "하이브리드 클라우드",
+      "공공 AI"
+    ],
+    "tldr": [
+      "AI 주권은 데이터 위치를 넘어 모델·운영·거버넌스 전체를 직접 통제하는 권한이다",
+      "데이터 주권·운영 주권·디지털 주권·AI 인프라 4가지 축으로 동시에 설계해야 한다",
+      "글로벌 클라우드의 속도와 자국 관할권 통제를 동시에 잡는 하이브리드 모델이 현실적 정답이다"
+    ],
+    "images": [
+      {
+        "id": "sovereignty-cover",
+        "type": "cover",
+        "description": "Wide 16:9 landscape illustration. A glowing sphere representing AI brain or neural network nestled inside protective transparent geometric boundaries shaped like a shield. Soft gradient background with warm amber and deep teal tones. Abstract data flow lines circling within the shield boundary, none escaping. Minimalist editorial style, no text, no labels.",
+        "url": "/guides/ai-sovereignty-explained-sovereignty-cover.png"
+      },
+      {
+        "id": "sovereignty-pillars",
+        "type": "diagram",
+        "description": "Wide 16:9 landscape diagram. Four interconnected hexagonal pillars arranged horizontally, each with a distinct icon inside: a database cylinder, gear wheel, padlock, and server rack silhouette. Pillars connected by clean curved lines on top forming an arch. Soft cream background with muted sage green and burnt orange accents. Flat modern illustration style, no text, no labels, no letters.",
+        "url": "/guides/ai-sovereignty-explained-sovereignty-pillars.png"
+      }
+    ],
+    "body": "## 개요: AI를 도입할수록 통제권이 사라지는 역설\n\nChatGPT 같은 도구를 업무에 쓰기 시작하면 묘한 불안감이 따라온다. 보고서 초안을 외부 모델에 보냈는데, 그 데이터가 어디로 흘러가 어떻게 학습에 쓰이는지 알 수 없다. 모델이 어느 날 갑자기 바뀌어도 막을 방법이 없고, 서비스 약관이 바뀌면 그저 따라야 한다. 이 불안의 정체가 바로 'AI 주권(AI Sovereignty)' 문제다.\n\nIBM이 2026년 발표한 정의에 따르면 AI 주권은 한 조직이나 국가가 자신의 AI 기술 스택, 즉 인프라·데이터·모델·운영 전체를 직접 통제할 수 있는 능력이다. 과거에는 데이터 보관 위치(data residency)만 따지면 됐지만, 생성형 AI 시대에는 모델이 어디서 추론하는지, 누가 운영 권한을 갖는지, 의사결정 로그가 어디에 남는지까지 모두 통제 범위에 들어왔다.\n\n> 📌 **핵심**: AI 주권은 '데이터를 어디 두느냐'가 아니라 '누가 끌 수 있고, 누가 설명할 수 있는가'를 묻는 권한 설계 문제다.\n\n## AI 주권 vs Sovereign AI: 헷갈리는 두 단어\n\n두 용어는 자주 혼용되지만 결이 다르다.\n\n- **AI 주권(AI Sovereignty)**: 통제권 그 자체. AI 시스템을 누가 어떻게 쓰고, 규정을 어떻게 지킬지를 결정할 권한을 말한다.\n- **Sovereign AI**: 그 통제권을 실현하는 기술적 기반. 데이터센터·GPU·연산자원, 그리고 자국 데이터로 자국 영토 안에서 학습·배포한 AI 모델을 가리킨다.\n\n쉽게 말해 Sovereign AI는 '하드웨어와 모델', AI 주권은 '권한과 거버넌스'다. 둘이 합쳐져야 비로소 진정한 통제가 완성된다.\n\n{{image:sovereignty-pillars}}\n\n## 작동 방식: AI 주권을 구성하는 4가지 축\n\n### 1. 데이터 주권 (Data Sovereignty)\n학습 데이터, 실시간 입력값, 모델 출력 모두가 생성된 국가의 법률을 따른다. 단순히 어디 저장하느냐를 넘어, 데이터가 AI 파이프라인을 따라 흐르는 모든 단계에서 누가 접근하고 어떻게 보호되는지를 다룬다.\n\n### 2. 운영 주권 (Operational Sovereignty)\nAI 시스템의 운영 권한이 자국 또는 자조직에 있어야 한다. 외부 벤더가 통제 평면(control plane)을 쥐고 있으면 정작 비상시에 손을 쓸 수 없다.\n\n### 3. 디지털 주권 (Digital Sovereignty)\nID 관리, 암호화 키, 감사 로그, 텔레메트리가 모두 관할권 안에 머물러야 한다. IBM Sovereign Core처럼 '계약이 아니라 아키텍처로' 주권을 강제하는 방식이 새로운 표준으로 떠오르고 있다.\n\n### 4. AI 인프라\n자체 GPU 클러스터, 사설 클라우드, 온프레미스 서버 등 모델을 돌릴 물리적 자원. 한국 정부가 추진 중인 국가 AI 컴퓨팅 센터, NIPA·KISA의 공공 클라우드 정책이 모두 이 영역에 해당한다.\n\n> ⚠️ **주의**: 네 가지 축 중 하나라도 빠지면 주권이 무너진다. 데이터만 국내에 둬도 운영 권한이 해외 벤더에 있으면 '명목상 주권'에 그친다.\n\n## 왜 지금 공공기관이 이걸 짚어야 하나\n\nIBM 2025 CEO 조사에서 임원의 68%가 \"AI가 우리 비즈니스의 핵심을 다시 짤 것\"이라고 답했고, 61%는 이미 AI 에이전트를 적극 도입 중이라고 했다. 민간이 이 속도로 움직이면, 공공기관도 결국 AI 에이전트가 민원 응대·문서 검토·정책 분석에 들어오게 된다.\n\n이때 핵심 질문은 두 가지다.\n\n**첫째, 민감한 행정 데이터를 외부 모델에 그대로 줘도 되는가?** 주민등록번호가 섞인 민원 문서를 해외 사업자의 LLM API에 보내는 순간 데이터 주권은 사라진다. 개인정보보호법, 망분리 지침, 그리고 곧 본격 적용될 EU AI Act급 규제(국내에서도 AI 기본법 시행령 논의 중)와 모두 충돌할 수 있다.\n\n**둘째, AI가 내린 결정을 우리가 설명할 수 있는가?** EU AI Act는 위반 시 최대 3,500만 유로 또는 매출의 7% 과징금을 부과한다. 채용·복지·신용 같은 영역에서 AI 결정의 근거를 못 대면 민원·소송·감사로 직결된다.\n\n## 공공기관 활용 방법: 하이브리드 모델로 설계하기\n\n많은 기관이 \"그럼 모든 AI를 자체 구축해야 하느냐\"고 묻는다. 하지만 IBM의 분석은 이 이분법 자체가 함정이라고 지적한다. 자국 클라우드만 쓰면 단일 지역 장애에 취약하고, 인재 풀이 좁고, 최신 AI 기능 도입이 늦다.\n\n현실적인 답은 **하이브리드 모델**이다.\n\n- **민감 데이터·핵심 추론**: 자국 영토 안 사설 클라우드 또는 격리(air-gapped) 환경에서 처리\n- **공개 정보 분석·일반 업무 보조**: 글로벌 클라우드의 최신 모델 활용\n- **공통 원칙**: 기본 암호화, 워크로드 이동성(portability), 운영 투명성, 규제 적합성\n\n> 💡 **팁**: 지자체 민원 챗봇을 만든다면 ① 민원인 개인정보가 들어가는 응답 생성은 국내 LLM(예: HyperCLOVA X, Solar)으로 온프레미스 처리하고, ② 공개된 조례·법령 검색은 글로벌 모델 API로 빠르게 처리하는 식의 분리 설계가 가능하다.\n\n### AI 거버넌스: 주권을 운영으로 옮기는 5단계\n\n주권을 선언만 하면 의미가 없다. IBM의 거버넌스 가이드는 다음 5가지 실행 항목을 제시한다.\n\n1. **투명성**: AI가 왜 그런 결정을 했는지 근거를 항상 기록한다. 부정거래 탐지 AI라면 '의심스럽다'가 아니라 '큰 금액·새로운 위치·낯선 수취인'처럼 지표를 함께 남긴다.\n2. **책임자 지정**: 기관 내 'AI 거버넌스 책임자'를 명시해 모델 드리프트, 편향, 이상 동작을 모니터링한다.\n3. **자동 가드레일**: 개발 단계부터 데이터 계보(lineage), 실시간 드리프트 감지를 코드로 심는다.\n4. **감사 준비 상시화**: 감사가 닥쳐서 증거를 모으는 방식이 아니라, 평소에 자동으로 규제 준비 증거를 만드는 구조로 전환한다.\n5. **계약이 아닌 아키텍처로 강제**: \"우리 데이터는 안전합니다\"라는 벤더 약속이 아니라, 시스템 구조 자체가 데이터 유출을 막아야 한다.\n\n### 실무 적용 체크리스트\n\n- [ ] 우리 부서가 쓰는 AI 도구가 데이터를 어디로 보내는지 파악했는가?\n- [ ] 외부 LLM에 보내도 되는 데이터와 안 되는 데이터의 분류 기준이 있는가?\n- [ ] AI 결정에 대한 설명 가능성(Explainability)이 시스템에 내장돼 있는가?\n- [ ] 벤더가 바뀌거나 서비스가 중단돼도 우리 업무가 굴러가는가? (이동성)\n- [ ] AI 운영 책임자가 지정돼 있는가?\n\n## 더 깊이 보기\n\n- 「Sovereign AI 기술시사 통역 설명」 (강천호) — Sovereign AI 개념을 영어 원문 뉴스로 짚어주는 영상: https://www.youtube.com/watch?v=UYOkrygXRRI\n- 「지금도 늦었다 — AI 시대의 잔혹한 현실」 (최재붕 교수, 세바시) — 왜 한국이 자체 AI 역량 확보에 사활을 걸어야 하는지: https://www.youtube.com/watch?v=zcyzPjLFnfM\n\n## 마무리\n\nAI 주권은 거창한 선언이 아니라 설계 원칙이다. \"우리 데이터는 어디 있고, 누가 보고, 누가 끌 수 있나\"라는 단순한 질문에서 시작하면 된다. 공공기관이 AI를 도입할수록 이 질문에 자신 있게 답할 수 있어야, AI가 행정의 도구로 자리 잡고 또 하나의 통제 불능 영역이 되지 않는다.",
+    "published_at": "2026-05-04",
+    "status": "published",
+    "videos": [
+      {
+        "title": "sovereign AI [기술시사 통역 설명]",
+        "url": "https://www.youtube.com/watch?v=UYOkrygXRRI",
+        "channel": "MiliPreter 강천호 〈통역 병․준위․장교 클래스〉 카페 주소 http://cafe.naver.com/pathtosuccess"
+      },
+      {
+        "title": "지금도 늦었다. 60만 명 해고가 말해주는 AI 시대의 잔혹한 현실 | 최재붕 교수 [세바시45 ep.94]",
+        "url": "https://www.youtube.com/watch?v=zcyzPjLFnfM",
+        "channel": "세바시 강연 Sebasi Talk"
+      },
+      {
+        "title": "※ 2026년 3월 AI 실전활용 비법 특별강연(2026.3.17. 강민구 영남일보)",
+        "url": "https://www.youtube.com/watch?v=lDUBfCJQsME",
+        "channel": "강민구 (디지털ㆍAI 상록수)"
+      }
+    ],
+    "evaluation_score": 4.09
+  },
+  {
     "slug": "prompt-engineering",
     "title": "프롬프트 엔지니어링이란? AI에게 원하는 답을 정확히 얻어내는 기술",
     "summary": "프롬프트가 답변 품질을 결정한다 — 5가지 핵심 기법 정리",
