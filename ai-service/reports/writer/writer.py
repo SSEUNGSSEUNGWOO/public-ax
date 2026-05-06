@@ -12,11 +12,13 @@ from reports.writer.prompts import FEEDBACK_SECTION_TEMPLATE, SYSTEM_PROMPT, WRI
 def run_claude(prompt: str, timeout: int = 300) -> str:
     env = {k: v for k, v in os.environ.items() if k != "ANTHROPIC_API_KEY"}
     result = subprocess.run(
-        ["claude", "-p", prompt],
+        ["claude", "-p", "-"],
+        input=prompt,
         capture_output=True,
         text=True,
         timeout=timeout,
         env=env,
+        encoding="utf-8",
     )
     if result.returncode != 0:
         raise RuntimeError(f"claude CLI 실패: {result.stderr}")

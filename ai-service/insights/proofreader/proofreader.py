@@ -24,11 +24,16 @@ PROMPT_TEMPLATE = """다음은 AI 동향 리포트 마크다운 초안입니다.
 
 def run(draft: str) -> str:
     prompt = PROMPT_TEMPLATE.format(draft=draft)
+    import os
+    env = {k: v for k, v in os.environ.items() if k != "ANTHROPIC_API_KEY"}
     result = subprocess.run(
-        ["claude", "-p", prompt],
+        ["claude", "-p", "-"],
+        input=prompt,
         capture_output=True,
         text=True,
         timeout=300,
+        env=env,
+        encoding="utf-8",
     )
     if result.returncode != 0:
         print(f"[proofreader] CLI 실패, 원본 유지: {result.stderr[:100]}")

@@ -7,7 +7,7 @@
 3. evaluator: 6기준(factual·insight·readability·seo·geo·human_voice) 점수
    - 미달 시 writer 재실행 (max 3)
 4. reviewer: 최종 검수·polish
-5. supabase upsert (proc_reports)
+5. DB upsert (proc_reports)
 
 사용:
     python reports/run.py            # 자동 발행 (today 기준)

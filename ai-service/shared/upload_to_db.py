@@ -1,6 +1,6 @@
 """
 기존 JSON 데이터를 DB로 업로드하는 스크립트
-Usage: python ai-service/shared/upload_to_supabase.py
+Usage: python ai-service/shared/upload_to_db.py
 """
 import json
 import sys
@@ -23,7 +23,7 @@ def upload_insights():
         print("insights.json 없음, 건너뜀")
         return
 
-    data = json.loads(path.read_text())
+    data = json.loads(path.read_text(encoding="utf-8"))
 
     with get_conn() as conn:
         with conn.cursor() as cur:
@@ -68,7 +68,7 @@ def upload_guides():
         print("guides.json 없음, 건너뜀")
         return
 
-    data = json.loads(path.read_text())
+    data = json.loads(path.read_text(encoding="utf-8"))
 
     with get_conn() as conn:
         with conn.cursor() as cur:

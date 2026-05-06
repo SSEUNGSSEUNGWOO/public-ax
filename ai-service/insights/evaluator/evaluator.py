@@ -64,12 +64,17 @@ def evaluate_with_codex_cli(draft: str, rubric: dict) -> dict:
 }}"""
 
     env = {k: v for k, v in os.environ.items() if k != "ANTHROPIC_API_KEY"}
+    import shutil
+    codex_cmd = shutil.which("codex") or "codex"
     result = subprocess.run(
-        ["codex", "exec", "--skip-git-repo-check", "-s", "read-only", prompt],
+        [codex_cmd, "exec", "--skip-git-repo-check", "-s", "read-only", "-"],
+        input=prompt,
         capture_output=True,
         text=True,
         timeout=240,
         env=env,
+        encoding="utf-8",
+        shell=True,
     )
 
     if result.returncode != 0:

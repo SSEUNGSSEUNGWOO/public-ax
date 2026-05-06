@@ -18,7 +18,7 @@ python guides/run.py "RAG"              # 가이드 생성 (주제 입력)
 python guides/publish.py list           # 가이드 목록 (draft/published)
 python guides/publish.py <slug>         # draft → published
 python guides/publish.py unpublish <slug>
-python shared/upload_to_supabase.py     # 로컬 JSON → Supabase 업로드
+python shared/upload_to_db.py            # 로컬 JSON → DB 업로드
 ```
 
 ## 모노레포 구조
@@ -28,7 +28,7 @@ public-ax/
 ├── frontend/        Next.js 16 + Tailwind CSS 4 + shadcn/ui
 │   ├── app/         App Router 페이지
 │   ├── components/  UI 컴포넌트 (champion/, insights/, shared/, ui/)
-│   └── lib/         데이터 레이어 (guides.ts, insights.ts, supabase/)
+│   └── lib/         데이터 레이어 (guides.ts, insights.ts)
 ├── ai-service/      Python AI 파이프라인
 │   ├── insights/    일일 인사이트 자동 생성
 │   │   ├── crawlers/   6개 크롤러 (arxiv, github_trending, ai_news, ai_blogs, huggingface, kr_ai_policy)
@@ -48,8 +48,7 @@ public-ax/
 │   └── shared/      공통 모듈
 │       ├── models.py       RawItem, Insight 데이터 모델
 │       ├── storage.py      로컬 JSON 저장소 추상화
-│       ├── supabase_client.py
-│       └── upload_to_supabase.py
+│       └── upload_to_db.py
 ├── .env            루트에 위치, frontend/next.config.ts에서 로드
 └── frontend/content/guides.json  가이드 로컬 저장소
 ```
@@ -71,7 +70,7 @@ public-ax/
 ```
 - 평가 통과 기준: 4.0/5.0 (`insights/evaluator/rubric.yaml`)
 - 평가 미달 시 최대 3회 Writer 재실행 (피드백 반영)
-- 발행된 인사이트는 `ai-service/insights/data/insights.json` → Supabase `insights` 테이블
+- 발행된 인사이트는 `ai-service/insights/data/insights.json` → Neon PostgreSQL `insights` 테이블
 
 ### 가이드 파이프라인 흐름
 ```
@@ -80,12 +79,10 @@ public-ax/
 - 평가 통과 기준: 4.0/5.0 (`guides/evaluator/rubric.yaml`)
 - 가이드 body에 `{{image:id}}` 플레이스홀더 삽입, 이미지는 별도 수동 생성
 - 이미지 URL은 `/guides/{slug}-{id}.png` 형식으로 자동 세팅
-- 프론트엔드는 Supabase `guides` 테이블에서 `status = "published"`인 것만 표시
+- 프론트엔드는 Neon PostgreSQL `guides` 테이블에서 `status = "published"`인 것만 표시
 
 ### 데이터 레이어
-- `frontend/lib/guides.ts`, `frontend/lib/insights.ts`: Supabase에서 데이터 읽는 유일한 접점
-- `lib/supabase/server.ts`: 서버 컴포넌트용 (SSR), `anon key` 사용
-- `lib/guides.ts`, `lib/insights.ts`: `SUPABASE_SERVICE_ROLE_KEY` 사용 (서버 전용)
+- `frontend/lib/guides.ts`, `frontend/lib/insights.ts`: Neon PostgreSQL에서 데이터 읽는 유일한 접점
 - `.env`는 루트에 하나만. `frontend/next.config.ts`가 `loadEnvConfig("../")` 로 읽음
 
 ### 프론트엔드 패턴
@@ -103,20 +100,20 @@ public-ax/
 3. 사용자가 선택하면 `python3 guides/run.py "주제"` 실행
 4. 완료 후 이미지 프롬프트 출력 (COVER, DIAGRAM 등)
 5. 사용자가 이미지 생성해서 전달하면 지정 경로에 저장
-6. `python3 guides/publish.py <slug>` → `python3 shared/upload_to_supabase.py` 실행
+6. `python3 guides/publish.py <slug>` → `python3 shared/upload_to_db.py` 실행
 
 ### 인사이트 발행 워크플로우
 사용자가 "인사이트 발행해줘" / "인사이트 돌려줘"라고 하면:
 1. `cd ai-service && python3 insights/run.py` 실행
 2. 완료 후 결과(제목, 평가 점수) 출력
-3. Supabase 업로드 확인
+3. DB 업로드 확인
 
 ### 분석 리포트 발행 워크플로우 (`/proc` 분석 탭용)
 사용자가 "분석 리포트 발행해줘" / "리포트 돌려줘"라고 하면:
 1. `cd ai-service && .venv/bin/python reports/run.py` 실행
 2. 흐름: Analyzer (30일 vs 90일 평균) → Writer (Claude CLI) → Evaluator (6기준) → Reviewer
 3. 평가 통과 기준 4.0/5.0. 미달 시 Writer 최대 3회 재실행
-4. Supabase `proc_reports` 테이블에 status='draft'로 적재
+4. Neon PostgreSQL `proc_reports` 테이블에 status='draft'로 적재
 5. 별도 명령으로 status='published'로 승격 (또는 수동 SQL)
 
 ### 입찰 분류 검수 워크플로우 (`/bids-review`)
@@ -145,9 +142,7 @@ public-ax/
 
 ```
 ANTHROPIC_API_KEY=        # insights/guides 파이프라인에서 직접 사용하지 않음
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
+DATABASE_URL=             # Neon PostgreSQL 연결 문자열
 UNSPLASH_ACCESS_KEY=
 RESEND_API_KEY=
 NEWSLETTER_FROM=

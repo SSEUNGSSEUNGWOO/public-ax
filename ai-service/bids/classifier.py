@@ -184,11 +184,13 @@ def classify_cli(bid: dict, model: str = "sonnet") -> Optional[dict]:
     env = {k: v for k, v in os.environ.items() if k != "ANTHROPIC_API_KEY"}
     try:
         result = subprocess.run(
-            ["claude", "-p", _build_prompt(bid), "--model", model],
+            ["claude", "-p", "-", "--model", model],
+            input=_build_prompt(bid),
             capture_output=True,
             text=True,
             timeout=60,
             env=env,
+            encoding="utf-8",
         )
         if result.returncode != 0:
             return None

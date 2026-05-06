@@ -1,6 +1,6 @@
 """
 로컬 raw 데이터를 raw_items 테이블에 업로드
-Usage: python ai-service/shared/upload_raw_to_supabase.py
+Usage: python ai-service/shared/upload_raw_to_db.py
 """
 import json
 import sys

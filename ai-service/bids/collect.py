@@ -64,13 +64,18 @@ def fetch_page(bgn: str, end: str, page: int) -> list[dict]:
         res = requests.get(url, timeout=30)
         text = res.text
         if not text.startswith("{"):
+            if page <= 2:
+                print(f"\n  p{page} 비-JSON 응답: {text[:200]}", flush=True)
             return []
-        items = res.json().get("response", {}).get("body", {}).get("items") or []
+        data = res.json()
+        items = data.get("response", {}).get("body", {}).get("items") or []
         if not isinstance(items, list):
+            if page <= 2:
+                print(f"\n  p{page} items가 list가 아님: {type(items)} / body={data.get('response', {}).get('body', {})}", flush=True)
             return []
         return [item for item in items if is_ai_bid(item.get("bidNtceNm", ""))]
     except Exception as e:
-        print(f"\n  p{page} 오류: {e}")
+        print(f"\n  p{page} 오류: {e}", flush=True)
         return []
 
 
@@ -86,8 +91,12 @@ def fetch_month(year: int, month: int, workers: int = 5) -> list[dict]:
     )
     try:
         res = requests.get(url, timeout=30)
-        total = res.json().get("response", {}).get("body", {}).get("totalCount", 0)
-    except Exception:
+        data = res.json()
+        total = data.get("response", {}).get("body", {}).get("totalCount", 0)
+        if total == 0:
+            print(f"  totalCount=0, 응답: {str(data)[:300]}", flush=True)
+    except Exception as e:
+        print(f"  총 건수 파악 실패: {e}", flush=True)
         total = 5000
     max_pages = (int(total) // 100) + 1
     print(f"  {label}: 총 {total}건 → {max_pages}페이지 / 워커 {workers}", flush=True)
