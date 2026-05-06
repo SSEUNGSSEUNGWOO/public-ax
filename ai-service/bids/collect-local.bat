@@ -1,13 +1,29 @@
 @echo off
-REM 나라장터 AI 공고 로컬 수집 (Windows 작업 스케줄러용)
-REM 한국 IP 필요 → 로컬에서만 실행
+REM G2B 통합 수집 (Windows 작업 스케줄러용)
+REM 1. g2b-monitor: raw 테이블에 전체 공고 수집 (한국 IP 필요)
+REM 2. public-ax: raw에서 AI 키워드 매칭 건 sync
 
-cd /d "%~dp0.."
+REM === Step 1: g2b-monitor 수집 ===
+echo [%date% %time%] g2b-monitor collector 시작
+cd /d "C:\project\g2b-monitor\ai-service"
 
-REM .env에서 환경변수 로드
-for /f "usebackq tokens=1,* delims==" %%a in ("%~dp0..\..\..\.env") do (
-    if not "%%a"=="" if not "%%a:~0,1%"=="#" set "%%a=%%b"
+for /f "usebackq tokens=1,* delims==" %%a in ("C:\project\g2b-monitor\ai-service\.env") do (
+    if not "%%a"=="" set "%%a=%%b"
 )
 
-call .venv\Scripts\activate
-python bids\collect.py --months 1
+call .venv\Scripts\activate 2>nul || (echo g2b-monitor venv 없음 & goto step2)
+python -m collector --daily
+echo [%date% %time%] g2b-monitor collector 완료
+
+REM === Step 2: public-ax sync ===
+:step2
+echo [%date% %time%] public-ax sync 시작
+cd /d "C:\project\public-ax\ai-service"
+
+for /f "usebackq tokens=1,* delims==" %%a in ("C:\project\public-ax\.env") do (
+    if not "%%a"=="" set "%%a=%%b"
+)
+
+call .venv\Scripts\activate 2>nul || (echo public-ax venv 없음 & exit /b 1)
+python bids\sync_from_raw.py --days 7
+echo [%date% %time%] public-ax sync 완료
