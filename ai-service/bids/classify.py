@@ -154,7 +154,7 @@ def main():
     print("=== 카테고리 분포 ===")
     total = sum(results.values())
     for category, count in results.most_common():
-        bar = "█" * min(count // 2, 50)
+        bar = "#" * min(count // 2, 50)
         pct = count / total * 100 if total else 0
         print(f"  {category:18s} {count:5d}  ({pct:4.1f}%)  {bar}")
 
