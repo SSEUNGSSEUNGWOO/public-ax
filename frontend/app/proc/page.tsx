@@ -4,7 +4,7 @@ import { ProcTabs } from "@/components/proc/proc-tabs";
 import { ReportTab } from "@/components/proc/report-tab";
 import { fetchAIBids } from "@/lib/g2b";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "K-AI PROC | PUBLIC-AI",

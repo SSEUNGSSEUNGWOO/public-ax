@@ -1,4 +1,6 @@
-import { createClient } from "@supabase/supabase-js";
+import { db } from "@/lib/db";
+import { insights } from "@/lib/db/schema";
+import { eq, or, desc } from "drizzle-orm";
 
 export interface Insight {
   slug: string;
@@ -13,34 +15,47 @@ export interface Insight {
   views?: number;
 }
 
-function getClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+function rowToInsight(row: typeof insights.$inferSelect): Insight {
+  return {
+    slug: row.slug,
+    title: row.title,
+    body: row.body,
+    sources: row.sources as Insight["sources"],
+    published_at: row.publishedAt,
+    category: row.category,
+    image_url: row.imageUrl,
+    evaluation_score: row.evaluationScore,
+    crawled_count: row.crawledCount,
+    views: row.views ?? undefined,
+  };
 }
 
 export async function getAllInsights(): Promise<Insight[]> {
-  const { data, error } = await getClient()
-    .from("insights")
-    .select("*")
-    .order("published_at", { ascending: false });
+  try {
+    const rows = await db
+      .select()
+      .from(insights)
+      .orderBy(desc(insights.publishedAt));
 
-  if (error) {
-    console.error("insights fetch error:", error.message);
+    return rows.map(rowToInsight);
+  } catch (error) {
+    console.error("insights fetch error:", error);
     return [];
   }
-  return data ?? [];
 }
 
 export async function getInsightBySlug(slug: string): Promise<Insight | null> {
   const decoded = decodeURIComponent(slug);
-  const { data, error } = await getClient()
-    .from("insights")
-    .select("*")
-    .or(`slug.eq.${decoded},slug.eq.${slug}`)
-    .single();
+  try {
+    const rows = await db
+      .select()
+      .from(insights)
+      .where(or(eq(insights.slug, decoded), eq(insights.slug, slug)))
+      .limit(1);
 
-  if (error) return null;
-  return data;
+    if (rows.length === 0) return null;
+    return rowToInsight(rows[0]);
+  } catch {
+    return null;
+  }
 }

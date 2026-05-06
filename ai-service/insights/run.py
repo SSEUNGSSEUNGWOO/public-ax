@@ -27,7 +27,7 @@ from evaluator.evaluator import run as evaluator_run
 from shared.storage import load_draft_meta, load_raw_items, save_draft, save_insight
 from shared.models import Insight
 from newsletter.sender import send_newsletter
-from shared.supabase_client import get_client as get_supabase
+from shared.db import get_conn
 from shared.indexer import chunk_insight, chunk_raw_items, upsert_chunks
 
 
@@ -144,22 +144,41 @@ def save_to_insights(result: dict):
     print(f"[run] insights.json 저장 완료: {insight.slug} ({len(sources)}개 출처)")
 
     try:
-        sb = get_supabase()
-        row = {
-            "slug": insight.slug,
-            "title": insight.title,
-            "body": insight.body,
-            "sources": insight.sources,
-            "published_at": insight.published_at,
-            "category": insight.category,
-            "image_url": insight.image_url,
-            "evaluation_score": insight.evaluation_score,
-            "crawled_count": insight.crawled_count,
-        }
-        sb.table("insights").upsert(row).execute()
-        print(f"[run] Supabase 업로드 완료: {insight.slug}")
+        from psycopg2.extras import Json
+        with get_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO insights (slug, title, body, sources, published_at,
+                                          category, image_url, evaluation_score, crawled_count)
+                    VALUES (%(slug)s, %(title)s, %(body)s, %(sources)s, %(published_at)s,
+                            %(category)s, %(image_url)s, %(evaluation_score)s, %(crawled_count)s)
+                    ON CONFLICT (slug) DO UPDATE SET
+                        title = EXCLUDED.title,
+                        body = EXCLUDED.body,
+                        sources = EXCLUDED.sources,
+                        published_at = EXCLUDED.published_at,
+                        category = EXCLUDED.category,
+                        image_url = EXCLUDED.image_url,
+                        evaluation_score = EXCLUDED.evaluation_score,
+                        crawled_count = EXCLUDED.crawled_count
+                    """,
+                    {
+                        "slug": insight.slug,
+                        "title": insight.title,
+                        "body": insight.body,
+                        "sources": Json(insight.sources),
+                        "published_at": insight.published_at,
+                        "category": insight.category,
+                        "image_url": insight.image_url,
+                        "evaluation_score": insight.evaluation_score,
+                        "crawled_count": insight.crawled_count,
+                    },
+                )
+            conn.commit()
+        print(f"[run] DB 업로드 완료: {insight.slug}")
     except Exception as e:
-        print(f"[run] Supabase 업로드 실패 (로컬엔 저장됨): {e}")
+        print(f"[run] DB 업로드 실패 (로컬엔 저장됨): {e}")
 
     return insight
 

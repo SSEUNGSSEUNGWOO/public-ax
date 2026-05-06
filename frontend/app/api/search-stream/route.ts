@@ -1,48 +1,63 @@
 import { NextRequest } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { db } from "@/lib/db";
+import { sql } from "drizzle-orm";
 import Anthropic from "@anthropic-ai/sdk";
 import OpenAI from "openai";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+function getAnthropic() {
+  return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+}
+function getOpenAI() {
+  return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+}
 
 export async function GET(req: NextRequest) {
   const query = new URL(req.url).searchParams.get("q") ?? "";
   if (!query.trim()) return new Response("no query", { status: 400 });
 
-  const embRes = await openai.embeddings.create({
+  const embRes = await getOpenAI().embeddings.create({
     model: "text-embedding-3-small",
     input: query,
   });
 
-  const { data: docs } = await supabase.rpc("hybrid_search", {
-    query_text: query,
-    query_embedding: embRes.data[0].embedding,
-    match_count: 8,
-  });
+  const embedding = embRes.data[0].embedding;
+  const result = await db.execute(
+    sql`SELECT content, type, metadata,
+            1 - (embedding <=> ${JSON.stringify(embedding)}::vector) AS similarity,
+            ts_rank(to_tsvector('simple', content), plainto_tsquery('simple', ${query})) AS text_rank
+        FROM documents
+        WHERE embedding IS NOT NULL
+        ORDER BY (1 - (embedding <=> ${JSON.stringify(embedding)}::vector)) * 0.7
+               + ts_rank(to_tsvector('simple', content), plainto_tsquery('simple', ${query})) * 0.3 DESC
+        LIMIT 8`
+  );
+  interface DocRow {
+    content: string;
+    type: string;
+    metadata: Record<string, string>;
+    similarity: number;
+    text_rank: number;
+  }
+  const docs = (result.rows ?? []) as unknown as DocRow[];
 
   const priority = ["site_info", "insight", "guide", "raw"];
-  const sorted = [...(docs ?? [])].sort(
-    (a: { type: string }, b: { type: string }) => priority.indexOf(a.type) - priority.indexOf(b.type)
+  const sorted = [...docs].sort(
+    (a, b) => priority.indexOf(a.type) - priority.indexOf(b.type)
   );
 
-  const context = sorted.map((d: { content: string }) => d.content).join("\n\n---\n\n");
+  const context = sorted.map((d) => d.content).join("\n\n---\n\n");
 
   const seen = new Set<string>();
   const sources = sorted
-    .filter((d: { metadata: Record<string, string>; type: string }) => d.metadata?.slug || d.metadata?.url)
-    .filter((d: { metadata: Record<string, string> }) => {
+    .filter((d) => d.metadata?.slug || d.metadata?.url)
+    .filter((d) => {
       const key = d.metadata?.slug || d.metadata?.url;
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
     })
     .slice(0, 5)
-    .map((d: { metadata: Record<string, string>; type: string }) => ({
+    .map((d) => ({
       title: d.metadata?.title || d.metadata?.slug || d.metadata?.url || "",
       url: d.metadata?.slug ? `/insights/${d.metadata.slug}` : d.metadata?.url ?? "",
       type: d.type,
@@ -54,7 +69,7 @@ export async function GET(req: NextRequest) {
       // 소스 먼저 전송
       controller.enqueue(encoder.encode(`data: ${JSON.stringify({ sources })}\n\n`));
 
-      const response = await anthropic.messages.stream({
+      const response = await getAnthropic().messages.stream({
         model: "claude-sonnet-4-6",
         max_tokens: 800,
         system: `당신은 PUBLIC-AI의 공공 AI 전환 검색 어시스턴트입니다.

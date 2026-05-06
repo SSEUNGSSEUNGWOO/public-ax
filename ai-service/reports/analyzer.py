@@ -9,6 +9,8 @@ from collections import Counter, defaultdict
 from datetime import date, timedelta
 from typing import Any
 
+from shared.db import get_conn
+
 
 def _is_unit_contract(row: dict) -> bool:
     name = row.get("bid_ntce_nm") or ""
@@ -27,40 +29,46 @@ def _get_budget(row: dict) -> int:
         return 0
 
 
-def _fetch_rows(client, start: str, end: str) -> list[dict]:
-    rows = []
-    offset = 0
-    while True:
-        res = (
-            client.table("bids")
-            .select(
-                "bid_ntce_nm, ai_category, dmnd_instt_nm, ntce_instt_nm, "
-                "bid_ntce_date, bid_clse_date, assign_bdgt_amt, presmpt_prce, bsns_div_nm, "
-                "bidprc_psbl_indstrty_nm, cntrct_cncls_mthd_nm"
-            )
-            .gte("bid_ntce_date", start)
-            .lte("bid_ntce_date", end)
-            .range(offset, offset + 999)
-            .execute()
+def _fetch_rows(conn, start: str, end: str) -> list[dict]:
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT bid_ntce_nm, ai_category, dmnd_instt_nm, ntce_instt_nm,
+                   bid_ntce_date, bid_clse_date, assign_bdgt_amt, presmpt_prce,
+                   bsns_div_nm, bidprc_psbl_indstrty_nm, cntrct_cncls_mthd_nm
+            FROM bids
+            WHERE bid_ntce_date >= %s AND bid_ntce_date <= %s
+            """,
+            (start, end),
         )
-        if not res.data:
-            break
-        rows.extend(res.data)
-        if len(res.data) < 1000:
-            break
-        offset += 1000
+        rows = [dict(r) for r in cur.fetchall()]
     return [r for r in rows if not _is_unit_contract(r) and r.get("ai_category") not in (None, "무관")]
 
 
-def analyze(client, today: date | None = None) -> dict[str, Any]:
+def analyze(today: date | None = None) -> dict[str, Any]:
     today = today or date.today()
     period_end = today
     period_start = today - timedelta(days=30)
     baseline_end = period_start - timedelta(days=1)
     baseline_start = baseline_end - timedelta(days=90) + timedelta(days=1)
 
-    recent = _fetch_rows(client, period_start.isoformat(), period_end.isoformat())
-    baseline = _fetch_rows(client, baseline_start.isoformat(), baseline_end.isoformat())
+    with get_conn() as conn:
+        recent = _fetch_rows(conn, period_start.isoformat(), period_end.isoformat())
+        baseline = _fetch_rows(conn, baseline_start.isoformat(), baseline_end.isoformat())
+
+        # 월별 등록 추이 (최근 6개월)
+        six_mo_ago = (today - timedelta(days=180)).isoformat()
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT bid_ntce_date, ai_category
+                FROM bids
+                WHERE bid_ntce_date >= %s
+                LIMIT 10000
+                """,
+                (six_mo_ago,),
+            )
+            rows_6mo = [dict(r) for r in cur.fetchall()]
 
     # 카테고리 카운트
     recent_cat = Counter((r.get("ai_category") or "(미분류)") for r in recent)
@@ -169,17 +177,8 @@ def analyze(client, today: date | None = None) -> dict[str, Any]:
     biz_recent = Counter((r.get("bsns_div_nm") or "기타") for r in recent)
     biz_baseline_monthly = {k: round(v / 3, 1) for k, v in Counter((r.get("bsns_div_nm") or "기타") for r in baseline).items()}
 
-    # 월별 등록 추이 (최근 6개월)
+    # 월별 등록 추이
     monthly_trend = defaultdict(int)
-    six_mo_ago = (today - timedelta(days=180)).isoformat()
-    res = (
-        client.table("bids")
-        .select("bid_ntce_date, ai_category")
-        .gte("bid_ntce_date", six_mo_ago)
-        .range(0, 9999)
-        .execute()
-    )
-    rows_6mo = res.data or []
     for r in rows_6mo:
         d = r.get("bid_ntce_date") or ""
         if len(d) >= 7 and r.get("ai_category") not in (None, "무관"):

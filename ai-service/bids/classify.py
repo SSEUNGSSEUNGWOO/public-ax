@@ -1,5 +1,5 @@
 """
-공고 일괄 분류 → Supabase bids.ai_category 업데이트
+공고 일괄 분류 -> bids.ai_category 업데이트
 
 사용:
     # 마감 미경과 + ai_category NULL인 것만 (기본 Haiku)
@@ -36,7 +36,7 @@ load_dotenv(Path(__file__).parent.parent / ".env", override=False)
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from bids.classifier import classify_anthropic, classify_openai, classify_cli, CATEGORIES
-from shared.supabase_client import get_client
+from shared.db import get_conn
 
 
 CLASSIFIERS = {
@@ -46,34 +46,41 @@ CLASSIFIERS = {
 }
 
 
-def fetch_targets(client, scope: str, reclassify: bool, limit: int | None, from_date: str | None) -> list[dict]:
+def fetch_targets(scope: str, reclassify: bool, limit: int | None, from_date: str | None) -> list[dict]:
     today = date.today().isoformat()
-    query = (
-        client.table("bids")
-        .select("id, bid_ntce_nm, ntce_instt_nm, bsns_div_nm, assign_bdgt_amt, presmpt_prce, ai_category")
-    )
+
+    conditions = []
+    params: list = []
+
     if scope == "active":
-        query = query.gte("bid_clse_date", today).order("bid_clse_date", desc=False)
+        conditions.append("bid_clse_date >= %s")
+        params.append(today)
+        order_col = "bid_clse_date"
+        order_dir = "ASC"
     else:
-        query = query.order("bid_ntce_date", desc=True)
+        order_col = "bid_ntce_date"
+        order_dir = "DESC"
 
     if from_date:
-        query = query.gte("bid_ntce_date", from_date)
+        conditions.append("bid_ntce_date >= %s")
+        params.append(from_date)
 
     if not reclassify:
-        query = query.is_("ai_category", "null")
+        conditions.append("ai_category IS NULL")
 
-    page_size = 1000
-    offset = 0
-    rows = []
-    while True:
-        res = query.range(offset, offset + page_size - 1).execute()
-        rows.extend(res.data or [])
-        if len(res.data or []) < page_size:
-            break
-        offset += page_size
-        if limit and len(rows) >= limit:
-            break
+    where = ("WHERE " + " AND ".join(conditions)) if conditions else ""
+    sql = f"""
+        SELECT id, bid_ntce_nm, ntce_instt_nm, bsns_div_nm,
+               assign_bdgt_amt, presmpt_prce, ai_category
+        FROM bids
+        {where}
+        ORDER BY {order_col} {order_dir}
+    """
+
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(sql, params)
+            rows = [dict(r) for r in cur.fetchall()]
 
     if limit:
         rows = rows[:limit]
@@ -82,6 +89,16 @@ def fetch_targets(client, scope: str, reclassify: bool, limit: int | None, from_
 
 def classify_one(classify_fn, bid):
     return bid, classify_fn(bid)
+
+
+def _update_category(bid_id: str, category: str):
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "UPDATE bids SET ai_category = %s WHERE id = %s",
+                (category, bid_id),
+            )
+        conn.commit()
 
 
 def main():
@@ -94,8 +111,7 @@ def main():
     parser.add_argument("--from-date", type=str, default=None, help="bid_ntce_date 하한 (YYYY-MM-DD)")
     args = parser.parse_args()
 
-    client = get_client()
-    targets = fetch_targets(client, args.scope, args.reclassify, args.limit, args.from_date)
+    targets = fetch_targets(args.scope, args.reclassify, args.limit, args.from_date)
 
     if not targets:
         print("분류 대상 없음")
@@ -118,11 +134,11 @@ def main():
             title = (bid.get("bid_ntce_nm") or "")[:50]
             if not result:
                 failed += 1
-                client.table("bids").update({"ai_category": "무관"}).eq("id", bid["id"]).execute()
+                _update_category(bid["id"], "무관")
                 results["무관"] += 1
-                print(f"  [{done}/{len(targets)}] ⚠️ 무관(파싱실패): {title}")
+                print(f"  [{done}/{len(targets)}] 무관(파싱실패): {title}")
                 continue
-            client.table("bids").update({"ai_category": result["category"]}).eq("id", bid["id"]).execute()
+            _update_category(bid["id"], result["category"])
             results[result["category"]] += 1
             if done % 20 == 0 or done == len(targets):
                 elapsed = time.time() - started

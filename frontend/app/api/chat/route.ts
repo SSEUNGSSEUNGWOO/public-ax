@@ -1,18 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { db } from "@/lib/db";
+import { sql } from "drizzle-orm";
 import Anthropic from "@anthropic-ai/sdk";
 import OpenAI from "openai";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+function getAnthropic() {
+  return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+}
+function getOpenAI() {
+  return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+}
 
 async function embedQuery(query: string): Promise<number[]> {
-  const res = await openai.embeddings.create({
+  const res = await getOpenAI().embeddings.create({
     model: "text-embedding-3-small",
     input: query,
   });
@@ -20,11 +20,14 @@ async function embedQuery(query: string): Promise<number[]> {
 }
 
 async function searchDocuments(embedding: number[]) {
-  const { data } = await supabase.rpc("match_documents", {
-    query_embedding: embedding,
-    match_count: 10,
-  });
-  return (data ?? []) as { content: string; type: string; metadata: Record<string, string>; similarity: number }[];
+  const result = await db.execute(
+    sql`SELECT content, type, metadata, 1 - (embedding <=> ${JSON.stringify(embedding)}::vector) AS similarity
+        FROM documents
+        WHERE embedding IS NOT NULL
+        ORDER BY embedding <=> ${JSON.stringify(embedding)}::vector
+        LIMIT 10`
+  );
+  return (result.rows ?? []) as unknown as { content: string; type: string; metadata: Record<string, string>; similarity: number }[];
 }
 
 function buildContext(docs: { content: string; type: string; metadata: Record<string, string>; similarity: number }[]) {
@@ -55,7 +58,7 @@ export async function POST(req: NextRequest) {
   const docs = await searchDocuments(embedding);
   const context = buildContext(docs);
 
-  const response = await anthropic.messages.create({
+  const response = await getAnthropic().messages.create({
     model: "claude-sonnet-4-6",
     max_tokens: 1024,
     system: `당신은 PUBLIC-AI의 공공 AI 전환 어시스턴트입니다.

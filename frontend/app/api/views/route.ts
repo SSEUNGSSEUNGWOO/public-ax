@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { db } from "@/lib/db";
+import { guides, insights } from "@/lib/db/schema";
+import { eq, sql } from "drizzle-orm";
 
 export async function POST(req: NextRequest) {
   const { type, slug } = await req.json();
@@ -13,20 +10,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "missing params" }, { status: 400 });
   }
 
-  const table = type === "guide" ? "guides" : "insights";
+  const table = type === "guide" ? guides : insights;
 
-  const { data: row } = await supabase
+  const rows = await db
+    .select({ views: table.views })
     .from(table)
-    .select("views")
-    .eq("slug", slug)
-    .single();
+    .where(eq(table.slug, slug))
+    .limit(1);
 
-  const newViews = (row?.views ?? 0) + 1;
+  const newViews = (rows[0]?.views ?? 0) + 1;
 
-  await supabase
-    .from(table)
-    .update({ views: newViews })
-    .eq("slug", slug);
+  await db
+    .update(table)
+    .set({ views: newViews })
+    .where(eq(table.slug, slug));
 
   return NextResponse.json({ views: newViews });
 }

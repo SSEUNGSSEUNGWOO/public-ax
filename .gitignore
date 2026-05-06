@@ -39,3 +39,4 @@ yarn-debug.log*
 # Build
 /build
 /coverage
+.vercel

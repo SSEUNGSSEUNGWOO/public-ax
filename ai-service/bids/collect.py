@@ -19,7 +19,7 @@ load_dotenv(ROOT / ".env")
 load_dotenv(Path(__file__).parent.parent / ".env", override=False)
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-from shared.supabase_client import get_client
+from shared.db import get_conn
 
 G2B_KEY = os.environ.get("G2B_API_KEY", "3393eec4c01364de879d496e848da7a9a067555abbff33f38f6293502956fc71")
 BASE = "https://apis.data.go.kr/1230000/ao/PubDataOpnStdService"
@@ -148,31 +148,50 @@ def to_row(item: dict) -> dict:
 def upsert_bids(bids: list[dict]):
     if not bids:
         return
-    client = get_client()
     # id 기준 중복 제거
     seen = {}
     for b in bids:
         row = to_row(b)
         seen[row["id"]] = row
     rows = list(seen.values())
-    # 500건씩 배치 upsert
-    batch = 500
-    for i in range(0, len(rows), batch):
-        client.table("bids").upsert(rows[i:i+batch], on_conflict="id").execute()
-    print(f"  → Supabase upsert {len(rows)}건 완료")
+
+    columns = list(rows[0].keys())
+    placeholders = ", ".join(f"%({c})s" for c in columns)
+    col_list = ", ".join(columns)
+    update_set = ", ".join(f"{c} = EXCLUDED.{c}" for c in columns if c != "id")
+
+    sql = f"""
+        INSERT INTO bids ({col_list})
+        VALUES ({placeholders})
+        ON CONFLICT (id) DO UPDATE SET {update_set}
+    """
+
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            batch = 500
+            for i in range(0, len(rows), batch):
+                for row in rows[i:i+batch]:
+                    cur.execute(sql, row)
+        conn.commit()
+    print(f"  -> DB upsert {len(rows)}건 완료")
 
 
 def get_collected_months(field: str = "bid_ntce_date") -> set[str]:
     """field가 채워진 row가 100건 이상인 월 목록 반환"""
     try:
-        client = get_client()
-        q = client.table("bids").select("bid_ntce_date")
-        if field != "bid_ntce_date":
-            q = q.not_.is_(field, "null")
-        r = q.execute()
-        from collections import Counter
-        months = Counter(d["bid_ntce_date"][:7] for d in r.data if d.get("bid_ntce_date"))
-        return {m for m, cnt in months.items() if cnt >= 100}
+        condition = "" if field == "bid_ntce_date" else f" AND {field} IS NOT NULL"
+        with get_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    f"""
+                    SELECT LEFT(bid_ntce_date, 7) AS month, COUNT(*) AS cnt
+                    FROM bids
+                    WHERE bid_ntce_date IS NOT NULL{condition}
+                    GROUP BY LEFT(bid_ntce_date, 7)
+                    HAVING COUNT(*) >= 100
+                    """,
+                )
+                return {r["month"] for r in cur.fetchall()}
     except Exception:
         return set()
 

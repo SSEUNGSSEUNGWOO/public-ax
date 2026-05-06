@@ -29,7 +29,7 @@ load_dotenv(ROOT / ".env")
 load_dotenv(Path(__file__).parent.parent / ".env", override=False)
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from shared.supabase_client import get_client
+from shared.db import get_conn
 
 CATEGORIES = [
     "LLM/생성형 AI",
@@ -60,23 +60,26 @@ def is_unit_contract(row: dict) -> bool:
 
 
 def list_pending(limit: int) -> list[dict]:
-    client = get_client()
     today = date.today().isoformat()
-    res = (
-        client.table("bids")
-        .select(
-            "id, bid_ntce_nm, ntce_instt_nm, dmnd_instt_nm, "
-            "bsns_div_nm, ai_category, bid_clse_date, "
-            "assign_bdgt_amt, presmpt_prce, bidprc_psbl_indstrty_nm"
-        )
-        .in_("ai_category", list(REVIEW_TARGETS))
-        .gte("bid_clse_date", today)
-        .is_("reviewed_at", "null")
-        .order("bid_clse_date", desc=False)
-        .limit(limit * 2)  # 단가계약 제외 후 limit 채우기 위해 여유
-        .execute()
-    )
-    rows = [r for r in (res.data or []) if not is_unit_contract(r)]
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT id, bid_ntce_nm, ntce_instt_nm, dmnd_instt_nm,
+                       bsns_div_nm, ai_category, bid_clse_date,
+                       assign_bdgt_amt, presmpt_prce, bidprc_psbl_indstrty_nm
+                FROM bids
+                WHERE ai_category = ANY(%s)
+                  AND bid_clse_date >= %s
+                  AND reviewed_at IS NULL
+                ORDER BY bid_clse_date ASC
+                LIMIT %s
+                """,
+                (list(REVIEW_TARGETS), today, limit * 2),
+            )
+            rows = [dict(r) for r in cur.fetchall()]
+
+    rows = [r for r in rows if not is_unit_contract(r)]
     return rows[:limit]
 
 
@@ -87,32 +90,42 @@ def _now_iso() -> str:
 def update_category(bid_id: str, category: str) -> None:
     if category not in CATEGORIES:
         raise ValueError(f"알 수 없는 카테고리: {category}")
-    client = get_client()
-    client.table("bids").update({
-        "ai_category": category,
-        "reviewed_at": _now_iso(),
-    }).eq("id", bid_id).execute()
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "UPDATE bids SET ai_category = %s, reviewed_at = %s WHERE id = %s",
+                (category, _now_iso(), bid_id),
+            )
+        conn.commit()
 
 
 def keep(bid_id: str) -> None:
     """카테고리 유지 + 검수 완료 표시."""
-    client = get_client()
-    client.table("bids").update({"reviewed_at": _now_iso()}).eq("id", bid_id).execute()
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "UPDATE bids SET reviewed_at = %s WHERE id = %s",
+                (_now_iso(), bid_id),
+            )
+        conn.commit()
 
 
 def count_pending() -> int:
-    client = get_client()
     today = date.today().isoformat()
-    res = (
-        client.table("bids")
-        .select("id", count="exact")
-        .in_("ai_category", list(REVIEW_TARGETS))
-        .gte("bid_clse_date", today)
-        .is_("reviewed_at", "null")
-        .limit(1)
-        .execute()
-    )
-    return res.count or 0
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT COUNT(*) AS cnt
+                FROM bids
+                WHERE ai_category = ANY(%s)
+                  AND bid_clse_date >= %s
+                  AND reviewed_at IS NULL
+                """,
+                (list(REVIEW_TARGETS), today),
+            )
+            row = cur.fetchone()
+            return row["cnt"] if row else 0
 
 
 def main() -> None:
@@ -135,13 +148,13 @@ def main() -> None:
 
     if args.cmd == "list-pending":
         items = list_pending(args.limit)
-        print(json.dumps(items, ensure_ascii=False, indent=2))
+        print(json.dumps(items, ensure_ascii=False, indent=2, default=str))
     elif args.cmd == "update":
         update_category(args.bid_id, args.category)
-        print(f"✅ {args.bid_id} → {args.category}")
+        print(f"OK {args.bid_id} -> {args.category}")
     elif args.cmd == "keep":
         keep(args.bid_id)
-        print(f"✅ {args.bid_id} (카테고리 유지)")
+        print(f"OK {args.bid_id} (카테고리 유지)")
     elif args.cmd == "count":
         n = count_pending()
         print(f"미검수 대상: {n}건")

@@ -1,35 +1,40 @@
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { db } from "@/lib/db";
+import { likes, comments } from "@/lib/db/schema";
+import { eq, sql } from "drizzle-orm";
 
 export interface ContentCounts {
   [slug: string]: { likes: number; comments: number };
 }
 
 export async function getCountsForType(contentType: "insight" | "guide"): Promise<ContentCounts> {
-  const [{ data: likes }, { data: comments }] = await Promise.all([
-    supabase
-      .from("likes")
-      .select("content_id")
-      .eq("content_type", contentType),
-    supabase
-      .from("comments")
-      .select("content_id")
-      .eq("content_type", contentType),
+  const [likeRows, commentRows] = await Promise.all([
+    db
+      .select({
+        contentId: likes.contentId,
+        count: sql<number>`count(*)::int`,
+      })
+      .from(likes)
+      .where(eq(likes.contentType, contentType))
+      .groupBy(likes.contentId),
+    db
+      .select({
+        contentId: comments.contentId,
+        count: sql<number>`count(*)::int`,
+      })
+      .from(comments)
+      .where(eq(comments.contentType, contentType))
+      .groupBy(comments.contentId),
   ]);
 
   const result: ContentCounts = {};
 
-  for (const row of likes ?? []) {
-    if (!result[row.content_id]) result[row.content_id] = { likes: 0, comments: 0 };
-    result[row.content_id].likes++;
+  for (const row of likeRows) {
+    if (!result[row.contentId]) result[row.contentId] = { likes: 0, comments: 0 };
+    result[row.contentId].likes = row.count;
   }
-  for (const row of comments ?? []) {
-    if (!result[row.content_id]) result[row.content_id] = { likes: 0, comments: 0 };
-    result[row.content_id].comments++;
+  for (const row of commentRows) {
+    if (!result[row.contentId]) result[row.contentId] = { likes: 0, comments: 0 };
+    result[row.contentId].comments = row.count;
   }
 
   return result;

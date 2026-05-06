@@ -1,4 +1,6 @@
-import { createClient } from "@supabase/supabase-js";
+import { db } from "@/lib/db";
+import { procReports } from "@/lib/db/schema";
+import { eq, desc } from "drizzle-orm";
 
 export interface ProcReport {
   id: string;
@@ -63,39 +65,52 @@ export interface LargeBid {
   ntce_date: string;
 }
 
-function getClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+function rowToReport(row: typeof procReports.$inferSelect): ProcReport {
+  return {
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    body: row.body,
+    data: row.data as ReportData,
+    period_start: row.periodStart ?? "",
+    period_end: row.periodEnd ?? "",
+    baseline_start: row.baselineStart ?? "",
+    baseline_end: row.baselineEnd ?? "",
+    evaluation_score: row.evaluationScore ? parseFloat(row.evaluationScore) : null,
+    status: row.status ?? "draft",
+    created_at: row.createdAt?.toISOString() ?? "",
+    updated_at: row.updatedAt?.toISOString() ?? "",
+  };
 }
 
 export async function getLatestReport(): Promise<ProcReport | null> {
-  const { data, error } = await getClient()
-    .from("proc_reports")
-    .select("*")
-    .eq("status", "published")
-    .order("period_end", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  try {
+    const rows = await db
+      .select()
+      .from(procReports)
+      .where(eq(procReports.status, "published"))
+      .orderBy(desc(procReports.periodEnd))
+      .limit(1);
 
-  if (error) {
-    console.error("proc_reports fetch error:", error.message);
+    if (rows.length === 0) return null;
+    return rowToReport(rows[0]);
+  } catch (error) {
+    console.error("proc_reports fetch error:", error);
     return null;
   }
-  return data;
 }
 
 export async function getAllReports(): Promise<ProcReport[]> {
-  const { data, error } = await getClient()
-    .from("proc_reports")
-    .select("*")
-    .eq("status", "published")
-    .order("period_end", { ascending: false });
+  try {
+    const rows = await db
+      .select()
+      .from(procReports)
+      .where(eq(procReports.status, "published"))
+      .orderBy(desc(procReports.periodEnd));
 
-  if (error) {
-    console.error("proc_reports list error:", error.message);
+    return rows.map(rowToReport);
+  } catch (error) {
+    console.error("proc_reports list error:", error);
     return [];
   }
-  return data ?? [];
 }

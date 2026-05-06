@@ -1,14 +1,10 @@
-import os
-from supabase import create_client, Client
+"""
+Deprecated: Supabase SDK 클라이언트 → psycopg2로 마이그레이션 완료.
+하위 호환을 위해 get_client()는 get_conn()을 반환합니다.
+"""
+from shared.db import get_conn
 
-_client: Client | None = None
 
-def get_client() -> Client:
-    global _client
-    if _client is None:
-        url = os.environ.get("SUPABASE_URL") or os.environ.get("NEXT_PUBLIC_SUPABASE_URL", "")
-        key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
-        if not url or not key:
-            raise RuntimeError("SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY 환경변수 없음")
-        _client = create_client(url, key)
-    return _client
+def get_client():
+    """하위 호환용. shared.db.get_conn()을 사용하세요."""
+    return get_conn()

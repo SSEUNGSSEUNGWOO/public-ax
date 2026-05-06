@@ -1,32 +1,13 @@
 import { NextResponse } from "next/server";
-import OpenAI from "openai";
-import { createClient } from "@supabase/supabase-js";
-
-const EMBED_MODEL = "text-embedding-3-small";
+import { db } from "@/lib/db";
+import { bids } from "@/lib/db/schema";
+import { and, gte, ilike, or, sql } from "drizzle-orm";
 
 interface RequestBody {
   categories?: string[];
   budgetMin?: number;
   budgetMax?: number;
   description?: string;
-}
-
-interface MatchedRow {
-  id: string;
-  bid_ntce_no: string;
-  bid_ntce_ord: string;
-  bid_ntce_nm: string;
-  bid_ntce_sttus: string;
-  bid_ntce_date: string;
-  bsns_div_nm: string;
-  ntce_instt_nm: string;
-  assign_bdgt_amt: string;
-  presmpt_prce: string;
-  bid_clse_date: string;
-  bid_clse_tm: string;
-  bid_ntce_url: string;
-  ai_category: string | null;
-  similarity: number;
 }
 
 export async function POST(req: Request) {
@@ -37,68 +18,79 @@ export async function POST(req: Request) {
     const budgetMax = body.budgetMax ?? 100_000_000_000;
     const description = (body.description ?? "").trim();
 
-    // 임베딩 텍스트 구성: 회사 소개 + 관심 카테고리
-    const embedText = [
-      description,
-      categories.length > 0 ? `관심 분야: ${categories.join(", ")}` : "",
-    ]
-      .filter(Boolean)
-      .join("\n");
-
-    if (!embedText) {
+    if (!description && categories.length === 0) {
       return NextResponse.json({ matches: [] });
     }
 
-    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-    const embedRes = await openai.embeddings.create({
-      model: EMBED_MODEL,
-      input: embedText,
-    });
-    const queryEmbedding = embedRes.data[0].embedding;
-
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
-
-    // 후보를 넉넉히 받아서 KST 기준 마감 필터 + dedupe 후 상위만 노출
-    const { data, error } = await supabase.rpc("match_bids", {
-      query_embedding: queryEmbedding,
-      categories: categories.length ? categories : null,
-      budget_min: budgetMin,
-      budget_max: budgetMax,
-      match_count: 60,
-      active_only: false,
-    });
-
-    if (error) {
-      console.error("[proc/recommend] supabase rpc error:", error);
-      return NextResponse.json({ matches: [], error: error.message }, { status: 500 });
-    }
-
-    // KST 기준 오늘 (Supabase UTC current_date와 KST 사이 9시간 갭 보정)
+    // KST 기준 오늘
     const todayKst = new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
-    const rows = (data ?? []) as MatchedRow[];
-    const filtered = rows.filter((r) => r.bid_clse_date >= todayKst);
+    // 조건 조합
+    const conditions = [gte(bids.bidClseDate, todayKst)];
 
-    // dedupe: 같은 (공고명·발주기관·마감일) 사업은 가장 최신 차수만, similarity는 max 유지
-    const seen = new Map<string, MatchedRow>();
-    for (const r of filtered) {
+    // 카테고리 필터
+    if (categories.length > 0) {
+      conditions.push(
+        or(...categories.map((c) => sql`${bids.aiCategory} = ${c}`))!
+      );
+    }
+
+    // 예산 필터 (assign_bdgt_amt 또는 presmpt_prce 사용)
+    if (budgetMin > 0 || budgetMax < 100_000_000_000) {
+      conditions.push(
+        sql`COALESCE(NULLIF(${bids.assignBdgtAmt}, ''), ${bids.presmptPrce})::bigint BETWEEN ${budgetMin} AND ${budgetMax}`
+      );
+    }
+
+    // 텍스트 검색: description에서 키워드 추출 후 ILIKE
+    if (description) {
+      const keywords = description
+        .split(/[\s,;.·]+/)
+        .map((w) => w.trim())
+        .filter((w) => w.length >= 2);
+
+      if (keywords.length > 0) {
+        const likeConditions = keywords.map((kw) => ilike(bids.bidNtceNm, `%${kw}%`));
+        conditions.push(or(...likeConditions)!);
+      }
+    }
+
+    const rows = await db
+      .select({
+        bid_ntce_no: bids.bidNtceNo,
+        bid_ntce_ord: bids.bidNtceOrd,
+        bid_ntce_nm: bids.bidNtceNm,
+        bid_ntce_sttus: bids.bidNtceSttus,
+        bid_ntce_date: bids.bidNtceDate,
+        bsns_div_nm: bids.bsnsDivNm,
+        ntce_instt_nm: bids.ntceInsttNm,
+        assign_bdgt_amt: bids.assignBdgtAmt,
+        presmpt_prce: bids.presmptPrce,
+        bid_clse_date: bids.bidClseDate,
+        bid_clse_tm: bids.bidClseTm,
+        bid_ntce_url: bids.bidNtceUrl,
+        ai_category: bids.aiCategory,
+      })
+      .from(bids)
+      .where(and(...conditions))
+      .orderBy(sql`${bids.bidClseDate} ASC`)
+      .limit(60);
+
+    // dedupe: 같은 (공고명·발주기관·마감일) 사업은 가장 최신 차수만
+    const seen = new Map<string, (typeof rows)[number]>();
+    for (const r of rows) {
       const key = `${r.bid_ntce_nm}|${r.ntce_instt_nm}|${r.bid_clse_date}`;
       const existing = seen.get(key);
       if (
         !existing ||
-        r.bid_ntce_no > existing.bid_ntce_no ||
-        (r.bid_ntce_no === existing.bid_ntce_no && r.bid_ntce_ord > existing.bid_ntce_ord)
+        (r.bid_ntce_no ?? "") > (existing.bid_ntce_no ?? "") ||
+        ((r.bid_ntce_no ?? "") === (existing.bid_ntce_no ?? "") && (r.bid_ntce_ord ?? "") > (existing.bid_ntce_ord ?? ""))
       ) {
-        seen.set(key, { ...r, similarity: Math.max(r.similarity, existing?.similarity ?? 0) });
-      } else if (existing) {
-        existing.similarity = Math.max(existing.similarity, r.similarity);
+        seen.set(key, r);
       }
     }
 
-    const deduped = Array.from(seen.values()).sort((a, b) => b.similarity - a.similarity).slice(0, 20);
+    const deduped = Array.from(seen.values()).slice(0, 20);
 
     const matches = deduped.map((r) => ({
       bidNtceNo: r.bid_ntce_no,
@@ -115,7 +107,7 @@ export async function POST(req: Request) {
       bidClseTm: r.bid_clse_tm,
       bidNtceUrl: r.bid_ntce_url,
       aiCategory: r.ai_category,
-      similarity: r.similarity,
+      similarity: 0,
     }));
 
     return NextResponse.json({ matches });

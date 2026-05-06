@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { db } from "@/lib/db";
+import { likes } from "@/lib/db/schema";
+import { eq, and, sql } from "drizzle-orm";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -15,13 +12,17 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "missing params" }, { status: 400 });
   }
 
-  const { count } = await supabase
-    .from("likes")
-    .select("*", { count: "exact", head: true })
-    .eq("content_type", content_type)
-    .eq("content_id", content_id);
+  const [result] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(likes)
+    .where(
+      and(
+        eq(likes.contentType, content_type),
+        eq(likes.contentId, content_id)
+      )
+    );
 
-  return NextResponse.json({ count: count ?? 0 });
+  return NextResponse.json({ count: result?.count ?? 0 });
 }
 
 export async function POST(req: NextRequest) {
@@ -31,20 +32,26 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "missing params" }, { status: 400 });
   }
 
-  const { error } = await supabase
-    .from("likes")
-    .insert({ content_type, content_id, user_fingerprint: crypto.randomUUID() });
-
-  if (error) {
+  try {
+    await db.insert(likes).values({
+      contentType: content_type,
+      contentId: content_id,
+      userFingerprint: crypto.randomUUID(),
+    });
+  } catch (error) {
     console.error("likes insert error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: String(error) }, { status: 500 });
   }
 
-  const { count } = await supabase
-    .from("likes")
-    .select("*", { count: "exact", head: true })
-    .eq("content_type", content_type)
-    .eq("content_id", content_id);
+  const [result] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(likes)
+    .where(
+      and(
+        eq(likes.contentType, content_type),
+        eq(likes.contentId, content_id)
+      )
+    );
 
-  return NextResponse.json({ count: count ?? 0 });
+  return NextResponse.json({ count: result?.count ?? 0 });
 }

@@ -1,10 +1,12 @@
 """
-문서를 청킹 → 임베딩 → Supabase documents 테이블에 저장
+문서를 청킹 → documents 테이블에 저장 (임베딩 제거됨)
 """
 import hashlib
 import re
-from shared.embedder import clean_markdown, embed_texts
-from shared.supabase_client import get_client as get_supabase
+from shared.embedder import clean_markdown
+from shared.db import get_conn
+
+from psycopg2.extras import Json
 
 CHUNK_SIZE = 800
 CHUNK_OVERLAP = 200
@@ -108,34 +110,38 @@ def upsert_chunks(chunks: list[dict]):
     if not chunks:
         return
 
-    sb = get_supabase()
-    existing_hashes = set()
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            hashes = [c["content_hash"] for c in chunks]
+            cur.execute(
+                "SELECT content_hash FROM documents WHERE content_hash = ANY(%s)",
+                (hashes,),
+            )
+            existing_hashes = {r["content_hash"] for r in cur.fetchall()}
 
-    hashes = [c["content_hash"] for c in chunks]
-    result = sb.table("documents").select("content_hash").in_("content_hash", hashes).execute()
-    existing_hashes = {r["content_hash"] for r in (result.data or [])}
+            new_chunks = [c for c in chunks if c["content_hash"] not in existing_hashes]
+            if not new_chunks:
+                print(f"  -> 전부 기존 데이터, 스킵")
+                return
 
-    new_chunks = [c for c in chunks if c["content_hash"] not in existing_hashes]
-    if not new_chunks:
-        print(f"  → 전부 기존 데이터, 스킵")
-        return
+            for c in new_chunks:
+                cur.execute(
+                    """
+                    INSERT INTO documents (content, content_hash, type, metadata)
+                    VALUES (%(content)s, %(content_hash)s, %(type)s, %(metadata)s)
+                    ON CONFLICT (content_hash) DO UPDATE SET
+                        content = EXCLUDED.content,
+                        type = EXCLUDED.type,
+                        metadata = EXCLUDED.metadata
+                    """,
+                    {
+                        "content": c["content"],
+                        "content_hash": c["content_hash"],
+                        "type": c["type"],
+                        "metadata": Json(c["metadata"]),
+                    },
+                )
 
-    texts = [c["content"] for c in new_chunks]
-    embeddings = embed_texts(texts)
+        conn.commit()
 
-    rows = [
-        {
-            "content": c["content"],
-            "content_hash": c["content_hash"],
-            "type": c["type"],
-            "metadata": c["metadata"],
-            "embedding": emb,
-        }
-        for c, emb in zip(new_chunks, embeddings)
-    ]
-
-    batch_size = 50
-    for i in range(0, len(rows), batch_size):
-        sb.table("documents").upsert(rows[i:i+batch_size], on_conflict="content_hash").execute()
-
-    print(f"  → {len(new_chunks)}개 임베딩 완료 (스킵: {len(chunks) - len(new_chunks)}개)")
+    print(f"  -> {len(new_chunks)}개 저장 완료 (스킵: {len(chunks) - len(new_chunks)}개)")

@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { db } from "@/lib/db";
+import { bids } from "@/lib/db/schema";
+import { gte } from "drizzle-orm";
 
 const SIX_MONTH_DAYS = 180;
 
@@ -101,28 +103,30 @@ function classifyAgency(rawName: string | null): string {
 
 export async function GET() {
   try {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
-
     const sixMoAgo = new Date(Date.now() - SIX_MONTH_DAYS * 86400000).toISOString().slice(0, 10);
 
-    const rawRows: BidRow[] = [];
-    const PAGE = 1000;
-    let offset = 0;
-    while (true) {
-      const { data, error } = await supabase
-        .from("bids")
-        .select("ai_category, ntce_instt_nm, dmnd_instt_nm, bid_ntce_no, bid_ntce_ord, bid_ntce_nm, bsns_div_nm, bid_ntce_date, bid_clse_date, assign_bdgt_amt, presmpt_prce, bidprc_psbl_indstrty_nm, cntrct_cncls_mthd_nm, bidwinr_dcsn_mthd_nm, rgn_lmt_yn, prtcpt_psbl_rgn_nm")
-        .gte("bid_ntce_date", sixMoAgo)
-        .range(offset, offset + PAGE - 1);
-      if (error) throw error;
-      const page = data ?? [];
-      rawRows.push(...(page as BidRow[]));
-      if (page.length < PAGE) break;
-      offset += PAGE;
-    }
+    const rawRows = await db
+      .select({
+        ai_category: bids.aiCategory,
+        ntce_instt_nm: bids.ntceInsttNm,
+        dmnd_instt_nm: bids.dmndInsttNm,
+        bid_ntce_no: bids.bidNtceNo,
+        bid_ntce_ord: bids.bidNtceOrd,
+        bid_ntce_nm: bids.bidNtceNm,
+        bsns_div_nm: bids.bsnsDivNm,
+        bid_ntce_date: bids.bidNtceDate,
+        bid_clse_date: bids.bidClseDate,
+        assign_bdgt_amt: bids.assignBdgtAmt,
+        presmpt_prce: bids.presmptPrce,
+        bidprc_psbl_indstrty_nm: bids.bidprcPsblIndstryNm,
+        cntrct_cncls_mthd_nm: bids.cntrctCnclsMthdNm,
+        bidwinr_dcsn_mthd_nm: bids.bidwinrDcsnMthdNm,
+        rgn_lmt_yn: bids.rgnLmtYn,
+        prtcpt_psbl_rgn_nm: bids.prtcptPsblRgnNm,
+      })
+      .from(bids)
+      .where(gte(bids.bidNtceDate, sixMoAgo));
+
     const rows = dedupeRows(rawRows.filter((r) => !isUnitContract(r)));
 
     // 카테고리 × 기관유형 매트릭스
@@ -167,7 +171,6 @@ export async function GET() {
 
     const totalRows = rows.filter((r) => r.ai_category && r.ai_category !== "무관").length;
 
-    // 컬럼별(카테고리별) 합계 + 한 줄 헤드라인 + prose 요약
     function buildInsights(
       matrix: Record<string, Record<string, number>>,
       categoryAxis: string[],
@@ -194,7 +197,6 @@ export async function GET() {
           ? `${topSeries[0]}이 AI 발주의 ${Math.round((topSeries[1] / grand) * 100)}% 차지`
           : "발주 분포";
 
-      // dominant 패턴 1개 (한 분야가 한 series에 강하게 쏠린 케이스)
       const dominants = categoryAxis
         .map((c) => {
           const total = categoryTotals[c];
@@ -210,7 +212,6 @@ export async function GET() {
         .filter((d) => d.total >= 15 && d.pct >= 50)
         .sort((a, b) => b.pct - a.pct)[0];
 
-      // 1~2문장 prose
       const parts: string[] = [];
       if (standout) {
         parts.push(`${standout.category} 분야는 ${standout.top.series} 비중이 ${standout.pct}%로 가장 쏠려 있습니다.`);
@@ -228,7 +229,7 @@ export async function GET() {
     const bizInsights = buildInsights(bizMatrix, CATEGORIES, BIZ_DIVS);
     const budgetInsights = buildInsights(budgetMatrix, CATEGORIES, BUDGET_RANGES.map((b) => b.label));
 
-    // 참여 가능 업종 Top 15 (콤마 구분 다중 업종 split)
+    // 참여 가능 업종 Top 15
     const industryMap: Record<string, number> = {};
     for (const r of rows) {
       const raw = (r.bidprc_psbl_indstrty_nm || "").trim();
@@ -242,7 +243,7 @@ export async function GET() {
       .sort((a, b) => b.count - a.count)
       .slice(0, 15);
 
-    // 계약방법 / 낙찰자 결정방법 (top 6 + 그 외 묶음)
+    // 계약방법 / 낙찰자 결정방법
     function topNplusOther(map: Record<string, number>, n: number): { name: string; count: number }[] {
       const sorted = Object.entries(map).sort((a, b) => b[1] - a[1]);
       const top = sorted.slice(0, n).map(([name, count]) => ({ name, count }));

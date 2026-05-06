@@ -1,11 +1,6 @@
-import { createClient } from "@supabase/supabase-js";
-
-function getClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
+import { db } from "@/lib/db";
+import { bids } from "@/lib/db/schema";
+import { gte, asc, sql } from "drizzle-orm";
 
 export const AI_KEYWORDS = ["AI", "인공지능", "빅데이터", "머신러닝", "딥러닝", "자연어처리", "LLM", "챗봇", "지능형", "디지털전환", "클라우드"] as const;
 export type AiKeyword = typeof AI_KEYWORDS[number];
@@ -96,16 +91,36 @@ function dedupeBids(items: BidItem[]): BidItem[] {
 // 참여 가능한 공고 (마감 미경과 + 사업 단위 dedupe + 단가계약·무관 제외)
 export async function fetchAIBids(): Promise<BidItem[]> {
   const today = new Date().toISOString().slice(0, 10);
-  const { data, error } = await getClient()
-    .from("bids")
-    .select("*")
-    .gte("bid_clse_date", today)
-    .order("bid_clse_date", { ascending: true })
-    .limit(1000);
+  try {
+    const rows = await db
+      .select()
+      .from(bids)
+      .where(gte(bids.bidClseDate, today))
+      .orderBy(asc(bids.bidClseDate))
+      .limit(1000);
 
-  if (error || !data) return [];
-  const filtered = data.filter((r) => !isUnitContract(r) && r.ai_category !== "무관");
-  return dedupeBids(filtered.map(rowToBidItem));
+    const asRecord = rows.map((r) => ({
+      bid_ntce_no: r.bidNtceNo,
+      bid_ntce_ord: r.bidNtceOrd,
+      bid_ntce_nm: r.bidNtceNm,
+      bid_ntce_sttus: r.bidNtceSttus,
+      bid_ntce_date: r.bidNtceDate,
+      bsns_div_nm: r.bsnsDivNm,
+      ntce_instt_nm: r.ntceInsttNm,
+      assign_bdgt_amt: r.assignBdgtAmt,
+      presmpt_prce: r.presmptPrce,
+      bid_clse_date: r.bidClseDate,
+      bid_clse_tm: r.bidClseTm,
+      bid_ntce_url: r.bidNtceUrl,
+      ai_category: r.aiCategory,
+      dmnd_instt_nm: r.dmndInsttNm,
+    }));
+    const filtered = asRecord.filter((r) => !isUnitContract(r) && r.ai_category !== "무관");
+    return dedupeBids(filtered.map(rowToBidItem));
+  } catch (error) {
+    console.error("fetchAIBids error:", error);
+    return [];
+  }
 }
 
 // 이번달 신규 등록 건수 (bid_ntce_date 기준)
@@ -117,16 +132,20 @@ export async function fetchThisMonthCount(): Promise<number> {
   const next = new Date(year, now.getMonth() + 1, 1);
   const to = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}-01`;
 
-  const { count } = await getClient()
-    .from("bids")
-    .select("id", { count: "exact", head: true })
-    .gte("bid_ntce_date", from)
-    .lt("bid_ntce_date", to);
+  try {
+    const result = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(bids)
+      .where(sql`${bids.bidNtceDate} >= ${from} AND ${bids.bidNtceDate} < ${to}`);
 
-  return count ?? 0;
+    return result[0]?.count ?? 0;
+  } catch (error) {
+    console.error("fetchThisMonthCount error:", error);
+    return 0;
+  }
 }
 
-// 월별 통계 (Supabase 집계)
+// 월별 통계 (Drizzle 집계)
 export async function fetchMonthlyStats(months = 6): Promise<MonthStat[]> {
   const results: MonthStat[] = [];
   const now = new Date();
@@ -140,18 +159,25 @@ export async function fetchMonthlyStats(months = 6): Promise<MonthStat[]> {
     const next = new Date(year, d.getMonth() + 1, 1);
     const to = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}-01`;
 
-    const { data } = await getClient()
-      .from("bids")
-      .select("assign_bdgt_amt, presmpt_prce")
-      .gte("bid_ntce_date", from)
-      .lt("bid_ntce_date", to);
+    try {
+      const rows = await db
+        .select({
+          assignBdgtAmt: bids.assignBdgtAmt,
+          presmptPrce: bids.presmptPrce,
+        })
+        .from(bids)
+        .where(sql`${bids.bidNtceDate} >= ${from} AND ${bids.bidNtceDate} < ${to}`);
 
-    const count = data?.length ?? 0;
-    const totalBudget = (data ?? []).reduce(
-      (sum, b) => sum + parseInt((b.assign_bdgt_amt || b.presmpt_prce) ?? "0"),
-      0
-    );
-    results.push({ label, count, totalBudget });
+      const count = rows.length;
+      const totalBudget = rows.reduce(
+        (sum, b) => sum + parseInt((b.assignBdgtAmt || b.presmptPrce) ?? "0"),
+        0
+      );
+      results.push({ label, count, totalBudget });
+    } catch (error) {
+      console.error(`fetchMonthlyStats ${label} error:`, error);
+      results.push({ label, count: 0, totalBudget: 0 });
+    }
   }
 
   return results;

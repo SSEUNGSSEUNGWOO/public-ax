@@ -33,7 +33,7 @@ from reports.analyst.analyst import analyze_signals
 from reports.writer.writer import write
 from reports.evaluator.evaluator import evaluate, load_rubric
 from reports.reviewer.reviewer import review
-from shared.supabase_client import get_client
+from shared.db import get_conn
 
 
 def slugify(s: str) -> str:
@@ -53,11 +53,10 @@ def extract_title(body: str) -> str:
 
 
 def run(dry_run: bool = False) -> dict:
-    client = get_client()
     today = date.today()
 
     print("=== [1/5] Analyzer (통계) ===", flush=True)
-    analysis = analyze(client, today=today)
+    analysis = analyze(today=today)
     print(
         f"  최근 30일: {analysis['summary']['recent_total']}건 / "
         f"직전 90일 월평균: {analysis['summary']['baseline_monthly_avg']}건",
@@ -118,15 +117,54 @@ def run(dry_run: bool = False) -> dict:
     }
 
     if dry_run:
-        print("\n=== DRY RUN — Supabase 저장 생략 ===", flush=True)
+        print("\n=== DRY RUN -- DB 저장 생략 ===", flush=True)
         print(f"제목: {title}")
         print(f"슬러그: {slug}")
         print("\n--- 본문 미리보기 (앞 500자) ---")
         print(final_body[:500])
         return record
 
-    print("\n=== Supabase upsert ===", flush=True)
-    client.table("proc_reports").upsert(record, on_conflict="id").execute()
+    print("\n=== DB upsert ===", flush=True)
+    from psycopg2.extras import Json
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO proc_reports (id, slug, title, body, data,
+                                          period_start, period_end,
+                                          baseline_start, baseline_end,
+                                          evaluation_score, status)
+                VALUES (%(id)s, %(slug)s, %(title)s, %(body)s, %(data)s,
+                        %(period_start)s, %(period_end)s,
+                        %(baseline_start)s, %(baseline_end)s,
+                        %(evaluation_score)s, %(status)s)
+                ON CONFLICT (id) DO UPDATE SET
+                    slug = EXCLUDED.slug,
+                    title = EXCLUDED.title,
+                    body = EXCLUDED.body,
+                    data = EXCLUDED.data,
+                    period_start = EXCLUDED.period_start,
+                    period_end = EXCLUDED.period_end,
+                    baseline_start = EXCLUDED.baseline_start,
+                    baseline_end = EXCLUDED.baseline_end,
+                    evaluation_score = EXCLUDED.evaluation_score,
+                    status = EXCLUDED.status
+                """,
+                {
+                    "id": record["id"],
+                    "slug": record["slug"],
+                    "title": record["title"],
+                    "body": record["body"],
+                    "data": Json(record["data"]),
+                    "period_start": record["period_start"],
+                    "period_end": record["period_end"],
+                    "baseline_start": record["baseline_start"],
+                    "baseline_end": record["baseline_end"],
+                    "evaluation_score": record["evaluation_score"],
+                    "status": record["status"],
+                },
+            )
+        conn.commit()
     print(f"  저장 완료: {slug}", flush=True)
 
     return record

@@ -1,4 +1,6 @@
-import { createClient } from "@supabase/supabase-js";
+import { db } from "@/lib/db";
+import { guides } from "@/lib/db/schema";
+import { eq, desc } from "drizzle-orm";
 
 export interface GuideVideo {
   title: string;
@@ -29,34 +31,49 @@ export interface Guide {
   views?: number;
 }
 
-function getClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+function rowToGuide(row: typeof guides.$inferSelect): Guide {
+  return {
+    slug: row.slug,
+    title: row.title,
+    summary: row.summary,
+    category: row.category,
+    tags: row.tags,
+    published_at: row.publishedAt,
+    body: row.body,
+    videos: row.videos as GuideVideo[] | undefined,
+    images: row.images as GuideImage[] | undefined,
+    evaluation_score: row.evaluationScore ?? undefined,
+    status: row.status as "draft" | "published" | undefined,
+    views: row.views ?? undefined,
+  };
 }
 
 export async function getAllGuides(): Promise<Guide[]> {
-  const { data, error } = await getClient()
-    .from("guides")
-    .select("*")
-    .eq("status", "published")
-    .order("published_at", { ascending: false });
+  try {
+    const rows = await db
+      .select()
+      .from(guides)
+      .where(eq(guides.status, "published"))
+      .orderBy(desc(guides.publishedAt));
 
-  if (error) {
-    console.error("guides fetch error:", error.message);
+    return rows.map(rowToGuide);
+  } catch (error) {
+    console.error("guides fetch error:", error);
     return [];
   }
-  return data ?? [];
 }
 
 export async function getGuideBySlug(slug: string): Promise<Guide | null> {
-  const { data, error } = await getClient()
-    .from("guides")
-    .select("*")
-    .eq("slug", slug)
-    .single();
+  try {
+    const rows = await db
+      .select()
+      .from(guides)
+      .where(eq(guides.slug, slug))
+      .limit(1);
 
-  if (error) return null;
-  return data;
+    if (rows.length === 0) return null;
+    return rowToGuide(rows[0]);
+  } catch {
+    return null;
+  }
 }
