@@ -20,18 +20,16 @@ jobs:
       - name: Install dependencies
         run: pip install -r ai-service/requirements.txt
 
-      - name: 1) Collect bids (G2B → Supabase)
+      - name: 1) Collect bids (G2B → Neon)
         working-directory: ai-service
         env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
           G2B_API_KEY: ${{ secrets.G2B_API_KEY }}
         run: python bids/collect.py
 
       - name: 2) Classify (OpenAI mini, active scope)
         working-directory: ai-service
         env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: python bids/classify.py --provider openai --scope active
