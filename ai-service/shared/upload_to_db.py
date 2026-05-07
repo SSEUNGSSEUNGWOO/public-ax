@@ -100,7 +100,7 @@ def upload_guides():
                         "title": item["title"],
                         "summary": item.get("summary", ""),
                         "category": item.get("category", ""),
-                        "tags": Json(item.get("tags", [])),
+                        "tags": item.get("tags", []),
                         "published_at": item["published_at"],
                         "body": item["body"],
                         "videos": Json(item.get("videos", [])),
